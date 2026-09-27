@@ -1,0 +1,42 @@
+- generic [active] [ref=f3e1]:
+  - banner [ref=f3e2]:
+    - link "真题导入审核" [ref=f3e3] [cursor=pointer]:
+      - /url: /admin/imports
+    - generic [ref=f3e4]: 本地管理界面
+  - main [ref=f3e5]:
+    - generic [ref=f3e6]:
+      - generic [ref=f3e7]:
+        - generic [ref=f3e8]:
+          - heading "2020年11月软件设计师真题及解析" [level=1] [ref=f3e9]
+          - paragraph [ref=f3e10]: 2020 / second_half / default · 考生回忆版
+        - link "返回批次" [ref=f3e11] [cursor=pointer]:
+          - /url: /admin/imports
+      - paragraph
+      - group [ref=f3e12]:
+        - generic "批次操作" [ref=f3e13] [cursor=pointer]
+      - status [ref=f3e14]: 处理中…
+      - navigation "题目导航" [ref=f3e15]:
+        - button "上一题" [ref=f3e16] [cursor=pointer]
+        - button "下一题" [ref=f3e17] [cursor=pointer]
+        - generic [ref=f3e18]:
+          - text: 跳至题目
+          - combobox "跳至题目" [ref=f3e19]
+        - generic [ref=f3e20]:
+          - text: 状态
+          - combobox "状态" [ref=f3e21]:
+            - option "全部" [selected]
+            - option "待审核"
+            - option "需核对"
+            - option "已审核/已发布"
+            - option "已排除"
+      - generic [ref=f3e22]:
+        - region "原文对照" [ref=f3e23]:
+          - generic [ref=f3e24]:
+            - generic [ref=f3e25]:
+              - heading "原文对照" [level=2] [ref=f3e26]
+              - paragraph
+            - generic [ref=f3e27]:
+              - button "排版与图片" [pressed] [ref=f3e28] [cursor=pointer]
+              - button "Markdown 原文" [ref=f3e29] [cursor=pointer]
+        - region "解析结果" [ref=f3e31]:
+          - paragraph [ref=f3e33]: 选择一道题开始核对。

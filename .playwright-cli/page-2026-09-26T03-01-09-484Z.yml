@@ -1,0 +1,394 @@
+- generic [active] [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - link "真题导入审核" [ref=f1e3] [cursor=pointer]:
+      - /url: /admin/imports
+    - generic [ref=f1e4]: 本地管理界面
+  - main [ref=f1e5]:
+    - generic [ref=f1e6]:
+      - generic [ref=f1e7]:
+        - generic [ref=f1e8]:
+          - heading "2020年11月软件设计师真题及解析" [level=1] [ref=f1e9]
+          - paragraph [ref=f1e10]: 2020 / second_half / default · 考生回忆版
+        - link "返回批次" [ref=f1e11] [cursor=pointer]:
+          - /url: /admin/imports
+      - paragraph [ref=f1e35]: 56 道题 / 74 个小问 · 排除 0 道 · 状态：in_review
+      - group [ref=f1e12]:
+        - generic "批次操作" [ref=f1e13] [cursor=pointer]
+      - status [ref=f1e14]: 解析完成，请核对原文和分类
+      - navigation "题目导航" [ref=f1e15]:
+        - button "上一题" [ref=f1e16] [cursor=pointer]
+        - button "下一题" [disabled] [ref=f1e17]
+        - generic [ref=f1e18]:
+          - text: 跳至题目
+          - combobox "跳至题目" [ref=f1e19]:
+            - option "第 1 题 · 1 问 · 待审核"
+            - option "第 2 题 · 1 问 · 待审核"
+            - option "第 3 题 · 1 问 · 待审核"
+            - option "第 4-5 题 · 2 问 · 待审核"
+            - option "第 6 题 · 1 问 · 待审核"
+            - option "第 7 题 · 1 问 · 待审核"
+            - option "第 8 题 · 1 问 · 待审核"
+            - option "第 9 题 · 1 问 · 待审核"
+            - option "第 10 题 · 1 问 · 待审核"
+            - option "第 11 题 · 1 问 · 待审核"
+            - option "第 12 题 · 1 问 · 待审核"
+            - option "第 13 题 · 1 问 · 待审核"
+            - option "第 14 题 · 1 问 · 待审核"
+            - option "第 15 题 · 1 问 · 待审核"
+            - option "第 16 题 · 1 问 · 待审核"
+            - option "第 17-18 题 · 2 问 · 待审核"
+            - option "第 19 题 · 1 问 · 待审核"
+            - option "第 20 题 · 1 问 · 待审核"
+            - option "第 21 题 · 1 问 · 待审核"
+            - option "第 22 题 · 1 问 · 待审核"
+            - option "第 23 题 · 1 问 · 待审核"
+            - option "第 24 题 · 1 问 · 待审核"
+            - option "第 25-26 题 · 2 问 · 待审核"
+            - option "第 27 题 · 1 问 · 待审核"
+            - option "第 28 题 · 1 问 · 待审核"
+            - option "第 29-30 题 · 2 问 · 待审核"
+            - option "第 31 题 · 1 问 · 待审核"
+            - option "第 32 题 · 1 问 · 待审核"
+            - option "第 33 题 · 1 问 · 待审核"
+            - option "第 34 题 · 1 问 · 待审核"
+            - option "第 35-36 题 · 2 问 · 待审核"
+            - option "第 37 题 · 1 问 · 待审核"
+            - option "第 38 题 · 1 问 · 待审核"
+            - option "第 39 题 · 1 问 · 待审核"
+            - option "第 40 题 · 1 问 · 待审核"
+            - option "第 41 题 · 1 问 · 待审核"
+            - option "第 42-43 题 · 2 问 · 需核对"
+            - option "第 44-47 题 · 4 问 · 待审核"
+            - option "第 48 题 · 1 问 · 待审核"
+            - option "第 49 题 · 1 问 · 待审核"
+            - option "第 50 题 · 1 问 · 待审核"
+            - option "第 51-52 题 · 2 问 · 待审核"
+            - option "第 53 题 · 1 问 · 待审核"
+            - option "第 54-55 题 · 2 问 · 需核对"
+            - option "第 56 题 · 1 问 · 待审核"
+            - option "第 58 题 · 1 问 · 待审核"
+            - option "第 59 题 · 1 问 · 待审核"
+            - option "第 60-61 题 · 2 问 · 待审核"
+            - option "第 62-63 题 · 2 问 · 待审核"
+            - option "第 64 题 · 1 问 · 待审核"
+            - option "第 65 题 · 1 问 · 待审核"
+            - option "第 66 题 · 1 问 · 待审核"
+            - option "第 67 题 · 1 问 · 需核对"
+            - option "第 68-69 题 · 2 问 · 待审核"
+            - option "第 70 题 · 1 问 · 待审核"
+            - option "第 71-75 题 · 5 问 · 待审核" [selected]
+        - generic [ref=f1e20]:
+          - text: 状态
+          - combobox "状态" [ref=f1e21]:
+            - option "全部" [selected]
+            - option "待审核"
+            - option "需核对"
+            - option "已审核/已发布"
+            - option "已排除"
+        - generic [ref=f1e36]: 56 / 56 道
+      - generic [ref=f1e22]:
+        - region "原文对照" [ref=f1e23]:
+          - generic [ref=f1e24]:
+            - generic [ref=f1e25]:
+              - heading "原文对照" [level=2] [ref=f1e26]
+              - paragraph [ref=f1e37]: 第 608～640 行 · 第 71-75 题
+            - generic [ref=f1e27]:
+              - button "排版与图片" [pressed] [ref=f1e28] [cursor=pointer]
+              - button "Markdown 原文" [ref=f1e29] [cursor=pointer]
+          - generic [ref=f1e30]: 正在生成原文预览…
+        - region "解析结果" [ref=f1e31]:
+          - generic [ref=f1e32]:
+            - heading "第 71-75 题（5 个小问）" [level=2] [ref=f1e177]
+            - paragraph [ref=f1e178]: 待审核 · 共享题干及每个小问逐项核对
+            - group [ref=f1e179]:
+              - generic "查看解析结果的排版预览" [ref=f1e180] [cursor=pointer]
+            - generic [ref=f1e181]:
+              - generic [ref=f1e182]: 共享题干（普通单题留空）
+              - textbox "共享题干（普通单题留空）" [ref=f1e183]: "Regardless of how well designed, constructed, and tested a system or application may be, errors or bugs will inevitably occur. Once a system has been (71), it enters operations and support. Systems support is the ongoing technical support for users, as well as the maintenance required to fix any errors, omissions, or new requirements that may arise. Before an information system can be (72), it must be in operation. System operation is the day-to-day, week-to-week, month-to-month, and year-to-year (73) of an information system's business processes and application programs. Unlike systems analysis, design, and implementation, systems support cannot sensibly be (74) into actual phases that a support project must perform. Rather, systems support consists of four ongoing activities: program maintenance, system recovery, technical support, and system enhancement. Each activity is a type of support project that is (75) by a particular problem, event, or opportunity encountered with the implemented system."
+            - generic [ref=f1e184]:
+              - heading "小问 1" [level=3] [ref=f1e185]
+              - generic [ref=f1e186]:
+                - generic [ref=f1e187]: 原文题号
+                - spinbutton "原文题号" [ref=f1e188]: "71"
+              - generic [ref=f1e189]:
+                - generic [ref=f1e190]: 小问题干（共享题干已包含问题时可留空）
+                - textbox "小问题干（共享题干已包含问题时可留空）" [ref=f1e191]
+              - generic [ref=f1e192]:
+                - generic [ref=f1e193]:
+                  - generic [ref=f1e194]: 选项 A
+                  - textbox "选项 A" [ref=f1e195]: designed
+                - generic [ref=f1e196]:
+                  - generic [ref=f1e197]: 选项 B
+                  - textbox "选项 B" [ref=f1e198]: implemented
+                - generic [ref=f1e199]:
+                  - generic [ref=f1e200]: 选项 C
+                  - textbox "选项 C" [ref=f1e201]: investigated
+                - generic [ref=f1e202]:
+                  - generic [ref=f1e203]: 选项 D
+                  - textbox "选项 D" [ref=f1e204]: analyzed
+              - generic [ref=f1e205]:
+                - generic [ref=f1e206]: 正确答案
+                - combobox "正确答案" [ref=f1e207]:
+                  - option "请选择"
+                  - option "A"
+                  - option "B" [selected]
+                  - option "C"
+                  - option "D"
+              - generic [ref=f1e208]:
+                - generic [ref=f1e209]: 解析
+                - textbox "解析" [ref=f1e210]: A. designed：设计 B. implemented：实施 C. investigated：调查 D. analyzed：分析 A. supported：支持 B. tested：测试 C. implemented：实施 D. constructed：构建 A. construction：构建 B. maintenance：维护 C. execution：执行 D. implementation：实施 A. broke：打破 B. formed：形成 C. composed：组成 D. decomposed：分解 A. triggered：触发 B. leaded：引导 C. caused：引起、导致 D. produced：产生 全文翻译：无论一个系统或应用程序的设计、构建和测试多么完善，错误或缺陷都不可避免地会出现。一旦系统实施完成（71），就会进入运行与支持阶段。 系统支持是指为用户提供持续的技术支持，以及为修复可能出现的错误、遗漏或满足新需求而进行的维护工作。信息系统必须先投入运行，才能获得支持（72）。系统运行是指日复一日、周复一周、月复一月、年复一年地执行（73）信息系统的业务流程和应用程序。 与系统分析、设计和实施不同，系统支持不能合理地分解（74）为支持项目必须执行的具体阶段。相反，系统支持包含四项持续进行的活动：程序维护、系统恢复、技术支持和系统增强。每项活动都是一种支持项目，由已实施系统中遇到的特定问题、事件或机会所触发（75）。
+              - generic [ref=f1e211]:
+                - heading "知识点审核" [level=4] [ref=f1e212]
+                - generic [ref=f1e213]:
+                  - generic [ref=f1e214]: 主知识点（必选）
+                  - generic [ref=f1e216]:
+                    - text: 软件生命周期 · software-engineering.process.lifecycle
+                    - button "移除软件生命周期" [ref=f1e217] [cursor=pointer]: ×
+                  - generic [ref=f1e218]:
+                    - generic [ref=f1e219]: AI 候选：
+                    - button "软件生命周期 · software-engineering.process.lifecycle" [ref=f1e220] [cursor=pointer]
+                    - button "软件维护 · software-engineering.quality-maintenance.maintenance" [ref=f1e221] [cursor=pointer]
+                    - button "增量与螺旋模型 · software-engineering.process.incremental-spiral" [ref=f1e222] [cursor=pointer]
+                  - combobox "主知识点（必选）" [ref=f1e223]
+                  - paragraph [ref=f1e224]: 搜索名称或编码，选择一个主知识点
+                  - paragraph [ref=f1e225]
+                - generic [ref=f1e226]:
+                  - generic [ref=f1e227]: 关联知识点（最多 3 个）
+                  - generic [ref=f1e228]: 尚未选择
+                  - generic [ref=f1e230]:
+                    - generic [ref=f1e231]: AI 候选：
+                    - button "进度网络与关键路径 · software-engineering.project-management.schedule-network" [ref=f1e232] [cursor=pointer]
+                    - button "系统转换与评价 · software-engineering.quality-maintenance.conversion-evaluation" [ref=f1e233] [cursor=pointer]
+                  - combobox "关联知识点（最多 3 个）" [ref=f1e234]
+                  - paragraph [ref=f1e235]: 已选 0 / 3 个；搜索名称或编码添加
+                  - paragraph [ref=f1e236]
+            - generic [ref=f1e237]:
+              - heading "小问 2" [level=3] [ref=f1e238]
+              - generic [ref=f1e239]:
+                - generic [ref=f1e240]: 原文题号
+                - spinbutton "原文题号" [ref=f1e241]: "72"
+              - generic [ref=f1e242]:
+                - generic [ref=f1e243]: 小问题干（共享题干已包含问题时可留空）
+                - textbox "小问题干（共享题干已包含问题时可留空）" [ref=f1e244]
+              - generic [ref=f1e245]:
+                - generic [ref=f1e246]:
+                  - generic [ref=f1e247]: 选项 A
+                  - textbox "选项 A" [ref=f1e248]: supported
+                - generic [ref=f1e249]:
+                  - generic [ref=f1e250]: 选项 B
+                  - textbox "选项 B" [ref=f1e251]: tested
+                - generic [ref=f1e252]:
+                  - generic [ref=f1e253]: 选项 C
+                  - textbox "选项 C" [ref=f1e254]: implemented
+                - generic [ref=f1e255]:
+                  - generic [ref=f1e256]: 选项 D
+                  - textbox "选项 D" [ref=f1e257]: constructed
+              - generic [ref=f1e258]:
+                - generic [ref=f1e259]: 正确答案
+                - combobox "正确答案" [ref=f1e260]:
+                  - option "请选择"
+                  - option "A" [selected]
+                  - option "B"
+                  - option "C"
+                  - option "D"
+              - generic [ref=f1e261]:
+                - generic [ref=f1e262]: 解析
+                - textbox "解析" [ref=f1e263]: A. designed：设计 B. implemented：实施 C. investigated：调查 D. analyzed：分析 A. supported：支持 B. tested：测试 C. implemented：实施 D. constructed：构建 A. construction：构建 B. maintenance：维护 C. execution：执行 D. implementation：实施 A. broke：打破 B. formed：形成 C. composed：组成 D. decomposed：分解 A. triggered：触发 B. leaded：引导 C. caused：引起、导致 D. produced：产生 全文翻译：无论一个系统或应用程序的设计、构建和测试多么完善，错误或缺陷都不可避免地会出现。一旦系统实施完成（71），就会进入运行与支持阶段。 系统支持是指为用户提供持续的技术支持，以及为修复可能出现的错误、遗漏或满足新需求而进行的维护工作。信息系统必须先投入运行，才能获得支持（72）。系统运行是指日复一日、周复一周、月复一月、年复一年地执行（73）信息系统的业务流程和应用程序。 与系统分析、设计和实施不同，系统支持不能合理地分解（74）为支持项目必须执行的具体阶段。相反，系统支持包含四项持续进行的活动：程序维护、系统恢复、技术支持和系统增强。每项活动都是一种支持项目，由已实施系统中遇到的特定问题、事件或机会所触发（75）。
+              - generic [ref=f1e264]:
+                - heading "知识点审核" [level=4] [ref=f1e265]
+                - generic [ref=f1e266]:
+                  - generic [ref=f1e267]: 主知识点（必选）
+                  - generic [ref=f1e269]:
+                    - text: 软件维护 · software-engineering.quality-maintenance.maintenance
+                    - button "移除软件维护" [ref=f1e270] [cursor=pointer]: ×
+                  - generic [ref=f1e271]:
+                    - generic [ref=f1e272]: AI 候选：
+                    - button "软件维护 · software-engineering.quality-maintenance.maintenance" [ref=f1e273] [cursor=pointer]
+                    - button "软件生命周期 · software-engineering.process.lifecycle" [ref=f1e274] [cursor=pointer]
+                    - button "软件配置管理 · software-engineering.project-management.configuration" [ref=f1e275] [cursor=pointer]
+                  - combobox "主知识点（必选）" [ref=f1e276]
+                  - paragraph [ref=f1e277]: 搜索名称或编码，选择一个主知识点
+                  - paragraph [ref=f1e278]
+                - generic [ref=f1e279]:
+                  - generic [ref=f1e280]: 关联知识点（最多 3 个）
+                  - generic [ref=f1e281]: 尚未选择
+                  - generic [ref=f1e283]:
+                    - generic [ref=f1e284]: AI 候选：
+                    - button "系统转换与评价 · software-engineering.quality-maintenance.conversion-evaluation" [ref=f1e285] [cursor=pointer]
+                  - combobox "关联知识点（最多 3 个）" [ref=f1e286]
+                  - paragraph [ref=f1e287]: 已选 0 / 3 个；搜索名称或编码添加
+                  - paragraph [ref=f1e288]
+            - generic [ref=f1e289]:
+              - heading "小问 3" [level=3] [ref=f1e290]
+              - generic [ref=f1e291]:
+                - generic [ref=f1e292]: 原文题号
+                - spinbutton "原文题号" [ref=f1e293]: "73"
+              - generic [ref=f1e294]:
+                - generic [ref=f1e295]: 小问题干（共享题干已包含问题时可留空）
+                - textbox "小问题干（共享题干已包含问题时可留空）" [ref=f1e296]
+              - generic [ref=f1e297]:
+                - generic [ref=f1e298]:
+                  - generic [ref=f1e299]: 选项 A
+                  - textbox "选项 A" [ref=f1e300]: construction
+                - generic [ref=f1e301]:
+                  - generic [ref=f1e302]: 选项 B
+                  - textbox "选项 B" [ref=f1e303]: maintenance
+                - generic [ref=f1e304]:
+                  - generic [ref=f1e305]: 选项 C
+                  - textbox "选项 C" [ref=f1e306]: execution
+                - generic [ref=f1e307]:
+                  - generic [ref=f1e308]: 选项 D
+                  - textbox "选项 D" [ref=f1e309]: implementation
+              - generic [ref=f1e310]:
+                - generic [ref=f1e311]: 正确答案
+                - combobox "正确答案" [ref=f1e312]:
+                  - option "请选择"
+                  - option "A"
+                  - option "B"
+                  - option "C" [selected]
+                  - option "D"
+              - generic [ref=f1e313]:
+                - generic [ref=f1e314]: 解析
+                - textbox "解析" [ref=f1e315]: A. designed：设计 B. implemented：实施 C. investigated：调查 D. analyzed：分析 A. supported：支持 B. tested：测试 C. implemented：实施 D. constructed：构建 A. construction：构建 B. maintenance：维护 C. execution：执行 D. implementation：实施 A. broke：打破 B. formed：形成 C. composed：组成 D. decomposed：分解 A. triggered：触发 B. leaded：引导 C. caused：引起、导致 D. produced：产生 全文翻译：无论一个系统或应用程序的设计、构建和测试多么完善，错误或缺陷都不可避免地会出现。一旦系统实施完成（71），就会进入运行与支持阶段。 系统支持是指为用户提供持续的技术支持，以及为修复可能出现的错误、遗漏或满足新需求而进行的维护工作。信息系统必须先投入运行，才能获得支持（72）。系统运行是指日复一日、周复一周、月复一月、年复一年地执行（73）信息系统的业务流程和应用程序。 与系统分析、设计和实施不同，系统支持不能合理地分解（74）为支持项目必须执行的具体阶段。相反，系统支持包含四项持续进行的活动：程序维护、系统恢复、技术支持和系统增强。每项活动都是一种支持项目，由已实施系统中遇到的特定问题、事件或机会所触发（75）。
+              - generic [ref=f1e316]:
+                - heading "知识点审核" [level=4] [ref=f1e317]
+                - generic [ref=f1e318]:
+                  - generic [ref=f1e319]: 主知识点（必选）
+                  - generic [ref=f1e321]:
+                    - text: 软件生命周期 · software-engineering.process.lifecycle
+                    - button "移除软件生命周期" [ref=f1e322] [cursor=pointer]: ×
+                  - generic [ref=f1e323]:
+                    - generic [ref=f1e324]: AI 候选：
+                    - button "软件生命周期 · software-engineering.process.lifecycle" [ref=f1e325] [cursor=pointer]
+                    - button "软件维护 · software-engineering.quality-maintenance.maintenance" [ref=f1e326] [cursor=pointer]
+                    - button "进度网络与关键路径 · software-engineering.project-management.schedule-network" [ref=f1e327] [cursor=pointer]
+                  - combobox "主知识点（必选）" [ref=f1e328]
+                  - paragraph [ref=f1e329]: 搜索名称或编码，选择一个主知识点
+                  - paragraph [ref=f1e330]
+                - generic [ref=f1e331]:
+                  - generic [ref=f1e332]: 关联知识点（最多 3 个）
+                  - generic [ref=f1e333]: 尚未选择
+                  - generic [ref=f1e335]:
+                    - generic [ref=f1e336]: AI 候选：
+                    - button "增量与螺旋模型 · software-engineering.process.incremental-spiral" [ref=f1e337] [cursor=pointer]
+                  - combobox "关联知识点（最多 3 个）" [ref=f1e338]
+                  - paragraph [ref=f1e339]: 已选 0 / 3 个；搜索名称或编码添加
+                  - paragraph [ref=f1e340]
+            - generic [ref=f1e341]:
+              - heading "小问 4" [level=3] [ref=f1e342]
+              - generic [ref=f1e343]:
+                - generic [ref=f1e344]: 原文题号
+                - spinbutton "原文题号" [ref=f1e345]: "74"
+              - generic [ref=f1e346]:
+                - generic [ref=f1e347]: 小问题干（共享题干已包含问题时可留空）
+                - textbox "小问题干（共享题干已包含问题时可留空）" [ref=f1e348]
+              - generic [ref=f1e349]:
+                - generic [ref=f1e350]:
+                  - generic [ref=f1e351]: 选项 A
+                  - textbox "选项 A" [ref=f1e352]: broke
+                - generic [ref=f1e353]:
+                  - generic [ref=f1e354]: 选项 B
+                  - textbox "选项 B" [ref=f1e355]: formed
+                - generic [ref=f1e356]:
+                  - generic [ref=f1e357]: 选项 C
+                  - textbox "选项 C" [ref=f1e358]: composed
+                - generic [ref=f1e359]:
+                  - generic [ref=f1e360]: 选项 D
+                  - textbox "选项 D" [ref=f1e361]: decomposed
+              - generic [ref=f1e362]:
+                - generic [ref=f1e363]: 正确答案
+                - combobox "正确答案" [ref=f1e364]:
+                  - option "请选择"
+                  - option "A"
+                  - option "B"
+                  - option "C"
+                  - option "D" [selected]
+              - generic [ref=f1e365]:
+                - generic [ref=f1e366]: 解析
+                - textbox "解析" [ref=f1e367]: A. designed：设计 B. implemented：实施 C. investigated：调查 D. analyzed：分析 A. supported：支持 B. tested：测试 C. implemented：实施 D. constructed：构建 A. construction：构建 B. maintenance：维护 C. execution：执行 D. implementation：实施 A. broke：打破 B. formed：形成 C. composed：组成 D. decomposed：分解 A. triggered：触发 B. leaded：引导 C. caused：引起、导致 D. produced：产生 全文翻译：无论一个系统或应用程序的设计、构建和测试多么完善，错误或缺陷都不可避免地会出现。一旦系统实施完成（71），就会进入运行与支持阶段。 系统支持是指为用户提供持续的技术支持，以及为修复可能出现的错误、遗漏或满足新需求而进行的维护工作。信息系统必须先投入运行，才能获得支持（72）。系统运行是指日复一日、周复一周、月复一月、年复一年地执行（73）信息系统的业务流程和应用程序。 与系统分析、设计和实施不同，系统支持不能合理地分解（74）为支持项目必须执行的具体阶段。相反，系统支持包含四项持续进行的活动：程序维护、系统恢复、技术支持和系统增强。每项活动都是一种支持项目，由已实施系统中遇到的特定问题、事件或机会所触发（75）。
+              - generic [ref=f1e368]:
+                - heading "知识点审核" [level=4] [ref=f1e369]
+                - generic [ref=f1e370]:
+                  - generic [ref=f1e371]: 主知识点（必选）
+                  - generic [ref=f1e373]:
+                    - text: 系统转换与评价 · software-engineering.quality-maintenance.conversion-evaluation
+                    - button "移除系统转换与评价" [ref=f1e374] [cursor=pointer]: ×
+                  - generic [ref=f1e375]:
+                    - generic [ref=f1e376]: AI 候选：
+                    - button "系统转换与评价 · software-engineering.quality-maintenance.conversion-evaluation" [ref=f1e377] [cursor=pointer]
+                    - button "软件生命周期 · software-engineering.process.lifecycle" [ref=f1e378] [cursor=pointer]
+                    - button "模块化设计 · software-engineering.architecture-design.modularity" [ref=f1e379] [cursor=pointer]
+                  - combobox "主知识点（必选）" [ref=f1e380]
+                  - paragraph [ref=f1e381]: 搜索名称或编码，选择一个主知识点
+                  - paragraph [ref=f1e382]
+                - generic [ref=f1e383]:
+                  - generic [ref=f1e384]: 关联知识点（最多 3 个）
+                  - generic [ref=f1e385]: 尚未选择
+                  - generic [ref=f1e387]:
+                    - generic [ref=f1e388]: AI 候选：
+                    - button "内聚 · software-engineering.architecture-design.cohesion" [ref=f1e389] [cursor=pointer]
+                  - combobox "关联知识点（最多 3 个）" [ref=f1e390]
+                  - paragraph [ref=f1e391]: 已选 0 / 3 个；搜索名称或编码添加
+                  - paragraph [ref=f1e392]
+            - generic [ref=f1e393]:
+              - heading "小问 5" [level=3] [ref=f1e394]
+              - generic [ref=f1e395]:
+                - generic [ref=f1e396]: 原文题号
+                - spinbutton "原文题号" [ref=f1e397]: "75"
+              - generic [ref=f1e398]:
+                - generic [ref=f1e399]: 小问题干（共享题干已包含问题时可留空）
+                - textbox "小问题干（共享题干已包含问题时可留空）" [ref=f1e400]
+              - generic [ref=f1e401]:
+                - generic [ref=f1e402]:
+                  - generic [ref=f1e403]: 选项 A
+                  - textbox "选项 A" [ref=f1e404]: triggered
+                - generic [ref=f1e405]:
+                  - generic [ref=f1e406]: 选项 B
+                  - textbox "选项 B" [ref=f1e407]: leaded
+                - generic [ref=f1e408]:
+                  - generic [ref=f1e409]: 选项 C
+                  - textbox "选项 C" [ref=f1e410]: caused
+                - generic [ref=f1e411]:
+                  - generic [ref=f1e412]: 选项 D
+                  - textbox "选项 D" [ref=f1e413]: produced
+              - generic [ref=f1e414]:
+                - generic [ref=f1e415]: 正确答案
+                - combobox "正确答案" [ref=f1e416]:
+                  - option "请选择"
+                  - option "A" [selected]
+                  - option "B"
+                  - option "C"
+                  - option "D"
+              - generic [ref=f1e417]:
+                - generic [ref=f1e418]: 解析
+                - textbox "解析" [ref=f1e419]: A. designed：设计 B. implemented：实施 C. investigated：调查 D. analyzed：分析 A. supported：支持 B. tested：测试 C. implemented：实施 D. constructed：构建 A. construction：构建 B. maintenance：维护 C. execution：执行 D. implementation：实施 A. broke：打破 B. formed：形成 C. composed：组成 D. decomposed：分解 A. triggered：触发 B. leaded：引导 C. caused：引起、导致 D. produced：产生 全文翻译：无论一个系统或应用程序的设计、构建和测试多么完善，错误或缺陷都不可避免地会出现。一旦系统实施完成（71），就会进入运行与支持阶段。 系统支持是指为用户提供持续的技术支持，以及为修复可能出现的错误、遗漏或满足新需求而进行的维护工作。信息系统必须先投入运行，才能获得支持（72）。系统运行是指日复一日、周复一周、月复一月、年复一年地执行（73）信息系统的业务流程和应用程序。 与系统分析、设计和实施不同，系统支持不能合理地分解（74）为支持项目必须执行的具体阶段。相反，系统支持包含四项持续进行的活动：程序维护、系统恢复、技术支持和系统增强。每项活动都是一种支持项目，由已实施系统中遇到的特定问题、事件或机会所触发（75）。
+              - generic [ref=f1e420]:
+                - heading "知识点审核" [level=4] [ref=f1e421]
+                - generic [ref=f1e422]:
+                  - generic [ref=f1e423]: 主知识点（必选）
+                  - generic [ref=f1e425]:
+                    - text: 软件维护 · software-engineering.quality-maintenance.maintenance
+                    - button "移除软件维护" [ref=f1e426] [cursor=pointer]: ×
+                  - generic [ref=f1e427]:
+                    - generic [ref=f1e428]: AI 候选：
+                    - button "软件维护 · software-engineering.quality-maintenance.maintenance" [ref=f1e429] [cursor=pointer]
+                    - button "风险管理 · software-engineering.project-management.risk" [ref=f1e430] [cursor=pointer]
+                    - button "软件生命周期 · software-engineering.process.lifecycle" [ref=f1e431] [cursor=pointer]
+                  - combobox "主知识点（必选）" [ref=f1e432]
+                  - paragraph [ref=f1e433]: 搜索名称或编码，选择一个主知识点
+                  - paragraph [ref=f1e434]
+                - generic [ref=f1e435]:
+                  - generic [ref=f1e436]: 关联知识点（最多 3 个）
+                  - generic [ref=f1e437]: 尚未选择
+                  - generic [ref=f1e439]:
+                    - generic [ref=f1e440]: AI 候选：
+                    - button "软件可靠性与容错 · software-engineering.quality-maintenance.reliability-fault-tolerance" [ref=f1e441] [cursor=pointer]
+                  - combobox "关联知识点（最多 3 个）" [ref=f1e442]
+                  - paragraph [ref=f1e443]: 已选 0 / 3 个；搜索名称或编码添加
+                  - paragraph [ref=f1e444]
+          - generic [ref=f1e34]:
+            - button "保存题目内容" [ref=f1e445] [cursor=pointer]
+            - button "文本辅助提取" [ref=f1e446] [cursor=pointer]
+            - button "确认整题并批准" [ref=f1e447] [cursor=pointer]
+            - button "排除整道题" [ref=f1e448] [cursor=pointer]
+            - button "增加小问" [ref=f1e449] [cursor=pointer]

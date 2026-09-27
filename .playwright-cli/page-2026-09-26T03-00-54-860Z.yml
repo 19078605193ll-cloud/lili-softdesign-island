@@ -1,0 +1,177 @@
+- generic [active] [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - link "真题导入审核" [ref=f1e3] [cursor=pointer]:
+      - /url: /admin/imports
+    - generic [ref=f1e4]: 本地管理界面
+  - main [ref=f1e5]:
+    - generic [ref=f1e6]:
+      - generic [ref=f1e7]:
+        - generic [ref=f1e8]:
+          - heading "2020年11月软件设计师真题及解析" [level=1] [ref=f1e9]
+          - paragraph [ref=f1e10]: 2020 / second_half / default · 考生回忆版
+        - link "返回批次" [ref=f1e11] [cursor=pointer]:
+          - /url: /admin/imports
+      - paragraph [ref=f1e35]: 56 道题 / 74 个小问 · 排除 0 道 · 状态：in_review
+      - group [ref=f1e12]:
+        - generic "批次操作" [ref=f1e13] [cursor=pointer]
+      - status [ref=f1e14]: 解析完成，请核对原文和分类
+      - navigation "题目导航" [ref=f1e15]:
+        - button "上一题" [ref=f1e16] [cursor=pointer]
+        - button "下一题" [ref=f1e17] [cursor=pointer]
+        - generic [ref=f1e18]:
+          - text: 跳至题目
+          - combobox "跳至题目" [ref=f1e19]:
+            - option "第 1 题 · 1 问 · 待审核"
+            - option "第 2 题 · 1 问 · 待审核"
+            - option "第 3 题 · 1 问 · 待审核"
+            - option "第 4-5 题 · 2 问 · 待审核"
+            - option "第 6 题 · 1 问 · 待审核"
+            - option "第 7 题 · 1 问 · 待审核"
+            - option "第 8 题 · 1 问 · 待审核"
+            - option "第 9 题 · 1 问 · 待审核"
+            - option "第 10 题 · 1 问 · 待审核"
+            - option "第 11 题 · 1 问 · 待审核"
+            - option "第 12 题 · 1 问 · 待审核"
+            - option "第 13 题 · 1 问 · 待审核"
+            - option "第 14 题 · 1 问 · 待审核"
+            - option "第 15 题 · 1 问 · 待审核"
+            - option "第 16 题 · 1 问 · 待审核"
+            - option "第 17-18 题 · 2 问 · 待审核"
+            - option "第 19 题 · 1 问 · 待审核"
+            - option "第 20 题 · 1 问 · 待审核"
+            - option "第 21 题 · 1 问 · 待审核"
+            - option "第 22 题 · 1 问 · 待审核"
+            - option "第 23 题 · 1 问 · 待审核"
+            - option "第 24 题 · 1 问 · 待审核"
+            - option "第 25-26 题 · 2 问 · 待审核"
+            - option "第 27 题 · 1 问 · 待审核"
+            - option "第 28 题 · 1 问 · 待审核"
+            - option "第 29-30 题 · 2 问 · 待审核"
+            - option "第 31 题 · 1 问 · 待审核"
+            - option "第 32 题 · 1 问 · 待审核"
+            - option "第 33 题 · 1 问 · 待审核"
+            - option "第 34 题 · 1 问 · 待审核"
+            - option "第 35-36 题 · 2 问 · 待审核"
+            - option "第 37 题 · 1 问 · 待审核"
+            - option "第 38 题 · 1 问 · 待审核"
+            - option "第 39 题 · 1 问 · 待审核"
+            - option "第 40 题 · 1 问 · 待审核"
+            - option "第 41 题 · 1 问 · 待审核" [selected]
+            - option "第 42-43 题 · 2 问 · 需核对"
+            - option "第 44-47 题 · 4 问 · 待审核"
+            - option "第 48 题 · 1 问 · 待审核"
+            - option "第 49 题 · 1 问 · 待审核"
+            - option "第 50 题 · 1 问 · 待审核"
+            - option "第 51-52 题 · 2 问 · 待审核"
+            - option "第 53 题 · 1 问 · 待审核"
+            - option "第 54-55 题 · 2 问 · 需核对"
+            - option "第 56 题 · 1 问 · 待审核"
+            - option "第 58 题 · 1 问 · 待审核"
+            - option "第 59 题 · 1 问 · 待审核"
+            - option "第 60-61 题 · 2 问 · 待审核"
+            - option "第 62-63 题 · 2 问 · 待审核"
+            - option "第 64 题 · 1 问 · 待审核"
+            - option "第 65 题 · 1 问 · 待审核"
+            - option "第 66 题 · 1 问 · 待审核"
+            - option "第 67 题 · 1 问 · 需核对"
+            - option "第 68-69 题 · 2 问 · 待审核"
+            - option "第 70 题 · 1 问 · 待审核"
+            - option "第 71-75 题 · 5 问 · 待审核"
+        - generic [ref=f1e20]:
+          - text: 状态
+          - combobox "状态" [ref=f1e21]:
+            - option "全部" [selected]
+            - option "待审核"
+            - option "需核对"
+            - option "已审核/已发布"
+            - option "已排除"
+        - generic [ref=f1e36]: 36 / 56 道
+      - generic [ref=f1e22]:
+        - region "原文对照" [ref=f1e23]:
+          - generic [ref=f1e24]:
+            - generic [ref=f1e25]:
+              - heading "原文对照" [level=2] [ref=f1e26]
+              - paragraph [ref=f1e37]: 第 349～363 行 · 第 41 题
+            - generic [ref=f1e27]:
+              - button "排版与图片" [pressed] [ref=f1e28] [cursor=pointer]
+              - button "Markdown 原文" [ref=f1e29] [cursor=pointer]
+          - generic [ref=f1e30]:
+            - paragraph [ref=f1e105]: 41、某类图如图所示，下列选项错误的是（） A 、 一个 A1 的对象可能与一个 A2 的对象关联
+            - paragraph [ref=f1e106]: B、 一个 A的非直接对象可能与一个 A1 的对象关联
+            - paragraph [ref=f1e107]: C、类 B1 的对象可能通过 A2 与 C1 的对象关联
+            - paragraph [ref=f1e108]: D、有可能 A 的直接对象与 B1 的对象关联
+            - paragraph
+            - paragraph [ref=f1e109]: 答案：A
+            - paragraph [ref=f1e110]: 解析：有难度。本题的直接对象和非直接对象概念没有在书上查到，如果不纠结这个的话，这里A1，A2都是 A 的子类，B1 和A都关联，A2和 C1有关联，B1 可能通过A2和C1 关联，这里唯一无关的就是 A1和A2之间，它们虽然同属于A的子类，但互相之间并无关联，推荐选A。
+        - region "解析结果" [ref=f1e31]:
+          - generic [ref=f1e32]:
+            - heading "第 41 题（1 个小问）" [level=2] [ref=f1e111]
+            - paragraph [ref=f1e112]: 待审核 · 共享题干及每个小问逐项核对
+            - group [ref=f1e113]:
+              - generic "查看解析结果的排版预览" [ref=f1e114] [cursor=pointer]
+            - generic [ref=f1e115]:
+              - generic [ref=f1e116]: 共享题干（普通单题留空）
+              - textbox "共享题干（普通单题留空）" [ref=f1e117]
+            - generic [ref=f1e118]:
+              - heading "小问 1" [level=3] [ref=f1e119]
+              - generic [ref=f1e120]:
+                - generic [ref=f1e121]: 原文题号
+                - spinbutton "原文题号" [ref=f1e122]: "41"
+              - generic [ref=f1e123]:
+                - generic [ref=f1e124]: 小问题干（共享题干已包含问题时可留空）
+                - textbox "小问题干（共享题干已包含问题时可留空）" [ref=f1e125]: 某类图如图所示，下列选项错误的是（） ![](asset://3c3c000e-5cf5-421e-8fa9-94af564f003f)
+              - generic [ref=f1e126]:
+                - generic [ref=f1e127]:
+                  - generic [ref=f1e128]: 选项 A
+                  - textbox "选项 A" [ref=f1e129]: 一个 A1 的对象可能与一个 A2 的对象关联
+                - generic [ref=f1e130]:
+                  - generic [ref=f1e131]: 选项 B
+                  - textbox "选项 B" [ref=f1e132]: 一个 A的非直接对象可能与一个 A1 的对象关联
+                - generic [ref=f1e133]:
+                  - generic [ref=f1e134]: 选项 C
+                  - textbox "选项 C" [ref=f1e135]: 类 B1 的对象可能通过 A2 与 C1 的对象关联
+                - generic [ref=f1e136]:
+                  - generic [ref=f1e137]: 选项 D
+                  - textbox "选项 D" [ref=f1e138]: 有可能 A 的直接对象与 B1 的对象关联
+              - generic [ref=f1e139]:
+                - generic [ref=f1e140]: 正确答案
+                - combobox "正确答案" [ref=f1e141]:
+                  - option "请选择"
+                  - option "A" [selected]
+                  - option "B"
+                  - option "C"
+                  - option "D"
+              - generic [ref=f1e142]:
+                - generic [ref=f1e143]: 解析
+                - textbox "解析" [ref=f1e144]: 有难度。本题的直接对象和非直接对象概念没有在书上查到，如果不纠结这个的话，这里A1，A2都是 A 的子类，B1 和A都关联，A2和 C1有关联，B1 可能通过A2和C1 关联，这里唯一无关的就是 A1和A2之间，它们虽然同属于A的子类，但互相之间并无关联，推荐选A。
+              - generic [ref=f1e145]:
+                - heading "知识点审核" [level=4] [ref=f1e146]
+                - generic [ref=f1e147]:
+                  - generic [ref=f1e148]: 主知识点（必选）
+                  - generic [ref=f1e150]:
+                    - text: 对象关系 · oo-uml-patterns.oo-foundation.object-relations
+                    - button "移除对象关系" [ref=f1e151] [cursor=pointer]: ×
+                  - generic [ref=f1e152]:
+                    - generic [ref=f1e153]: AI 候选：
+                    - button "对象关系 · oo-uml-patterns.oo-foundation.object-relations" [ref=f1e154] [cursor=pointer]
+                    - button "类图与对象图 · oo-uml-patterns.uml-structure.class-object" [ref=f1e155] [cursor=pointer]
+                    - button "面向对象分析与设计 · oo-uml-patterns.oo-foundation.oo-analysis-design" [ref=f1e156] [cursor=pointer]
+                  - combobox "主知识点（必选）" [ref=f1e157]
+                  - paragraph [ref=f1e158]: 搜索名称或编码，选择一个主知识点
+                  - paragraph [ref=f1e159]
+                - generic [ref=f1e160]:
+                  - generic [ref=f1e161]: 关联知识点（最多 3 个）
+                  - generic [ref=f1e162]: 尚未选择
+                  - generic [ref=f1e164]:
+                    - generic [ref=f1e165]: AI 候选：
+                    - button "顺序图与通信图 · oo-uml-patterns.uml-behavior.sequence-communication" [ref=f1e166] [cursor=pointer]
+                    - button "状态机图 · oo-uml-patterns.uml-behavior.state-machine" [ref=f1e167] [cursor=pointer]
+                  - combobox "关联知识点（最多 3 个）" [ref=f1e168]
+                  - paragraph [ref=f1e169]: 已选 0 / 3 个；搜索名称或编码添加
+                  - paragraph [ref=f1e170]
+          - generic [ref=f1e34]:
+            - button "保存题目内容" [ref=f1e171] [cursor=pointer]
+            - button "文本辅助提取" [ref=f1e172] [cursor=pointer]
+            - button "确认整题并批准" [ref=f1e173] [cursor=pointer]
+            - button "排除整道题" [ref=f1e174] [cursor=pointer]
+            - button "增加小问" [ref=f1e175] [cursor=pointer]

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}审核第 {{ item.question_no }} 题{% endblock %}
+{% block head %}
+<style>
+  #page-wrap{position:relative;display:inline-block;max-width:100%} #source-page{max-width:100%;max-height:900px;display:block} #crop-layer{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair}
+  .candidate{border:1px solid #dfe4ea;border-radius:6px;padding:8px;margin:6px 0}.issues li[data-severity="error"]{color:#b42318}.issues li[data-severity="warning"]{color:#9a6700}
+</style>
+{% endblock %}
+{% block content %}
+<div class="actions" style="justify-content:space-between;margin-bottom:14px"><a class="button secondary" href="/admin/imports/{{ batch.id }}">返回批次</a><div>{% if previous_id %}<a class="button secondary" href="/admin/imports/{{ batch.id }}/items/{{ previous_id }}">上一题</a>{% endif %} {% if next_id %}<a class="button secondary" href="/admin/imports/{{ batch.id }}/items/{{ next_id }}">下一题</a>{% endif %}</div></div>
+<div class="split">
+  <section class="card">
+    <h2>原始页面</h2><div id="page-buttons" class="actions"></div>
+    <div id="page-wrap"><img id="source-page" alt="来源页"><canvas id="crop-layer"></canvas></div>
+    <div class="grid"><div><label>素材类型</label><select id="asset-kind"><option value="figure">图</option><option value="table">表</option><option value="code">代码</option><option value="source_snapshot">原题截图</option></select></div><div><label>插入位置</label><select id="asset-placement"><option value="stem">本题题干</option>{% if group %}<option value="group_material">共享题干</option>{% endif %}</select></div><div><label>替代文字</label><input id="asset-alt" value="原题素材"></div><div><label>裁剪坐标</label><input id="bbox" readonly placeholder="在左图拖动框选"></div></div>
+    <button style="margin-top:10px" onclick="cropAsset()">裁剪并插入</button>
+  </section>
+  <section>
+    <div class="card"><div class="actions" style="justify-content:space-between"><h1>第 {{ item.question_no }} 题</h1><span class="badge {{ item.status }}">{{ item.status }}</span></div>
+      {% if group %}<label>共享题干（{{ group.source_label }}）</label><textarea id="group-material">{{ group.material_markdown }}</textarea>{% endif %}
+      <label>题干</label><textarea id="stem">{{ item.stem_markdown }}</textarea>
+      <div class="grid">{% for key in ['A','B','C','D'] %}<div><label>选项 {{ key }}</label><textarea id="option-{{ key }}">{{ option_map.get(key, '') }}</textarea></div>{% endfor %}</div>
+      <label>正确答案</label><select id="answer">{% for key in ['A','B','C','D'] %}<option value="{{ key }}" {% if key in item.correct_option_keys %}selected{% endif %}>{{ key }}</option>{% endfor %}</select>
+      <label>解析</label><textarea id="explanation">{{ item.explanation_markdown or '' }}</textarea>
+      <label>审核备注</label><textarea id="review-note">{{ item.review_note or '' }}</textarea>
+      <h3>校验结果</h3><ul class="issues">{% for issue in item.validation_issues %}<li data-severity="{{ issue.severity }}">{{ issue.code }}：{{ issue.message }}</li>{% else %}<li>无问题</li>{% endfor %}</ul>
+      <h3>来源证据</h3><ul>{% for ref in item.source_refs %}<li>{{ '题目' if ref.role == 'questions' else '答案解析' }} · 第 {{ ref.page_no }} 页{% if ref.bbox %} · 位置 {{ ref.bbox }}{% endif %}{% if ref.repair_run_id %} · 修复 {{ ref.repair_run_id }}{% endif %}</li>{% endfor %}</ul>
+      <button onclick="saveItem()">保存结构化内容</button>
+    </div>
+    <div class="card"><h2>知识点审核</h2>
+      <p class="muted">AI 候选只用于建议，最终选择必须来自现有活动叶子考点。</p>
+      {% for c in item.candidates %}<div class="candidate"><strong>{{ c.role }} #{{ c.rank }} · {{ c.node_name }}</strong><br><code>{{ c.node_code }}</code> · {{ c.confidence }}<br><span class="muted">{{ c.rationale }}</span><br><button class="secondary" onclick="chooseCandidate('{{ c.role }}','{{ c.node_code }}')">采用</button></div>{% else %}<p class="muted">尚未生成 AI 候选。</p>{% endfor %}
+      <label>主知识点 code</label><input id="primary" list="topics" value="{% for s in item.selections if s.role == 'primary' %}{{ s.node_code }}{% endfor %}">
+      <label>关联知识点 code（逗号分隔，最多 3 个）</label><input id="related" value="{% for s in item.selections if s.role == 'related' %}{{ s.node_code }}{% if not loop.last %},{% endif %}{% endfor %}">
+      <datalist id="topics">{% for topic in topics %}<option value="{{ topic.code }}">{{ topic.name }}</option>{% endfor %}</datalist>
+      <div class="actions" style="margin-top:12px"><button id="approve-button" onclick="approve()">批准本题</button><button class="danger" onclick="rejectItem()">驳回</button></div><div id="message" class="message"></div>
+    </div>
+  </section>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const batch={{ batch|tojson }}, item={{ item|tojson }}, group={{ group|tojson }}; let currentRef=null,bbox=null;
+const refs=[...new Map(item.source_refs.map(r=>[r.document_id+':'+r.page_no+':'+r.role,r])).values()];
+const buttons=document.getElementById('page-buttons'); refs.forEach((r,i)=>{const b=document.createElement('button');b.className='secondary';b.textContent=(r.role==='questions'?'试题页 ':'答案页 ')+r.page_no;b.onclick=()=>loadPage(r);buttons.appendChild(b);if(i===0)loadPage(r)});
+function loadPage(ref){currentRef=ref;const img=document.getElementById('source-page');img.src=`/api/v1/admin/source-documents/${ref.document_id}/pages/${ref.page_no}`;img.onload=resizeCanvas}
+function resizeCanvas(){const img=document.getElementById('source-page'),c=document.getElementById('crop-layer');c.width=img.clientWidth;c.height=img.clientHeight;c.style.width=img.clientWidth+'px';c.style.height=img.clientHeight+'px'}
+window.addEventListener('resize',resizeCanvas);const canvas=document.getElementById('crop-layer');let start=null;
+canvas.addEventListener('pointerdown',e=>{const r=canvas.getBoundingClientRect();start={x:e.clientX-r.left,y:e.clientY-r.top}});
+canvas.addEventListener('pointermove',e=>{if(!start)return;const r=canvas.getBoundingClientRect(),end={x:e.clientX-r.left,y:e.clientY-r.top},ctx=canvas.getContext('2d');ctx.clearRect(0,0,canvas.width,canvas.height);ctx.strokeStyle='#e5484d';ctx.lineWidth=2;ctx.strokeRect(start.x,start.y,end.x-start.x,end.y-start.y)});
+canvas.addEventListener('pointerup',e=>{if(!start)return;const r=canvas.getBoundingClientRect(),end={x:e.clientX-r.left,y:e.clientY-r.top};bbox={x0:Math.min(start.x,end.x)/canvas.width,y0:Math.min(start.y,end.y)/canvas.height,x1:Math.max(start.x,end.x)/canvas.width,y1:Math.max(start.y,end.y)/canvas.height};document.getElementById('bbox').value=JSON.stringify(bbox);start=null});
+function options(){return ['A','B','C','D'].map(key=>({key,content_markdown:document.getElementById('option-'+key).value}))}
+const message=document.getElementById('message'),stemField=document.getElementById('stem'),answerField=document.getElementById('answer'),explanationField=document.getElementById('explanation'),primaryField=document.getElementById('primary'),relatedField=document.getElementById('related');
+const existingPrimary=item.selections.find(value=>value.role==='primary')?.node_code;
+const suggestedPrimary=[...item.candidates].filter(value=>value.role==='primary').sort((a,b)=>a.rank-b.rank)[0]?.node_code;
+if(!primaryField.value)primaryField.value=existingPrimary||suggestedPrimary||'';
+if(!relatedField.value){
+  const existingRelated=item.selections.filter(value=>value.role==='related').map(value=>value.node_code);
+  const suggestedRelated=[...item.candidates].filter(value=>value.role==='related').sort((a,b)=>a.rank-b.rank).map(value=>value.node_code);
+  relatedField.value=(existingRelated.length?existingRelated:suggestedRelated).filter((code,index,values)=>code!==primaryField.value&&values.indexOf(code)===index).slice(0,3).join(',');
+}
+async function saveItem(){try{if(group)await api(`/api/v1/admin/import-groups/${group.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({material_markdown:document.getElementById('group-material').value})});await api(`/api/v1/admin/import-items/${item.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({stem_markdown:stemField.value,options:options(),correct_option_keys:[answerField.value],explanation_markdown:explanationField.value||null,review_note:document.getElementById('review-note').value||null})});message.textContent='已保存';setTimeout(()=>location.reload(),500)}catch(e){message.className='message error';message.textContent=e.message}}
+function chooseCandidate(role,code){if(role==='primary')primaryField.value=code;else{const values=relatedField.value.split(',').map(v=>v.trim()).filter(Boolean);if(!values.includes(code)&&values.length<3)values.push(code);relatedField.value=values.join(',')}}
+function approvalSelection(){
+  const primaryCode=primaryField.value.trim(),relatedCodes=relatedField.value.split(',').map(value=>value.trim()).filter(Boolean);
+  if(!primaryCode){primaryField.focus();throw new Error('请选择主知识点后再批准')}
+  if(relatedCodes.length>3){relatedField.focus();throw new Error('关联知识点最多只能选择 3 个')}
+  if(new Set(relatedCodes).size!==relatedCodes.length){relatedField.focus();throw new Error('关联知识点不能重复')}
+  if(relatedCodes.includes(primaryCode)){relatedField.focus();throw new Error('主知识点不能同时作为关联知识点')}
+  return {primary_code:primaryCode,related_codes:relatedCodes};
+}
+async function approve(){const button=document.getElementById('approve-button');try{const selection=approvalSelection();button.disabled=true;message.className='message';message.textContent='批准中…';await api(`/api/v1/admin/import-items/${item.id}/approve`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(selection)});message.textContent='审核通过';setTimeout(()=>location.reload(),500)}catch(e){message.className='message error';message.textContent=e.message}finally{button.disabled=false}}
+async function rejectItem(){const reason=prompt('请输入驳回原因');if(!reason)return;try{await api(`/api/v1/admin/import-items/${item.id}/reject`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({reason})});location.reload()}catch(e){message.className='message error';message.textContent=e.message}}
+async function cropAsset(){if(!bbox||!currentRef){message.textContent='请先在原图框选素材';return}try{const placement=document.getElementById('asset-placement').value,altText=document.getElementById('asset-alt').value.trim()||'原题素材';const asset=await api(`/api/v1/admin/import-items/${item.id}/assets`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({document_id:currentRef.document_id,page_no:currentRef.page_no,bbox,kind:document.getElementById('asset-kind').value,placement,alt_text:altText})});const markdown=`\n\n![${altText}](asset://${asset.id})`;if(placement==='group_material')document.getElementById('group-material').value+=markdown;else stemField.value+=markdown;message.textContent=`素材已创建：asset://${asset.id}，请保存题目。`}catch(e){message.className='message error';message.textContent=e.message}}
+</script>
+{% endblock %}

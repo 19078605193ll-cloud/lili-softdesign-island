@@ -1,0 +1,136 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - link "真题导入审核" [ref=e3] [cursor=pointer]:
+      - /url: /admin/imports
+    - generic [ref=e4]: 本地管理界面
+  - main [ref=e5]:
+    - generic [ref=e6]:
+      - heading "新建真题导入" [level=1] [ref=e7]
+      - paragraph [ref=e8]: 上传 Markdown，或包含一份 Markdown 和图片目录的 ZIP。支持任意题量；相同年份、期次和批次编码将补充到已有试卷。
+      - generic [ref=e9]:
+        - generic [ref=e10]:
+          - generic [ref=e11]:
+            - generic [ref=e12]: Markdown 或 ZIP
+            - button "Choose File" [ref=e13]
+          - generic [ref=e14]:
+            - generic [ref=e15]: 年份
+            - spinbutton [ref=e16]: "2020"
+          - generic [ref=e17]:
+            - generic [ref=e18]: 考试期次
+            - combobox [ref=e19]:
+              - option "下半年" [selected]
+              - option "上半年"
+              - option "其他"
+          - generic [ref=e20]:
+            - generic [ref=e21]: 批次编码
+            - textbox [ref=e22]: default
+          - generic [ref=e23]:
+            - generic [ref=e24]: 标题
+            - textbox [ref=e25]: 软件设计师基础知识真题
+          - generic [ref=e26]:
+            - generic [ref=e27]: 知识树版本（留空使用最新版）
+            - textbox "1.0.0" [ref=e28]
+        - paragraph [ref=e29]
+        - button "上传并解析" [ref=e31] [cursor=pointer]
+    - generic [ref=e32]:
+      - heading "导入批次" [level=2] [ref=e33]
+      - table [ref=e34]:
+        - rowgroup [ref=e35]:
+          - row [ref=e36]:
+            - columnheader "标题" [ref=e37]
+            - columnheader "场次" [ref=e38]
+            - columnheader "知识树" [ref=e39]
+            - columnheader "状态" [ref=e40]
+            - columnheader "题目进度" [ref=e41]
+            - columnheader "失败原因" [ref=e42]
+            - columnheader "操作" [ref=e43]
+        - rowgroup [ref=e44]:
+          - row [ref=e45]:
+            - cell "2025年5月软件设计师选择题（回忆版）" [ref=e46]
+            - cell "2025 / first_half / default" [ref=e47]
+            - cell "1.0.0" [ref=e48]
+            - cell "待人工审核" [ref=e49]
+            - cell "已批准 1 待审核 30" [ref=e51]:
+              - generic [ref=e52]: 已批准 1
+              - generic [ref=e53]: 待审核 30
+            - cell [ref=e54]
+            - cell [ref=e55]:
+              - generic [ref=e56]:
+                - link "打开" [ref=e57] [cursor=pointer]:
+                  - /url: /admin/imports/1423615e-3e95-4d38-8a1e-397b162a2ce5
+                - button "删除" [ref=e58] [cursor=pointer]
+          - row [ref=e59]:
+            - cell "2025年11月软件设计师选择题（回忆版）" [ref=e60]
+            - cell "2025 / second_half / default" [ref=e61]
+            - cell "1.0.0" [ref=e62]
+            - cell "待人工审核" [ref=e63]
+            - cell "待审核 52" [ref=e65]
+            - cell [ref=e67]
+            - cell [ref=e68]:
+              - generic [ref=e69]:
+                - link "打开" [ref=e70] [cursor=pointer]:
+                  - /url: /admin/imports/dcd01ea7-6e78-48c0-aff7-be1c48321fc1
+                - button "删除" [ref=e71] [cursor=pointer]
+          - row [ref=e72]:
+            - cell "2024年上半年软件设计师上午真题及答案" [ref=e73]
+            - cell "2024 / first_half / default" [ref=e74]
+            - cell "1.0.0" [ref=e75]
+            - cell "待人工审核" [ref=e76]
+            - cell "待审核 71" [ref=e78]
+            - cell [ref=e80]
+            - cell [ref=e81]:
+              - generic [ref=e82]:
+                - link "打开" [ref=e83] [cursor=pointer]:
+                  - /url: /admin/imports/3e0ca58b-8356-4936-9278-1b195d49b501
+                - button "删除" [ref=e84] [cursor=pointer]
+          - row [ref=e85]:
+            - cell "2023年11月软件设计师真题答案解析" [ref=e86]
+            - cell "2023 / second_half / default" [ref=e87]
+            - cell "1.0.0" [ref=e88]
+            - cell "待人工审核" [ref=e89]
+            - cell "待审核 73" [ref=e91]
+            - cell [ref=e93]
+            - cell [ref=e94]:
+              - generic [ref=e95]:
+                - link "打开" [ref=e96] [cursor=pointer]:
+                  - /url: /admin/imports/618f074a-96d4-4bbd-9518-9d1d32ebbb01
+                - button "删除" [ref=e97] [cursor=pointer]
+          - row [ref=e98]:
+            - cell "2023年05月软件设计师真题及解析" [ref=e99]
+            - cell "2023 / first_half / default" [ref=e100]
+            - cell "1.0.0" [ref=e101]
+            - cell "待人工审核" [ref=e102]
+            - cell "待审核 60 需处理 10" [ref=e104]:
+              - generic [ref=e105]: 待审核 60
+              - generic [ref=e106]: 需处理 10
+            - cell [ref=e107]
+            - cell [ref=e108]:
+              - generic [ref=e109]:
+                - link "打开" [ref=e110] [cursor=pointer]:
+                  - /url: /admin/imports/90ed2022-6b8f-48e1-a36b-e85c682fc9a1
+                - button "删除" [ref=e111] [cursor=pointer]
+          - row [ref=e112]:
+            - cell "2020年11月软件设计师真题及解析" [ref=e113]
+            - cell "2020 / second_half / default" [ref=e114]
+            - cell "1.0.0" [ref=e115]
+            - cell "待人工审核" [ref=e116]
+            - cell "待审核 69 需处理 5" [ref=e118]:
+              - generic [ref=e119]: 待审核 69
+              - generic [ref=e120]: 需处理 5
+            - cell [ref=e121]
+            - cell [ref=e122]:
+              - generic [ref=e123]:
+                - link "打开" [ref=e124] [cursor=pointer]:
+                  - /url: /admin/imports/74b22248-2e28-4c16-bdb9-3ae958196111
+                - button "删除" [ref=e125] [cursor=pointer]
+          - row [ref=e126]:
+            - cell "2020-11 Software Designer Foundation Morning Exam" [ref=e127]
+            - cell "2020 / second_half / 2020-11-morning" [ref=e128]
+            - cell "1.0.0" [ref=e129]
+            - cell "已发布" [ref=e130]
+            - cell "已发布 75" [ref=e132]
+            - cell [ref=e134]
+            - cell [ref=e135]:
+              - link "打开" [ref=e137] [cursor=pointer]:
+                - /url: /admin/imports/79058897-efce-48c1-9478-b31d5ee4aa7a
+      - paragraph [ref=e138]

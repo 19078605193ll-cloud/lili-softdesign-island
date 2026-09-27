@@ -1,0 +1,23 @@
+- generic [active] [ref=f2e1]:
+  - banner [ref=f2e2]:
+    - link "真题导入审核" [ref=f2e3] [cursor=pointer]:
+      - /url: /admin/imports
+    - generic [ref=f2e4]: 本地管理界面
+  - main [ref=f2e5]:
+    - generic [ref=f2e6]:
+      - heading "2020年11月软件设计师真题及解析" [level=1] [ref=f2e7]
+      - paragraph [ref=f2e8]: 2020 / second_half / default · 考生回忆版
+      - paragraph [ref=f2e9]: 上传与解析 → 核对整题和配图 → 各小问分类 → 整题审核发布
+      - paragraph
+      - generic [ref=f2e10]:
+        - button "推荐知识点（每批 5 小问）" [ref=f2e11] [cursor=pointer]
+        - button "批量批准已核对且有分类的整题" [ref=f2e12] [cursor=pointer]
+        - button "重试下载图片" [ref=f2e13] [cursor=pointer]
+        - button "检查重复与冲突" [ref=f2e14] [cursor=pointer]
+        - button "发布已审核题目" [ref=f2e15] [cursor=pointer]
+        - button "将排除题目转为补充批次" [ref=f2e16] [cursor=pointer]
+      - status [ref=f2e17]: 处理中…
+    - generic [ref=f2e18]:
+      - complementary [ref=f2e19]:
+        - heading "题目" [level=2] [ref=f2e20]
+      - paragraph [ref=f2e22]: 选择一道题开始核对。

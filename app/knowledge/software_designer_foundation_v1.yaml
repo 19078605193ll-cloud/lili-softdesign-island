@@ -1,0 +1,527 @@
+version: "1.0.0"
+source_name: "全国计算机专业技术资格考试办公室《软件设计师考试大纲》（2018年审定）"
+source_reference: "https://www.tup.tsinghua.edu.cn/bookscenter/book_07814301.html"
+subject:
+  code: software-designer.foundation
+  name: 软件设计师基础知识（上午题）
+  qualification_level: 中级
+  paper_kind: 基础知识
+chapters:
+  - code: cs-math
+    name: 计算机科学与数学基础
+    description: 数制、数据表示、逻辑和软件设计相关的离散与应用数学基础。
+    modules:
+      - code: cs-math.data-representation
+        name: 数制与数据表示
+        description: 计算机中数值和非数值信息的表示。
+        topics:
+          - {code: cs-math.data-representation.base-conversion, name: 进制与转换, description: 二、八、十、十六进制表示及相互转换。, aliases: [数制转换, 进制换算], keywords: [二进制, 十六进制, 基数], classification_guidance: 涉及不同进制数值互换或按位权展开时匹配。, syllabus_refs: [计算机内数据的表示及运算/数的表示]}
+          - {code: cs-math.data-representation.signed-number, name: 原码反码与补码, description: 有符号整数的原码、反码、补码及表示范围。, aliases: [机器数, 补码], keywords: [符号位, 原码, 反码, 补码], classification_guidance: 涉及负数机器表示、取值范围或补码运算时匹配。, syllabus_refs: [计算机内数据的表示及运算/数的表示]}
+          - {code: cs-math.data-representation.fixed-point, name: 定点数表示, description: 定点整数和定点小数的格式、范围与精度。, aliases: [定点表示], keywords: [定点数, 小数点, 表示范围], classification_guidance: 题干核心为固定小数点位置或定点数范围时匹配。, syllabus_refs: [计算机内数据的表示及运算/数的表示]}
+          - {code: cs-math.data-representation.floating-point, name: 浮点数表示, description: 浮点数阶码、尾数、规格化、范围与精度。, aliases: [浮点表示, IEEE浮点数], keywords: [阶码, 尾数, 规格化, IEEE754], classification_guidance: 涉及浮点格式、规格化或浮点范围精度时匹配。, syllabus_refs: [计算机内数据的表示及运算/数的表示]}
+          - {code: cs-math.data-representation.overflow-precision, name: 溢出与精度, description: 数值表示中的溢出判断、截断误差和精度问题。, aliases: [数值溢出, 舍入误差], keywords: [溢出, 精度, 舍入], classification_guidance: 以运算结果是否溢出或误差大小为主时匹配。, syllabus_refs: [计算机内数据的表示及运算/二进制数运算]}
+          - {code: cs-math.data-representation.character-encoding, name: 字符与汉字编码, description: ASCII、Unicode、汉字编码及字符存储容量。, aliases: [字符编码, 汉字编码], keywords: [ASCII, Unicode, GBK, 字符集], classification_guidance: 涉及字符集、编码值或字符占用空间时匹配。, syllabus_refs: [计算机内数据的表示及运算/非数值表示]}
+      - code: cs-math.logic-operation
+        name: 运算与逻辑
+        description: 二进制运算和逻辑代数基础。
+        topics:
+          - {code: cs-math.logic-operation.binary-arithmetic, name: 二进制算术运算, description: 二进制加减乘除及补码算术运算。, aliases: [机器运算], keywords: [二进制加法, 补码运算, 移位], classification_guidance: 需要执行二进制算术或移位计算时匹配。, syllabus_refs: [计算机内数据的表示及运算/二进制数运算]}
+          - {code: cs-math.logic-operation.boolean-algebra, name: 逻辑代数, description: 与、或、非、异或及逻辑代数基本定律。, aliases: [布尔代数], keywords: [与或非, 德摩根, 异或], classification_guidance: 涉及布尔运算规则和表达式化简时匹配。, syllabus_refs: [计算机内数据的表示及运算/逻辑代数]}
+          - {code: cs-math.logic-operation.logic-expression, name: 逻辑表达式与真值表, description: 逻辑表达式、真值表和等价判断。, aliases: [真值表], keywords: [逻辑表达式, 真值, 等价], classification_guidance: 以真值表求值或逻辑等价为主时匹配。, syllabus_refs: [计算机内数据的表示及运算/逻辑代数]}
+      - code: cs-math.applied-math
+        name: 离散与应用数学
+        description: 概率、逻辑、集合和运筹等基础方法。
+        topics:
+          - {code: cs-math.applied-math.combinatorics, name: 排列组合, description: 排列、组合和基本计数原理。, aliases: [组合数学], keywords: [排列, 组合, 计数], classification_guidance: 涉及方案数量或排列组合公式时匹配。, syllabus_refs: [其他数学基础知识/排列组合]}
+          - {code: cs-math.applied-math.probability-statistics, name: 概率与统计, description: 基本概率、期望和描述性统计计算。, aliases: [概率论, 应用统计], keywords: [概率, 期望, 方差, 均值], classification_guidance: 涉及随机事件概率或统计量时匹配。, syllabus_refs: [其他数学基础知识/概率论与应用统计]}
+          - {code: cs-math.applied-math.propositional-logic, name: 命题逻辑, description: 命题联结词、推理与等价式。, aliases: [形式逻辑], keywords: [命题, 蕴含, 等价], classification_guidance: 题目以命题真假和演绎推理为核心时匹配。, syllabus_refs: [其他数学基础知识/命题逻辑]}
+          - {code: cs-math.applied-math.predicate-logic, name: 谓词逻辑, description: 谓词、量词和谓词公式基础。, aliases: [一阶逻辑], keywords: [谓词, 全称量词, 存在量词], classification_guidance: 涉及量词、谓词或谓词公式转换时匹配。, syllabus_refs: [其他数学基础知识/谓词逻辑]}
+          - {code: cs-math.applied-math.set-relation, name: 集合关系与函数, description: 集合运算、关系性质和函数映射。, aliases: [集合论, 二元关系], keywords: [集合, 关系, 映射, 等价关系], classification_guidance: 涉及集合运算、关系性质或函数映射时匹配。, syllabus_refs: [其他数学基础知识/形式逻辑]}
+          - {code: cs-math.applied-math.coding-theory, name: 编码基础, description: 信息编码、码距和检错纠错基本概念。, aliases: [码距, 校验码基础], keywords: [编码, 码距, 检错, 纠错], classification_guidance: 以码字、码距和纠错能力为核心时匹配。, syllabus_refs: [其他数学基础知识/编码基础]}
+          - {code: cs-math.applied-math.operations-research, name: 运筹方法, description: 线性规划、决策和最优化的基础方法。, aliases: [运筹学, 线性规划], keywords: [最优化, 线性规划, 决策], classification_guidance: 涉及资源约束下求最优方案时匹配。, syllabus_refs: [其他数学基础知识/运筹基本方法]}
+
+  - code: architecture
+    name: 计算机组成与体系结构
+    description: 计算机硬件组成、指令、存储、输入输出、性能与可靠性。
+    modules:
+      - code: architecture.cpu-instruction
+        name: CPU 与指令系统
+        description: 处理器组成和指令执行机制。
+        topics:
+          - {code: architecture.cpu-instruction.cpu-components, name: CPU组成与功能, description: 运算器、控制器和寄存器的结构与职责。, aliases: [处理器组成], keywords: [运算器, 控制器, 寄存器], classification_guidance: 询问CPU部件职责或数据通路时匹配。, syllabus_refs: [计算机硬件基础/CPU组成]}
+          - {code: architecture.cpu-instruction.instruction-cycle, name: 指令周期与执行, description: 取指、分析、执行和中断周期。, aliases: [机器周期, 取指周期], keywords: [指令周期, 取指, 执行], classification_guidance: 涉及指令执行阶段或周期关系时匹配。, syllabus_refs: [计算机硬件基础/CPU工作原理]}
+          - {code: architecture.cpu-instruction.addressing-mode, name: 寻址方式, description: 立即、直接、间接、寄存器和变址等寻址方式。, aliases: [指令寻址], keywords: [有效地址, 直接寻址, 间接寻址, 变址], classification_guidance: 需要计算有效地址或辨识寻址模式时匹配。, syllabus_refs: [计算机硬件基础/CPU工作原理]}
+          - {code: architecture.cpu-instruction.interrupt, name: 中断机制, description: 中断请求、响应、向量和处理过程。, aliases: [中断处理], keywords: [中断向量, 中断响应, 优先级], classification_guidance: 涉及硬件中断过程或优先级时匹配。, syllabus_refs: [计算机硬件基础/I-O基本原理]}
+      - code: architecture.storage
+        name: 存储系统
+        description: 多级存储体系、Cache、主辅存和磁盘阵列。
+        topics:
+          - {code: architecture.storage.hierarchy, name: 存储层次体系, description: 寄存器、Cache、主存和辅存的层次关系。, aliases: [多级存储], keywords: [局部性, 容量, 速度, 层次], classification_guidance: 比较各级存储速度容量或讨论局部性时匹配。, syllabus_refs: [存储系统/多级存储体系]}
+          - {code: architecture.storage.cache-mapping, name: Cache映射与命中, description: 直接、全相联、组相联映射和命中率计算。, aliases: [高速缓存映射], keywords: [Cache, 命中率, 组相联, 地址映射], classification_guidance: 计算Cache地址字段、映射位置或命中率时匹配。, syllabus_refs: [存储系统/多级存储体系]}
+          - {code: architecture.storage.cache-replacement, name: Cache替换与写策略, description: LRU等替换算法以及写回、直写策略。, aliases: [缓存替换], keywords: [LRU, 写回, 直写], classification_guidance: 以Cache块替换或写策略为核心时匹配。, syllabus_refs: [存储系统/多级存储体系]}
+          - {code: architecture.storage.main-memory, name: 主存组织, description: 存储芯片组织、地址扩展和存储容量计算。, aliases: [内存编址], keywords: [存储芯片, 地址线, 位扩展, 字扩展], classification_guidance: 计算存储芯片数量、地址范围或容量时匹配。, syllabus_refs: [计算机硬件基础/存储器组成]}
+          - {code: architecture.storage.secondary-storage, name: 辅存与磁盘性能, description: 磁盘结构、容量、寻道和数据传输时间。, aliases: [磁盘存储], keywords: [磁道, 扇区, 寻道时间, 转速], classification_guidance: 计算磁盘容量或访问时间时匹配。, syllabus_refs: [存储系统/网络存储技术]}
+          - {code: architecture.storage.raid, name: RAID级别与特性, description: RAID常见级别的容量、性能和容错特性。, aliases: [磁盘阵列], keywords: [RAID0, RAID1, RAID5, 冗余], classification_guidance: 比较RAID级别或计算可用容量时匹配。, syllabus_refs: [存储系统/RAID类型和特性]}
+      - code: architecture.io-bus
+        name: 总线与输入输出
+        description: 总线、接口和I/O控制方式。
+        topics:
+          - {code: architecture.io-bus.bus, name: 总线结构与性能, description: 数据、地址、控制总线及总线带宽计算。, aliases: [系统总线], keywords: [总线宽度, 总线频率, 带宽], classification_guidance: 涉及总线类型或带宽吞吐计算时匹配。, syllabus_refs: [计算机硬件基础/I-O接口]}
+          - {code: architecture.io-bus.io-interface, name: I/O接口, description: 输入输出接口的功能、类型和特性。, aliases: [设备接口], keywords: [接口, 端口, 控制寄存器], classification_guidance: 询问接口职责、端口或设备控制寄存器时匹配。, syllabus_refs: [计算机硬件基础/I-O接口]}
+          - {code: architecture.io-bus.dma, name: DMA方式, description: DMA控制器及其数据传送过程。, aliases: [直接存储器访问], keywords: [DMA, 总线请求, 数据块], classification_guidance: CPU不逐字干预的块传送问题匹配。, syllabus_refs: [计算机硬件基础/I-O工作原理]}
+          - {code: architecture.io-bus.io-control, name: I/O控制方式, description: 程序查询、中断和通道等I/O方式。, aliases: [输入输出控制], keywords: [程序查询, 中断驱动, 通道], classification_guidance: 比较设备数据传送控制方式时匹配。, syllabus_refs: [计算机硬件基础/I-O工作原理]}
+      - code: architecture.system-architecture
+        name: 体系结构
+        description: 指令体系、流水线和并行处理。
+        topics:
+          - {code: architecture.system-architecture.risc-cisc, name: RISC与CISC, description: 精简和复杂指令系统的设计特征。, aliases: [精简指令集, 复杂指令集], keywords: [RISC, CISC, 指令格式], classification_guidance: 比较两类指令系统特点时匹配。, syllabus_refs: [体系结构分类及特性/CISC-RISC]}
+          - {code: architecture.system-architecture.pipeline, name: 流水线, description: 流水线周期、吞吐率、加速比和冲突。, aliases: [指令流水], keywords: [流水线, 吞吐率, 加速比, 冲突], classification_guidance: 涉及流水执行时间或性能计算时匹配。, syllabus_refs: [体系结构分类及特性/流水线操作]}
+          - {code: architecture.system-architecture.parallel, name: 并行与多处理机, description: 并行处理、多处理机和体系结构分类基础。, aliases: [并行计算], keywords: [多处理机, 并行, Flynn], classification_guidance: 以并行体系或多处理器分类为核心时匹配。, syllabus_refs: [体系结构分类及特性/多处理机并行处理]}
+      - code: architecture.performance-reliability
+        name: 性能与可靠性
+        description: 系统性能指标、可靠性和容错计算。
+        topics:
+          - {code: architecture.performance-reliability.performance-metrics, name: CPU性能指标, description: 时钟周期、CPI、MIPS和执行时间计算。, aliases: [处理器性能], keywords: [CPI, MIPS, 主频, 执行时间], classification_guidance: 以CPU指令执行性能公式为主时匹配。, syllabus_refs: [可靠性与性能评测/性能评测方法]}
+          - {code: architecture.performance-reliability.benchmark, name: 系统性能评测, description: 基准程序、吞吐量和响应时间等评测方法。, aliases: [Benchmark], keywords: [基准测试, 吞吐量, 响应时间], classification_guidance: 比较系统总体性能或评测方法时匹配。, syllabus_refs: [可靠性与性能评测/性能评测方法]}
+          - {code: architecture.performance-reliability.reliability, name: 系统可靠性计算, description: 串联、并联和冗余系统可靠性计算。, aliases: [可靠度], keywords: [串联系统, 并联系统, MTBF], classification_guidance: 计算部件组合后的系统可靠度时匹配。, syllabus_refs: [可靠性与性能评测/可靠性分析]}
+          - {code: architecture.performance-reliability.fault-tolerance, name: 故障诊断与容错, description: 冗余、容错和故障诊断基本技术。, aliases: [容错技术], keywords: [冗余, 故障, 容错], classification_guidance: 讨论硬件故障检测或冗余容错时匹配。, syllabus_refs: [可靠性与性能评测/诊断与容错]}
+
+  - code: os
+    name: 操作系统
+    description: 操作系统内核、资源管理和运行机制。
+    modules:
+      - code: os.foundation
+        name: 操作系统基础
+        description: 操作系统目标、功能、类型和内核。
+        topics:
+          - {code: os.foundation.concepts, name: 操作系统概念与功能, description: 操作系统的目标、特征和资源管理功能。, aliases: [OS基础], keywords: [操作系统, 资源管理, 并发, 共享], classification_guidance: 询问操作系统基本职责或特征时匹配。, syllabus_refs: [操作系统知识/基本概念]}
+          - {code: os.foundation.kernel, name: 内核与系统调用, description: 内核态、用户态、系统调用和内核结构。, aliases: [核心态, 管态], keywords: [内核, 系统调用, 用户态, 内核态], classification_guidance: 涉及特权级切换或系统调用时匹配。, syllabus_refs: [操作系统知识/操作系统内核]}
+          - {code: os.foundation.os-types, name: 操作系统类型, description: 批处理、分时、实时、网络和嵌入式操作系统。, aliases: [批处理系统, 分时系统, 实时系统], keywords: [分时, 实时, 批处理, 嵌入式], classification_guidance: 识别或比较操作系统运行类型时匹配。, syllabus_refs: [操作系统知识/操作系统配置]}
+      - code: os.process
+        name: 进程与处理机管理
+        description: 进程线程、调度、同步和死锁。
+        topics:
+          - {code: os.process.process-thread, name: 进程与线程, description: 进程、线程、PCB和资源归属。, aliases: [PCB, 轻量级进程], keywords: [进程, 线程, PCB], classification_guidance: 比较进程线程或询问PCB内容时匹配。, syllabus_refs: [操作系统知识/处理机管理]}
+          - {code: os.process.state-transition, name: 进程状态转换, description: 就绪、运行、阻塞等状态及转换原因。, aliases: [进程三态, 进程五态], keywords: [就绪, 运行, 阻塞, 状态转换], classification_guidance: 根据事件判断进程状态变化时匹配。, syllabus_refs: [操作系统知识/处理机管理]}
+          - {code: os.process.scheduling, name: 处理机调度, description: 先来先服务、短作业、优先级、时间片等算法。, aliases: [CPU调度, 进程调度], keywords: [FCFS, SJF, 时间片, 周转时间], classification_guidance: 比较调度策略或计算等待周转时间时匹配。, syllabus_refs: [操作系统知识/处理机管理]}
+          - {code: os.process.sync, name: 同步互斥与PV操作, description: 临界区、信号量、PV操作和经典同步问题。, aliases: [进程同步, 信号量], keywords: [PV操作, P操作, V操作, 临界区, 互斥], classification_guidance: 题目包含信号量取值、PV顺序或同步关系时匹配。, syllabus_refs: [操作系统知识/处理机管理]}
+          - {code: os.process.deadlock, name: 死锁, description: 死锁条件、预防、避免、检测和银行家算法。, aliases: [资源死锁], keywords: [死锁, 银行家算法, 安全序列], classification_guidance: 判断安全状态、资源分配或死锁条件时匹配。, syllabus_refs: [操作系统知识/处理机管理]}
+      - code: os.memory
+        name: 存储管理
+        description: 内存分配、地址转换和虚拟存储。
+        topics:
+          - {code: os.memory.partition, name: 分区存储管理, description: 固定和可变分区、分配算法及碎片。, aliases: [连续分配], keywords: [首次适应, 最佳适应, 碎片], classification_guidance: 涉及连续内存分区或分配算法时匹配。, syllabus_refs: [操作系统知识/存储管理]}
+          - {code: os.memory.paging, name: 分页与地址转换, description: 页、页框、页表和逻辑物理地址转换。, aliases: [页式存储], keywords: [页表, 页号, 页内地址, 快表], classification_guidance: 计算页号、物理地址或页表大小时匹配。, syllabus_refs: [操作系统知识/存储管理]}
+          - {code: os.memory.segmentation, name: 分段与段页式, description: 分段和段页式存储的地址结构与保护。, aliases: [段式存储, 段页式], keywords: [段表, 段号, 段页式], classification_guidance: 涉及按逻辑段管理或段页地址转换时匹配。, syllabus_refs: [操作系统知识/存储管理]}
+          - {code: os.memory.virtual-memory, name: 虚拟存储与缺页, description: 请求分页、工作集、缺页和抖动。, aliases: [请求分页], keywords: [虚拟存储, 缺页, 工作集, 抖动], classification_guidance: 涉及部分装入、缺页率或抖动时匹配。, syllabus_refs: [存储系统/虚拟存储器]}
+          - {code: os.memory.page-replacement, name: 页面置换算法, description: OPT、FIFO、LRU等页面置换算法。, aliases: [页淘汰算法], keywords: [OPT, FIFO, LRU, 页面置换], classification_guidance: 根据页面访问序列计算缺页次数时匹配。, syllabus_refs: [操作系统知识/存储管理]}
+      - code: os.file
+        name: 文件管理
+        description: 文件组织、目录和空间管理。
+        topics:
+          - {code: os.file.organization, name: 文件组织与访问, description: 顺序、索引、直接文件及访问方式。, aliases: [文件结构], keywords: [顺序文件, 索引文件, 直接访问], classification_guidance: 比较文件物理组织或访问方式时匹配。, syllabus_refs: [操作系统知识/文件管理]}
+          - {code: os.file.directory, name: 目录与路径, description: 单级、多级目录和路径解析。, aliases: [文件目录], keywords: [目录树, 绝对路径, 相对路径], classification_guidance: 涉及目录结构或路径定位时匹配。, syllabus_refs: [操作系统知识/文件管理]}
+          - {code: os.file.allocation, name: 文件存储分配, description: 连续、链接和索引分配方法。, aliases: [文件分配], keywords: [连续分配, 链接分配, 索引分配], classification_guidance: 比较文件块分配方式或计算访问次数时匹配。, syllabus_refs: [操作系统知识/文件管理]}
+          - {code: os.file.free-space, name: 空闲空间管理, description: 位示图、空闲链表和成组链接法。, aliases: [磁盘空闲管理], keywords: [位示图, 空闲链表, 成组链接], classification_guidance: 计算位示图位置或辨识空闲管理方式时匹配。, syllabus_refs: [操作系统知识/文件管理]}
+      - code: os.device-job
+        name: 设备与作业管理
+        description: 外设分配、缓冲、磁盘和作业调度。
+        topics:
+          - {code: os.device-job.device-management, name: 设备管理与分配, description: 设备独立性、驱动程序和设备分配。, aliases: [外设管理], keywords: [设备驱动, 设备独立性, 分配], classification_guidance: 涉及设备控制、驱动或独占共享设备时匹配。, syllabus_refs: [操作系统知识/设备管理]}
+          - {code: os.device-job.buffering, name: 缓冲与SPOOLing, description: 单双缓冲、循环缓冲和假脱机技术。, aliases: [假脱机, Spooling], keywords: [缓冲区, SPOOLing, 输入井, 输出井], classification_guidance: 涉及速度匹配、缓冲计算或虚拟设备时匹配。, syllabus_refs: [操作系统知识/设备管理]}
+          - {code: os.device-job.disk-scheduling, name: 磁盘调度, description: FCFS、SSTF、SCAN和循环扫描算法。, aliases: [移臂调度], keywords: [SSTF, SCAN, C-SCAN, 磁头], classification_guidance: 根据访问序列计算磁头移动时匹配。, syllabus_refs: [操作系统知识/设备管理]}
+          - {code: os.device-job.job-management, name: 作业管理, description: 作业调度、作业状态和控制方式。, aliases: [作业调度], keywords: [作业, 后备队列, 调度], classification_guidance: 以批处理作业进入内存和调度为核心时匹配。, syllabus_refs: [操作系统知识/作业管理]}
+
+  - code: data-structures-algorithms
+    name: 数据结构与算法
+    description: 常用数据结构、算法及复杂度分析。
+    modules:
+      - code: data-structures-algorithms.linear
+        name: 线性结构
+        description: 数组、字符串、线性表、栈和队列。
+        topics:
+          - {code: data-structures-algorithms.linear.array, name: 数组与矩阵, description: 一维多维数组的存储映射和特殊矩阵压缩。, aliases: [矩阵压缩], keywords: [数组, 行优先, 列优先, 稀疏矩阵], classification_guidance: 计算数组元素地址或矩阵压缩位置时匹配。, syllabus_refs: [数据结构与算法/数组]}
+          - {code: data-structures-algorithms.linear.string, name: 字符串与模式匹配, description: 串的存储、朴素匹配和KMP算法。, aliases: [串, KMP], keywords: [字符串, 模式匹配, next数组], classification_guidance: 涉及子串查找或KMP的next值时匹配。, syllabus_refs: [数据结构与算法/字符串处理]}
+          - {code: data-structures-algorithms.linear.linear-list, name: 顺序表, description: 线性表的顺序存储和基本操作。, aliases: [线性表], keywords: [顺序存储, 插入, 删除], classification_guidance: 以顺序表操作复杂度或存储特点为主时匹配。, syllabus_refs: [数据结构与算法/数组]}
+          - {code: data-structures-algorithms.linear.linked-list, name: 链表, description: 单链表、循环链表和双向链表。, aliases: [链式存储], keywords: [单链表, 双向链表, 指针], classification_guidance: 涉及结点链接、插入删除或链表结构时匹配。, syllabus_refs: [数据结构与算法/链表]}
+          - {code: data-structures-algorithms.linear.stack, name: 栈, description: 栈的后进先出特性及典型应用。, aliases: [LIFO], keywords: [栈, 入栈, 出栈, 表达式], classification_guidance: 涉及括号匹配、表达式转换或调用栈时匹配。, syllabus_refs: [数据结构与算法/栈]}
+          - {code: data-structures-algorithms.linear.queue, name: 队列, description: 队列、循环队列和双端队列。, aliases: [FIFO, 循环队列], keywords: [队列, 队头, 队尾, 环形], classification_guidance: 涉及先进先出或循环队列判空判满时匹配。, syllabus_refs: [数据结构与算法/队列]}
+      - code: data-structures-algorithms.tree
+        name: 树结构
+        description: 树、二叉树及典型树结构。
+        topics:
+          - {code: data-structures-algorithms.tree.basic, name: 树与二叉树性质, description: 树和二叉树的术语、性质与存储。, aliases: [二叉树性质], keywords: [结点, 度, 深度, 完全二叉树], classification_guidance: 计算树结点数量、高度或判断二叉树性质时匹配。, syllabus_refs: [数据结构与算法/树]}
+          - {code: data-structures-algorithms.tree.traversal, name: 二叉树遍历, description: 前序、中序、后序和层序遍历。, aliases: [树遍历], keywords: [前序, 中序, 后序, 层序], classification_guidance: 根据遍历序列还原或输出二叉树时匹配。, syllabus_refs: [数据结构与算法/树的基本运算]}
+          - {code: data-structures-algorithms.tree.search-tree, name: 二叉查找树, description: 二叉排序树的查找、插入和删除。, aliases: [BST, 二叉排序树], keywords: [查找树, 中序有序, 插入], classification_guidance: 涉及BST构造和查找路径时匹配。, syllabus_refs: [数据结构与算法/查找算法]}
+          - {code: data-structures-algorithms.tree.balanced-tree, name: 平衡二叉树, description: AVL树平衡因子和旋转调整。, aliases: [AVL树], keywords: [平衡因子, 左旋, 右旋], classification_guidance: 插入删除后需要AVL旋转调整时匹配。, syllabus_refs: [数据结构与算法/树]}
+          - {code: data-structures-algorithms.tree.heap, name: 堆与优先队列, description: 大顶堆、小顶堆和堆调整。, aliases: [优先队列], keywords: [大根堆, 小根堆, 堆化], classification_guidance: 涉及完全二叉树上的优先级或堆调整时匹配。, syllabus_refs: [数据结构与算法/树与排序]}
+          - {code: data-structures-algorithms.tree.huffman, name: 哈夫曼树与编码, description: 最优二叉树、带权路径长度和哈夫曼编码。, aliases: [最优二叉树], keywords: [Huffman, WPL, 前缀码], classification_guidance: 计算带权路径长度或构造最优前缀码时匹配。, syllabus_refs: [数据结构与算法/数据压缩算法]}
+      - code: data-structures-algorithms.graph
+        name: 图结构与算法
+        description: 图的存储、遍历和典型算法。
+        topics:
+          - {code: data-structures-algorithms.graph.representation, name: 图的存储, description: 邻接矩阵、邻接表及图的基本性质。, aliases: [图表示], keywords: [邻接矩阵, 邻接表, 度], classification_guidance: 询问图存储空间、边数或顶点度时匹配。, syllabus_refs: [数据结构与算法/图的定义与存储]}
+          - {code: data-structures-algorithms.graph.traversal, name: 图的遍历, description: 深度优先和广度优先遍历。, aliases: [DFS, BFS], keywords: [深度优先, 广度优先, 遍历], classification_guidance: 涉及DFS/BFS序列或遍历生成树时匹配。, syllabus_refs: [数据结构与算法/图的基本运算]}
+          - {code: data-structures-algorithms.graph.minimum-spanning-tree, name: 最小生成树, description: Prim和Kruskal最小生成树算法。, aliases: [MST], keywords: [Prim, Kruskal, 最小生成树], classification_guidance: 为连通网选择最小权边集合时匹配。, syllabus_refs: [数据结构与算法/图相关算法]}
+          - {code: data-structures-algorithms.graph.shortest-path, name: 最短路径, description: Dijkstra和Floyd最短路径算法。, aliases: [最短路], keywords: [Dijkstra, Floyd, 路径长度], classification_guidance: 求单源或多源最短路径时匹配。, syllabus_refs: [数据结构与算法/图相关算法]}
+          - {code: data-structures-algorithms.graph.topological-sort, name: 拓扑排序, description: 有向无环图的拓扑序和依赖分析。, aliases: [AOV网], keywords: [拓扑序, 入度, DAG], classification_guidance: 根据先后依赖求合法执行序列时匹配。, syllabus_refs: [数据结构与算法/图相关算法]}
+          - {code: data-structures-algorithms.graph.critical-path, name: 关键路径, description: AOE网、事件时间、活动余量和关键路径。, aliases: [AOE网], keywords: [关键活动, 最早时间, 最迟时间], classification_guidance: 计算工程工期或关键活动时匹配。, syllabus_refs: [数据结构与算法/图相关算法]}
+      - code: data-structures-algorithms.search-sort
+        name: 查找与排序
+        description: 常用查找、散列和排序方法。
+        topics:
+          - {code: data-structures-algorithms.search-sort.sequential-binary, name: 顺序与二分查找, description: 顺序查找、折半查找及平均查找长度。, aliases: [折半查找], keywords: [顺序查找, 二分查找, ASL], classification_guidance: 在有序表中折半定位或计算查找长度时匹配。, syllabus_refs: [数据结构与算法/查找算法]}
+          - {code: data-structures-algorithms.search-sort.hash, name: 散列表, description: 散列函数、冲突处理和装填因子。, aliases: [哈希表], keywords: [Hash, 冲突, 线性探测, 链地址], classification_guidance: 构造哈希表或分析冲突和查找长度时匹配。, syllabus_refs: [数据结构与算法/杂凑]}
+          - {code: data-structures-algorithms.search-sort.insertion-sort, name: 插入类排序, description: 直接插入和希尔排序的过程与复杂度。, aliases: [插入排序, 希尔排序], keywords: [直接插入, Shell, 稳定性], classification_guidance: 识别插入类排序过程或性质时匹配。, syllabus_refs: [数据结构与算法/排序算法]}
+          - {code: data-structures-algorithms.search-sort.exchange-sort, name: 交换类排序, description: 冒泡和快速排序的过程与复杂度。, aliases: [冒泡排序, 快速排序], keywords: [Bubble, QuickSort, 枢轴], classification_guidance: 以交换、冒泡或分区快排为主时匹配。, syllabus_refs: [数据结构与算法/排序算法]}
+          - {code: data-structures-algorithms.search-sort.selection-sort, name: 选择类排序, description: 简单选择和堆排序的过程与复杂度。, aliases: [选择排序, 堆排序], keywords: [选择, HeapSort, 堆调整], classification_guidance: 以选择最值或堆排序过程为主时匹配。, syllabus_refs: [数据结构与算法/排序算法]}
+          - {code: data-structures-algorithms.search-sort.merge-radix, name: 归并与基数排序, description: 归并排序、基数排序及外部排序基础。, aliases: [归并排序, 基数排序], keywords: [MergeSort, 归并, 基数], classification_guidance: 涉及归并段、按位分配收集或外排序时匹配。, syllabus_refs: [数据结构与算法/排序算法]}
+      - code: data-structures-algorithms.analysis-design
+        name: 算法分析与设计
+        description: 复杂度和典型算法设计策略。
+        topics:
+          - {code: data-structures-algorithms.analysis-design.complexity, name: 时间与空间复杂度, description: 渐进表示、基本操作计数和复杂度比较。, aliases: [大O表示法], keywords: [时间复杂度, 空间复杂度, Big-O], classification_guidance: 估算算法增长阶或资源复杂度时匹配。, syllabus_refs: [数据结构与算法/算法设计与分析]}
+          - {code: data-structures-algorithms.analysis-design.recursion, name: 递归算法, description: 递归定义、调用过程和递推关系。, aliases: [递推], keywords: [递归, 递推式, 调用栈], classification_guidance: 程序或算法通过自调用解决子问题时匹配。, syllabus_refs: [数据结构与算法/递归算法]}
+          - {code: data-structures-algorithms.analysis-design.divide-conquer, name: 分治法, description: 分解、求解和合并子问题的算法策略。, aliases: [分而治之], keywords: [分治, 子问题, 合并], classification_guidance: 问题被划分为独立同类子问题时匹配。, syllabus_refs: [数据结构与算法/算法设计与分析]}
+          - {code: data-structures-algorithms.analysis-design.greedy, name: 贪心法, description: 局部最优选择与贪心算法适用性。, aliases: [贪心算法], keywords: [局部最优, 贪心选择], classification_guidance: 每一步选择当前最优且不回退时匹配。, syllabus_refs: [数据结构与算法/算法设计与分析]}
+          - {code: data-structures-algorithms.analysis-design.dynamic-programming, name: 动态规划, description: 最优子结构、重叠子问题和状态转移。, aliases: [DP], keywords: [状态转移, 最优子结构, 备忘录], classification_guidance: 通过状态表复用重叠子问题结果时匹配。, syllabus_refs: [数据结构与算法/算法设计与分析]}
+          - {code: data-structures-algorithms.analysis-design.backtracking, name: 回溯法, description: 解空间树、约束检查和回退搜索。, aliases: [试探法], keywords: [解空间树, 剪枝, 回溯], classification_guidance: 枚举候选并在不满足条件时撤销选择时匹配。, syllabus_refs: [数据结构与算法/算法设计与分析]}
+          - {code: data-structures-algorithms.analysis-design.branch-bound, name: 分支限界法, description: 活结点表、界函数和最优解搜索。, aliases: [分支定界], keywords: [分支限界, 界函数, 优先队列], classification_guidance: 以界函数剪枝搜索最优解时匹配。, syllabus_refs: [数据结构与算法/算法设计与分析]}
+
+  - code: programming-languages
+    name: 程序设计语言与编译原理
+    description: 程序设计语言成分、运行机制和语言处理程序。
+    modules:
+      - code: programming-languages.language-basics
+        name: 程序语言基础
+        description: 类型、控制、作用域和调用机制。
+        topics:
+          - {code: programming-languages.language-basics.data-types, name: 数据类型与类型系统, description: 基本、构造、抽象类型及类型检查。, aliases: [类型系统], keywords: [数据类型, 强类型, 类型检查], classification_guidance: 涉及类型分类、相容或检查时机时匹配。, syllabus_refs: [程序设计语言/基本成分]}
+          - {code: programming-languages.language-basics.control-structure, name: 控制结构, description: 顺序、选择、循环和异常控制结构。, aliases: [控制流], keywords: [分支, 循环, 异常], classification_guidance: 以程序控制流组织方式为主时匹配。, syllabus_refs: [程序设计语言/基本成分]}
+          - {code: programming-languages.language-basics.scope-binding, name: 作用域与绑定, description: 静态动态作用域、名字绑定和生存期。, aliases: [名字绑定, 变量生存期], keywords: [作用域, 绑定, 生命周期], classification_guidance: 判断标识符可见范围或绑定时机时匹配。, syllabus_refs: [程序设计语言/基本成分]}
+          - {code: programming-languages.language-basics.parameter-passing, name: 参数传递与函数调用, description: 值、引用等参数传递和调用栈机制。, aliases: [传值调用, 传引用], keywords: [实参, 形参, 调用栈, 活动记录], classification_guidance: 分析函数调用后变量变化或活动记录时匹配。, syllabus_refs: [程序设计语言/函数调用机制]}
+          - {code: programming-languages.language-basics.paradigms, name: 程序设计范型, description: 结构化、面向对象、函数式和逻辑式语言特征。, aliases: [编程范式], keywords: [结构化, 面向对象, 函数式, 逻辑式], classification_guidance: 比较语言类别及其主要特点时匹配。, syllabus_refs: [程序设计语言/语言主要特点]}
+      - code: programming-languages.compiler
+        name: 编译与解释
+        description: 语言处理程序的阶段与原理。
+        topics:
+          - {code: programming-languages.compiler.compiler-interpreter, name: 编译器与解释器, description: 编译执行和解释执行的过程与差异。, aliases: [语言处理程序], keywords: [编译, 解释, 汇编], classification_guidance: 比较翻译程序和解释程序工作方式时匹配。, syllabus_refs: [语言处理程序/汇编编译解释]}
+          - {code: programming-languages.compiler.lexical-analysis, name: 词法分析, description: 单词符号、正规式和有限自动机基础。, aliases: [扫描器], keywords: [Token, 正规式, 有限自动机], classification_guidance: 从字符流识别单词或正规表达式时匹配。, syllabus_refs: [语言处理程序/编译基本原理]}
+          - {code: programming-languages.compiler.syntax-analysis, name: 语法分析, description: 文法、语法树和自顶向下/自底向上分析。, aliases: [解析器], keywords: [上下文无关文法, 语法树, 推导], classification_guidance: 涉及文法推导、语法树或分析方法时匹配。, syllabus_refs: [语言处理程序/编译基本原理]}
+          - {code: programming-languages.compiler.semantic-analysis, name: 语义分析, description: 类型检查、符号表和语义一致性检查。, aliases: [静态语义], keywords: [符号表, 类型检查, 语义错误], classification_guidance: 判断类型、声明或语义约束错误时匹配。, syllabus_refs: [语言处理程序/编译基本原理]}
+          - {code: programming-languages.compiler.intermediate-code, name: 中间代码, description: 三地址码、四元式等中间表示。, aliases: [中间表示, 四元式], keywords: [三地址码, 四元式, IR], classification_guidance: 将表达式翻译为中间表示时匹配。, syllabus_refs: [语言处理程序/编译基本原理]}
+          - {code: programming-languages.compiler.codegen-optimization, name: 代码生成与优化, description: 目标代码生成和常见局部全局优化。, aliases: [编译优化], keywords: [目标代码, 常量折叠, 公共子表达式], classification_guidance: 涉及优化变换或目标机器代码生成时匹配。, syllabus_refs: [语言处理程序/编译基本原理]}
+
+  - code: database
+    name: 数据库系统
+    description: 数据库理论、设计、SQL、事务和新技术。
+    modules:
+      - code: database.foundation
+        name: 数据库基础与模型
+        description: 数据库体系结构、数据模型和概念设计。
+        topics:
+          - {code: database.foundation.three-schema, name: 三级模式与两级映像, description: 外模式、模式、内模式及逻辑物理独立性。, aliases: [三级模式结构], keywords: [外模式, 概念模式, 内模式, 独立性], classification_guidance: 涉及数据库模式层次或数据独立性时匹配。, syllabus_refs: [数据库知识/基本概念]}
+          - {code: database.foundation.data-model, name: 数据模型, description: 层次、网状、关系和对象数据模型。, aliases: [数据库模型], keywords: [层次模型, 网状模型, 关系模型], classification_guidance: 比较数据组织模型特点时匹配。, syllabus_refs: [数据库知识/数据库模型]}
+          - {code: database.foundation.er-model, name: ER模型, description: 实体、属性、联系及联系基数。, aliases: [实体联系模型, E-R图], keywords: [实体, 属性, 联系, 基数], classification_guidance: 绘制概念模型或判断实体联系时匹配。, syllabus_refs: [数据库知识/数据库设计]}
+          - {code: database.foundation.er-mapping, name: ER模型转关系模式, description: 实体和一对一、一对多、多对多联系的关系转换。, aliases: [ER转关系], keywords: [关系模式, 外键, 联系转换], classification_guidance: 将ER图映射为关系表时匹配。, syllabus_refs: [数据库知识/数据库设计]}
+      - code: database.relational-theory
+        name: 关系数据库理论
+        description: 关系运算、完整性和规范化。
+        topics:
+          - {code: database.relational-theory.relational-algebra, name: 关系代数, description: 选择、投影、连接、除和集合运算。, aliases: [关系运算], keywords: [选择, 投影, 连接, 除法], classification_guidance: 用代数表达查询或计算关系结果时匹配。, syllabus_refs: [数据库知识/关系数据库理论]}
+          - {code: database.relational-theory.keys-integrity, name: 键与完整性约束, description: 超键、候选键、主外键和三类完整性。, aliases: [候选码, 完整性], keywords: [主键, 外键, 实体完整性, 参照完整性], classification_guidance: 判断键或完整性约束时匹配。, syllabus_refs: [数据库知识/关系数据库理论]}
+          - {code: database.relational-theory.functional-dependency, name: 函数依赖, description: 函数依赖、闭包、最小依赖集和候选键求解。, aliases: [属性闭包], keywords: [函数依赖, 闭包, 最小覆盖, 候选键], classification_guidance: 根据依赖集求闭包、键或最小覆盖时匹配。, syllabus_refs: [数据库知识/关系数据库理论]}
+          - {code: database.relational-theory.normalization, name: 范式, description: 1NF、2NF、3NF和BCNF判断与分解。, aliases: [数据库规范化], keywords: [第一范式, 第二范式, 第三范式, BCNF], classification_guidance: 判断关系模式范式级别或消除异常时匹配。, syllabus_refs: [数据库知识/关系数据库理论]}
+          - {code: database.relational-theory.decomposition, name: 无损连接与依赖保持, description: 模式分解的无损连接和依赖保持性质。, aliases: [模式分解], keywords: [无损连接, 依赖保持, 分解], classification_guidance: 验证关系分解正确性时匹配。, syllabus_refs: [数据库知识/关系数据库理论]}
+      - code: database.sql
+        name: SQL与数据库对象
+        description: 数据定义、查询、更新和数据库对象。
+        topics:
+          - {code: database.sql.ddl-dml, name: SQL定义与更新, description: 表、约束的定义及插入、更新、删除。, aliases: [DDL, DML], keywords: [CREATE, INSERT, UPDATE, DELETE], classification_guidance: 以SQL建表或数据更新语句为核心时匹配。, syllabus_refs: [数据库知识/数据库语言]}
+          - {code: database.sql.query, name: SQL基本查询, description: SELECT、过滤、排序和表达式查询。, aliases: [SELECT查询], keywords: [SELECT, WHERE, ORDER BY], classification_guidance: 单表筛选、排序或表达式查询时匹配。, syllabus_refs: [数据库知识/数据库语言]}
+          - {code: database.sql.join-subquery, name: 连接与子查询, description: 内外连接、相关与非相关子查询。, aliases: [多表查询], keywords: [JOIN, 子查询, EXISTS], classification_guidance: 多表连接或嵌套查询求结果时匹配。, syllabus_refs: [数据库知识/数据库语言]}
+          - {code: database.sql.group-aggregate, name: 分组与聚合, description: 聚合函数、GROUP BY和HAVING。, aliases: [聚合查询], keywords: [COUNT, SUM, GROUP BY, HAVING], classification_guidance: 按组统计并筛选分组结果时匹配。, syllabus_refs: [数据库知识/数据库语言]}
+          - {code: database.sql.view-index, name: 视图与索引, description: 视图、索引的用途、更新性和性能影响。, aliases: [数据库视图], keywords: [VIEW, INDEX, 物化], classification_guidance: 询问视图特性或索引适用性时匹配。, syllabus_refs: [数据库知识/数据库语言]}
+          - {code: database.sql.authorization, name: 数据库授权, description: 用户、角色及GRANT和REVOKE权限控制。, aliases: [SQL权限], keywords: [GRANT, REVOKE, ROLE], classification_guidance: 涉及数据库访问授权或权限回收时匹配。, syllabus_refs: [数据库知识/数据库语言]}
+      - code: database.transaction
+        name: 事务与恢复
+        description: 事务性质、并发控制和故障恢复。
+        topics:
+          - {code: database.transaction.acid, name: 事务与ACID, description: 事务边界及原子性、一致性、隔离性、持久性。, aliases: [事务特性], keywords: [ACID, COMMIT, ROLLBACK], classification_guidance: 判断事务属性或提交回滚语义时匹配。, syllabus_refs: [数据库知识/数据库系统基本概念]}
+          - {code: database.transaction.concurrency, name: 并发异常与可串行化, description: 丢失更新、脏读、不可重复读和串行化。, aliases: [并发控制], keywords: [脏读, 幻读, 可串行化], classification_guidance: 多事务交错造成异常或调度判断时匹配。, syllabus_refs: [数据库知识/关系数据库理论]}
+          - {code: database.transaction.locking, name: 封锁协议, description: 共享排他锁、两段锁和封锁粒度。, aliases: [两阶段封锁], keywords: [S锁, X锁, 2PL], classification_guidance: 通过锁解决事务并发问题时匹配。, syllabus_refs: [数据库知识/关系数据库理论]}
+          - {code: database.transaction.deadlock, name: 数据库死锁, description: 事务等待图、死锁检测和解除。, aliases: [事务死锁], keywords: [等待图, 死锁检测, 超时], classification_guidance: 锁等待形成环或处理事务死锁时匹配。, syllabus_refs: [数据库知识/关系数据库理论]}
+          - {code: database.transaction.recovery, name: 数据库恢复, description: 日志、检查点、UNDO和REDO恢复技术。, aliases: [故障恢复], keywords: [日志, 检查点, UNDO, REDO], classification_guidance: 根据日志恢复事务或判断恢复操作时匹配。, syllabus_refs: [数据库知识/数据库系统基本概念]}
+      - code: database.design-new
+        name: 数据库设计与新技术
+        description: 设计过程和非传统数据库基础。
+        topics:
+          - {code: database.design-new.design-process, name: 数据库设计过程, description: 需求、概念、逻辑、物理设计和运行维护。, aliases: [数据库生命周期], keywords: [概念设计, 逻辑设计, 物理设计], classification_guidance: 判断数据库设计阶段和产物时匹配。, syllabus_refs: [数据库知识/数据库设计]}
+          - {code: database.design-new.distributed, name: 分布式数据库, description: 分片、复制、透明性和分布式事务基础。, aliases: [分布式DB], keywords: [分片, 复制, 透明性], classification_guidance: 数据分布在多个节点及其透明性问题匹配。, syllabus_refs: [数据库知识/数据库新技术]}
+          - {code: database.design-new.nosql, name: NoSQL数据库, description: 键值、文档、列族和图数据库特点。, aliases: [非关系数据库], keywords: [键值, 文档数据库, 列族, 图数据库], classification_guidance: 比较非关系数据模型或适用场景时匹配。, syllabus_refs: [数据库知识/非关系型数据库]}
+          - {code: database.design-new.data-warehouse, name: 数据仓库与数据挖掘基础, description: 数据仓库、OLAP和数据挖掘基本概念。, aliases: [OLAP], keywords: [数据仓库, 主题, OLAP, 数据挖掘], classification_guidance: 面向分析的主题数据或多维分析时匹配。, syllabus_refs: [数据库知识/数据库新技术]}
+
+  - code: network
+    name: 计算机网络
+    description: 网络体系、通信、互联、协议和管理。
+    modules:
+      - code: network.architecture-communication
+        name: 网络体系与数据通信
+        description: 分层体系和物理数据传输基础。
+        topics:
+          - {code: network.architecture-communication.osi-tcpip, name: OSI与TCP-IP体系, description: OSI七层、TCP-IP分层及各层功能。, aliases: [网络分层], keywords: [OSI, TCP-IP, 协议栈], classification_guidance: 识别协议所属层或比较分层模型时匹配。, syllabus_refs: [计算机网络知识/协议体系结构]}
+          - {code: network.architecture-communication.transmission-media, name: 传输介质, description: 双绞线、同轴、光纤和无线介质特性。, aliases: [通信介质], keywords: [双绞线, 光纤, 无线], classification_guidance: 比较介质距离、带宽或抗干扰性时匹配。, syllabus_refs: [计算机网络知识/传输介质]}
+          - {code: network.architecture-communication.encoding-modulation, name: 编码与调制, description: 数字编码、调制和波特率比特率关系。, aliases: [信号编码], keywords: [曼彻斯特, 调制, 波特率, 比特率], classification_guidance: 涉及物理信号编码或传输速率计算时匹配。, syllabus_refs: [计算机网络知识/传输介质与交换]}
+          - {code: network.architecture-communication.multiplexing-switching, name: 复用与交换, description: 频分、时分、波分复用及电路报文分组交换。, aliases: [多路复用], keywords: [FDM, TDM, WDM, 分组交换], classification_guidance: 比较信道复用或交换技术时匹配。, syllabus_refs: [计算机网络知识/交换技术]}
+          - {code: network.architecture-communication.error-control, name: 差错控制, description: 奇偶校验、海明码和循环冗余校验。, aliases: [CRC, 海明校验], keywords: [奇偶校验, 海明码, CRC], classification_guidance: 计算校验位、码距或CRC余数时匹配。, syllabus_refs: [计算机网络知识/传输基础]}
+      - code: network.lan-device
+        name: 局域网与网络设备
+        description: 局域网技术和互联设备。
+        topics:
+          - {code: network.lan-device.ethernet, name: 以太网, description: 以太网帧、MAC地址和介质访问控制。, aliases: [IEEE802.3], keywords: [Ethernet, MAC, CSMA-CD], classification_guidance: 涉及以太网帧或MAC介质访问时匹配。, syllabus_refs: [计算机网络知识/局域网络连接]}
+          - {code: network.lan-device.wlan, name: 无线局域网, description: IEEE 802.11、无线接入和基本安全机制。, aliases: [Wi-Fi, IEEE802.11], keywords: [WLAN, AP, CSMA-CA], classification_guidance: 涉及无线局域网标准、AP或接入控制时匹配。, syllabus_refs: [计算机网络知识/局域网络连接]}
+          - {code: network.lan-device.vlan, name: VLAN与链路聚合, description: 虚拟局域网、Trunk和链路聚合基础。, aliases: [虚拟局域网], keywords: [VLAN, Trunk, 802.1Q], classification_guidance: 逻辑划分广播域或交换链路标记时匹配。, syllabus_refs: [计算机网络知识/局域网络连接]}
+          - {code: network.lan-device.interconnection-device, name: 网络互联设备, description: 中继器、集线器、网桥、交换机、路由器和网关。, aliases: [网络设备], keywords: [交换机, 路由器, 网桥, 网关], classification_guidance: 根据工作层次和转发对象辨识设备时匹配。, syllabus_refs: [计算机网络知识/常用网络设备]}
+      - code: network.internet-layer
+        name: 网络层与IP
+        description: IP编址、辅助协议和路由。
+        topics:
+          - {code: network.internet-layer.ipv4-subnet, name: IPv4与子网划分, description: IPv4地址、掩码、CIDR和子网计算。, aliases: [IP地址计算, CIDR], keywords: [IPv4, 子网掩码, 网络地址, 广播地址], classification_guidance: 计算子网、主机数或地址归属时匹配。, syllabus_refs: [计算机网络知识/TCP-IP协议]}
+          - {code: network.internet-layer.ipv6, name: IPv6, description: IPv6地址格式、压缩表示和主要改进。, aliases: [下一代IP], keywords: [IPv6, 地址压缩, 单播], classification_guidance: 涉及128位地址表示或IPv6特性时匹配。, syllabus_refs: [计算机网络知识/TCP-IP协议]}
+          - {code: network.internet-layer.arp-icmp, name: ARP与ICMP, description: 地址解析、差错报告和网络诊断。, aliases: [地址解析协议], keywords: [ARP, ICMP, ping, MAC解析], classification_guidance: IP到MAC解析或ping差错报文时匹配。, syllabus_refs: [计算机网络知识/TCP-IP协议]}
+          - {code: network.internet-layer.routing, name: 路由与路由协议, description: 路由表、静态动态路由及RIP、OSPF基础。, aliases: [路由选择], keywords: [路由表, RIP, OSPF, 下一跳], classification_guidance: 根据目标网络选择下一跳或比较路由协议时匹配。, syllabus_refs: [计算机网络知识/TCP-IP协议]}
+      - code: network.transport-application
+        name: 传输层与应用协议
+        description: 端到端传输及常见Internet服务协议。
+        topics:
+          - {code: network.transport-application.tcp, name: TCP协议, description: TCP连接、可靠传输、流量和拥塞控制。, aliases: [传输控制协议], keywords: [TCP, 三次握手, 滑动窗口, 拥塞], classification_guidance: 可靠连接、序号确认或握手挥手问题匹配。, syllabus_refs: [计算机网络知识/TCP-IP协议]}
+          - {code: network.transport-application.udp, name: UDP协议, description: UDP无连接服务、报文格式和适用场景。, aliases: [用户数据报协议], keywords: [UDP, 无连接, 数据报], classification_guidance: 比较无连接传输或选择实时传输协议时匹配。, syllabus_refs: [计算机网络知识/TCP-IP协议]}
+          - {code: network.transport-application.dns-dhcp, name: DNS与DHCP, description: 域名解析和动态主机配置工作过程。, aliases: [域名系统, 动态主机配置], keywords: [DNS, DHCP, 域名, 租约], classification_guidance: 域名到IP解析或自动分配网络参数时匹配。, syllabus_refs: [计算机网络知识/Internet基础]}
+          - {code: network.transport-application.web, name: HTTP与HTTPS, description: Web请求响应、状态码和HTTPS基本机制。, aliases: [Web协议], keywords: [HTTP, HTTPS, URL, 状态码], classification_guidance: 浏览器服务器交互或HTTP报文状态码时匹配。, syllabus_refs: [计算机网络知识/Internet基础]}
+          - {code: network.transport-application.file-email, name: 文件传输与电子邮件协议, description: FTP、TFTP、SMTP、POP3和IMAP用途。, aliases: [邮件协议], keywords: [FTP, SMTP, POP3, IMAP], classification_guidance: 辨识文件或邮件收发协议及端口时匹配。, syllabus_refs: [计算机网络知识/Internet基础]}
+          - {code: network.transport-application.network-management, name: 网络管理, description: SNMP、管理功能和基础故障诊断。, aliases: [SNMP], keywords: [网络管理, SNMP, MIB], classification_guidance: 涉及网络监控、管理站代理或MIB时匹配。, syllabus_refs: [计算机网络知识/简单网络管理]}
+
+  - code: software-engineering
+    name: 软件工程与项目管理
+    description: 软件生命周期、分析设计、测试维护、质量和项目管理。
+    modules:
+      - code: software-engineering.process
+        name: 软件过程与开发模型
+        description: 生命周期、过程模型和开发方法。
+        topics:
+          - {code: software-engineering.process.lifecycle, name: 软件生命周期, description: 可行性、需求、设计、实现、测试、运行维护等阶段。, aliases: [软件生存周期], keywords: [生命周期, 阶段, 开发过程], classification_guidance: 判断软件开发阶段、活动或产物时匹配。, syllabus_refs: [软件工程基础/软件生存周期]}
+          - {code: software-engineering.process.waterfall-prototype, name: 瀑布与原型模型, description: 瀑布模型、V模型和原型开发的特点与适用场景。, aliases: [瀑布模型, 原型模型], keywords: [瀑布, V模型, 原型], classification_guidance: 比较顺序开发与需求探索型模型时匹配。, syllabus_refs: [软件工程基础/生存周期模型]}
+          - {code: software-engineering.process.incremental-spiral, name: 增量与螺旋模型, description: 增量、演化、螺旋模型及风险驱动思想。, aliases: [增量模型, 螺旋模型], keywords: [增量, 迭代, 风险驱动], classification_guidance: 分批交付或以风险分析驱动迭代时匹配。, syllabus_refs: [软件工程基础/生存周期模型]}
+          - {code: software-engineering.process.agile, name: 敏捷开发, description: 敏捷价值观、Scrum和极限编程基础。, aliases: [Scrum, XP], keywords: [敏捷, 迭代, 用户故事, 结对编程], classification_guidance: 涉及短迭代、拥抱变化或敏捷实践时匹配。, syllabus_refs: [软件过程改进/极限编程]}
+          - {code: software-engineering.process.unified-process, name: 统一过程, description: UP的阶段、迭代增量和用例架构驱动特性。, aliases: [RUP, UP], keywords: [统一过程, 初始, 细化, 构造, 移交], classification_guidance: 询问统一过程阶段或核心特征时匹配。, syllabus_refs: [软件过程改进/统一过程]}
+      - code: software-engineering.requirement-analysis
+        name: 需求与结构化分析
+        description: 需求工程及结构化分析模型。
+        topics:
+          - {code: software-engineering.requirement-analysis.requirement-engineering, name: 需求工程, description: 需求获取、分析、规格说明、验证和管理。, aliases: [需求开发], keywords: [需求获取, 需求验证, 需求管理], classification_guidance: 涉及需求活动、变更或质量特性时匹配。, syllabus_refs: [系统分析基础/系统分析方法]}
+          - {code: software-engineering.requirement-analysis.dfd, name: 数据流图, description: 外部实体、数据流、加工、数据存储及分层平衡。, aliases: [DFD], keywords: [数据流图, 加工, 数据存储, 平衡], classification_guidance: 题目分析数据流图元素、分解和平衡时匹配。, syllabus_refs: [系统分析基础/系统分析模型]}
+          - {code: software-engineering.requirement-analysis.data-dictionary, name: 数据字典, description: 数据流、数据项、数据结构和数据存储定义。, aliases: [DD], keywords: [数据字典, 数据项, 数据结构], classification_guidance: 以结构化分析中的数据定义为主时匹配。, syllabus_refs: [系统分析基础/系统分析模型]}
+          - {code: software-engineering.requirement-analysis.decision-model, name: 判定表与判定树, description: 复杂条件组合的判定表和判定树表达。, aliases: [决策表, 决策树], keywords: [条件桩, 动作桩, 判定树], classification_guidance: 将多条件业务规则转为表或树时匹配。, syllabus_refs: [系统分析基础/系统分析模型]}
+          - {code: software-engineering.requirement-analysis.srs, name: 需求规格说明, description: SRS内容、质量要求和需求可追踪性。, aliases: [软件需求规格说明书], keywords: [SRS, 可验证性, 可追踪性], classification_guidance: 询问需求文档内容或优良需求特征时匹配。, syllabus_refs: [软件工程基础/软件开发文档]}
+      - code: software-engineering.architecture-design
+        name: 软件架构与设计
+        description: 架构风格、模块设计和结构化设计原则。
+        topics:
+          - {code: software-engineering.architecture-design.architecture-style, name: 软件体系结构与风格, description: 分层、管道过滤器、仓库、客户端服务器等架构风格。, aliases: [架构风格], keywords: [分层, 管道过滤器, 仓库, C-S], classification_guidance: 辨识系统总体组织风格及优缺点时匹配。, syllabus_refs: [系统设计基础/软件体系结构]}
+          - {code: software-engineering.architecture-design.modularity, name: 模块化设计, description: 模块分解、抽象、信息隐藏和逐步求精。, aliases: [模块设计], keywords: [模块化, 抽象, 信息隐藏, 逐步求精], classification_guidance: 以模块分解原则和信息隐藏为主时匹配。, syllabus_refs: [系统设计基础/基本原理]}
+          - {code: software-engineering.architecture-design.cohesion, name: 内聚, description: 偶然到功能内聚的类型和强弱判断。, aliases: [模块内聚度], keywords: [功能内聚, 顺序内聚, 通信内聚], classification_guidance: 判断单一模块内部元素关联程度时匹配。, syllabus_refs: [系统设计基础/系统模块结构设计]}
+          - {code: software-engineering.architecture-design.coupling, name: 耦合, description: 非直接到内容耦合的类型和强弱判断。, aliases: [模块耦合度], keywords: [数据耦合, 控制耦合, 公共耦合], classification_guidance: 判断模块之间依赖方式和强度时匹配。, syllabus_refs: [系统设计基础/系统模块结构设计]}
+          - {code: software-engineering.architecture-design.structured-design, name: 结构化设计, description: 变换分析、事务分析和结构图设计。, aliases: [SD方法], keywords: [变换流, 事务流, 结构图], classification_guidance: 数据流图到模块结构图的映射问题匹配。, syllabus_refs: [系统设计基础/结构化设计方法]}
+          - {code: software-engineering.architecture-design.ui-design, name: 人机界面设计, description: 界面一致性、反馈、容错和可用性原则。, aliases: [UI设计原则], keywords: [人机交互, 一致性, 反馈, 可用性], classification_guidance: 以用户界面质量和交互原则为主时匹配。, syllabus_refs: [系统设计基础/详细设计]}
+      - code: software-engineering.project-management
+        name: 软件项目管理
+        description: 估算、计划、风险和配置管理。
+        topics:
+          - {code: software-engineering.project-management.size-cost, name: 规模与成本估算, description: LOC、功能点和COCOMO等估算方法。, aliases: [软件估算, COCOMO], keywords: [代码行, 功能点, 工作量, 成本], classification_guidance: 计算软件规模、人月或开发成本时匹配。, syllabus_refs: [软件工程基础/软件开发项目管理]}
+          - {code: software-engineering.project-management.schedule-network, name: 进度网络与关键路径, description: 活动网络、最早最迟时间、时差和关键路径。, aliases: [PERT, CPM], keywords: [关键路径, 松弛时间, 最早开始], classification_guidance: 根据项目网络图计算工期和关键活动时匹配。, syllabus_refs: [软件工程基础/软件开发项目管理]}
+          - {code: software-engineering.project-management.gantt-resource, name: 甘特图与资源安排, description: 甘特图、里程碑和项目资源分配。, aliases: [Gantt图], keywords: [甘特图, 里程碑, 资源平衡], classification_guidance: 以横道计划、里程碑或资源冲突为主时匹配。, syllabus_refs: [软件工程基础/软件开发项目管理]}
+          - {code: software-engineering.project-management.risk, name: 风险管理, description: 风险识别、分析、应对和监控。, aliases: [项目风险], keywords: [风险概率, 风险影响, 风险应对], classification_guidance: 判断风险处理策略或风险暴露时匹配。, syllabus_refs: [软件工程基础/软件开发项目管理]}
+          - {code: software-engineering.project-management.configuration, name: 软件配置管理, description: 配置项、基线、版本、变更和配置审计。, aliases: [SCM, 版本管理], keywords: [配置项, 基线, 变更控制, 版本], classification_guidance: 涉及受控变更、基线或版本审计时匹配。, syllabus_refs: [软件工程基础/软件开发项目管理]}
+      - code: software-engineering.testing
+        name: 软件测试
+        description: 测试阶段、方法和用例设计。
+        topics:
+          - {code: software-engineering.testing.levels, name: 测试阶段, description: 单元、集成、确认、系统和验收测试。, aliases: [测试级别], keywords: [单元测试, 集成测试, 系统测试, 验收], classification_guidance: 判断测试对象、阶段或责任时匹配。, syllabus_refs: [软件测试基础/测试阶段]}
+          - {code: software-engineering.testing.white-box, name: 白盒测试与覆盖, description: 语句、判定、条件、组合和路径覆盖。, aliases: [结构测试], keywords: [语句覆盖, 判定覆盖, 条件覆盖, 路径], classification_guidance: 根据程序控制流选择覆盖标准时匹配。, syllabus_refs: [软件测试基础/测试方法]}
+          - {code: software-engineering.testing.path-complexity, name: 控制流图与环路复杂度, description: 控制流图、独立路径和McCabe复杂度。, aliases: [McCabe度量, 圈复杂度], keywords: [控制流图, 环路复杂度, 独立路径], classification_guidance: 计算V(G)或确定基本路径集合时匹配。, syllabus_refs: [软件质量管理/McCabe度量]}
+          - {code: software-engineering.testing.equivalence-boundary, name: 等价类与边界值, description: 有效无效等价类划分和边界值选择。, aliases: [黑盒测试设计], keywords: [等价类, 边界值, 输入域], classification_guidance: 根据输入条件设计黑盒测试数据时匹配。, syllabus_refs: [软件测试基础/测试用例设计]}
+          - {code: software-engineering.testing.cause-effect, name: 因果图与判定表测试, description: 条件组合、因果约束和判定表测试用例。, aliases: [因果图法], keywords: [因果图, 判定表, 条件组合], classification_guidance: 多输入条件组合的黑盒测试设计时匹配。, syllabus_refs: [软件测试基础/测试用例设计]}
+          - {code: software-engineering.testing.integration, name: 集成测试策略, description: 自顶向下、自底向上、桩模块和驱动模块。, aliases: [组装测试], keywords: [桩模块, 驱动模块, 自顶向下, 自底向上], classification_guidance: 判断模块集成顺序和辅助模块时匹配。, syllabus_refs: [软件测试基础/测试阶段]}
+      - code: software-engineering.quality-maintenance
+        name: 质量、维护与过程改进
+        description: 质量模型、评审、维护、可靠性和成熟度。
+        topics:
+          - {code: software-engineering.quality-maintenance.quality-model, name: 软件质量特性, description: 功能性、可靠性、易用性、效率、维护性和可移植性。, aliases: [ISO9126质量模型], keywords: [质量特性, 可靠性, 可维护性, 可移植性], classification_guidance: 辨识软件产品质量属性时匹配。, syllabus_refs: [软件质量管理/软件质量特性]}
+          - {code: software-engineering.quality-maintenance.quality-assurance, name: 质量保证与评审, description: SQA、技术评审、审计和缺陷预防。, aliases: [SQA, 软件评审], keywords: [质量保证, 评审, 审计], classification_guidance: 讨论过程质量活动或同行评审时匹配。, syllabus_refs: [软件质量管理/质量保证与评审]}
+          - {code: software-engineering.quality-maintenance.maintenance, name: 软件维护, description: 改正、适应、完善和预防性维护。, aliases: [维护类型], keywords: [改正性, 适应性, 完善性, 预防性], classification_guidance: 根据修改目的判断维护类型时匹配。, syllabus_refs: [系统运行和维护/系统维护]}
+          - {code: software-engineering.quality-maintenance.conversion-evaluation, name: 系统转换与评价, description: 直接、并行、分段转换及系统评价。, aliases: [系统切换], keywords: [直接转换, 并行转换, 分段转换], classification_guidance: 新旧系统切换策略或运行评价问题匹配。, syllabus_refs: [系统运行和维护/系统转换与评价]}
+          - {code: software-engineering.quality-maintenance.reliability-fault-tolerance, name: 软件可靠性与容错, description: 软件可靠性指标、恢复块和N版本程序设计。, aliases: [软件容错], keywords: [恢复块, N版本, 可靠性], classification_guidance: 软件故障下维持服务或冗余设计时匹配。, syllabus_refs: [软件质量管理/软件容错技术]}
+          - {code: software-engineering.quality-maintenance.cmm, name: 软件能力成熟度, description: CMM/CMMI成熟度等级和过程改进。, aliases: [CMMI], keywords: [成熟度, 过程改进, CMM], classification_guidance: 询问组织过程能力等级或关键特征时匹配。, syllabus_refs: [软件工程基础/软件过程改进]}
+
+  - code: oo-uml-patterns
+    name: 面向对象、UML与设计模式
+    description: 面向对象建模、统一建模语言和设计模式。
+    modules:
+      - code: oo-uml-patterns.oo-foundation
+        name: 面向对象基础
+        description: 对象模型的基本概念和关系。
+        topics:
+          - {code: oo-uml-patterns.oo-foundation.core-concepts, name: 类、对象与封装, description: 类、对象、属性、操作和信息封装。, aliases: [对象模型], keywords: [类, 对象, 封装, 消息], classification_guidance: 以对象基本构成和信息隐藏为主时匹配。, syllabus_refs: [面向对象基础/基本概念]}
+          - {code: oo-uml-patterns.oo-foundation.inheritance-polymorphism, name: 继承与多态, description: 泛化继承、重写、重载和动态绑定。, aliases: [动态绑定], keywords: [继承, 多态, 重写, 重载], classification_guidance: 涉及子类复用或运行期方法选择时匹配。, syllabus_refs: [面向对象基础/基本概念]}
+          - {code: oo-uml-patterns.oo-foundation.object-relations, name: 对象关系, description: 关联、依赖、聚合、组合和泛化关系。, aliases: [类间关系], keywords: [关联, 依赖, 聚合, 组合], classification_guidance: 判断类之间语义和生命周期关系时匹配。, syllabus_refs: [面向对象分析与设计]}
+          - {code: oo-uml-patterns.oo-foundation.oo-analysis-design, name: 面向对象分析与设计, description: 识别对象、职责、协作及从分析到设计的过程。, aliases: [OOA, OOD], keywords: [职责, 协作, 分析类, 设计类], classification_guidance: 涉及对象发现、职责分配或模型精化时匹配。, syllabus_refs: [面向对象分析与设计]}
+          - {code: oo-uml-patterns.oo-foundation.oo-testing, name: 面向对象测试, description: 类测试、继承测试、交互测试和基于场景测试。, aliases: [OO测试], keywords: [类测试, 交互, 继承层次], classification_guidance: 面向类、继承或对象协作的测试问题匹配。, syllabus_refs: [面向对象测试]}
+      - code: oo-uml-patterns.uml-structure
+        name: UML结构建模
+        description: UML静态结构和实现视图。
+        topics:
+          - {code: oo-uml-patterns.uml-structure.class-object, name: 类图与对象图, description: 类、接口、关系、多重度以及对象实例快照。, aliases: [UML类图, 对象图], keywords: [类图, 对象图, 多重度, 接口], classification_guidance: 以类的静态结构或对象实例关系为主时匹配。, syllabus_refs: [面向对象基础/UML]}
+          - {code: oo-uml-patterns.uml-structure.package-component, name: 包图与构件图, description: 模型包依赖和软件构件接口关系。, aliases: [组件图], keywords: [包图, 构件图, 组件, 接口], classification_guidance: 表达代码模块、构件或包依赖时匹配。, syllabus_refs: [面向对象基础/UML]}
+          - {code: oo-uml-patterns.uml-structure.deployment, name: 部署图, description: 执行结点、制品和部署连接关系。, aliases: [配置图], keywords: [部署图, 节点, 制品, 通信路径], classification_guidance: 描述软件制品在硬件节点上的部署时匹配。, syllabus_refs: [面向对象基础/UML]}
+      - code: oo-uml-patterns.uml-behavior
+        name: UML行为与交互建模
+        description: 用例、状态、活动和对象交互模型。
+        topics:
+          - {code: oo-uml-patterns.uml-behavior.use-case, name: 用例图, description: 参与者、用例、包含、扩展和泛化关系。, aliases: [用例模型], keywords: [参与者, include, extend, 用例], classification_guidance: 从用户目标描述系统功能或判断用例关系时匹配。, syllabus_refs: [面向对象基础/UML]}
+          - {code: oo-uml-patterns.uml-behavior.sequence-communication, name: 顺序图与通信图, description: 对象交互、生命线、消息时序和协作链接。, aliases: [时序图, 协作图], keywords: [顺序图, 生命线, 消息, 通信图], classification_guidance: 表达对象间消息先后或协作结构时匹配。, syllabus_refs: [面向对象基础/UML]}
+          - {code: oo-uml-patterns.uml-behavior.activity, name: 活动图, description: 活动流、分支、并发、泳道和对象流。, aliases: [UML活动图], keywords: [活动图, 泳道, 分叉, 汇合], classification_guidance: 描述业务流程、算法流程或并发活动时匹配。, syllabus_refs: [面向对象基础/UML]}
+          - {code: oo-uml-patterns.uml-behavior.state-machine, name: 状态机图, description: 状态、事件、转换、动作和复合状态。, aliases: [状态图], keywords: [状态机, 事件, 转换, 动作], classification_guidance: 描述单个对象生命周期和事件响应时匹配。, syllabus_refs: [面向对象基础/UML]}
+      - code: oo-uml-patterns.design-patterns
+        name: 设计模式
+        description: 创建、结构和行为型设计模式。
+        topics:
+          - {code: oo-uml-patterns.design-patterns.creational, name: 创建型模式, description: 工厂方法、抽象工厂、建造者、原型和单例模式。, aliases: [对象创建模式], keywords: [工厂方法, 抽象工厂, 建造者, 单例], classification_guidance: 将对象创建过程封装或解耦时匹配。, syllabus_refs: [面向对象基础/设计模式]}
+          - {code: oo-uml-patterns.design-patterns.structural, name: 结构型模式, description: 适配器、桥接、组合、装饰、外观、享元和代理模式。, aliases: [对象结构模式], keywords: [适配器, 装饰, 代理, 外观, 组合], classification_guidance: 通过组合类或对象形成更大结构时匹配。, syllabus_refs: [面向对象基础/设计模式]}
+          - {code: oo-uml-patterns.design-patterns.behavioral, name: 行为型模式, description: 责任链、命令、迭代器、观察者、状态、策略、模板方法等。, aliases: [对象行为模式], keywords: [观察者, 策略, 状态, 命令, 模板方法], classification_guidance: 分配对象职责或组织对象交互算法时匹配。, syllabus_refs: [面向对象基础/设计模式]}
+          - {code: oo-uml-patterns.design-patterns.pattern-selection, name: 模式辨识与应用, description: 根据意图、结构和变化点选择设计模式。, aliases: [模式应用], keywords: [模式意图, 可扩展性, 解耦], classification_guidance: 场景题要求辨识或选择具体设计模式时匹配。, syllabus_refs: [面向对象基础/分析模式与设计模式]}
+
+  - code: security
+    name: 信息安全
+    description: 信息安全目标、密码技术、访问控制和网络防护。
+    modules:
+      - code: security.foundation-crypto
+        name: 安全基础与密码技术
+        description: 安全属性、风险和密码学基础。
+        topics:
+          - {code: security.foundation-crypto.security-goals, name: 安全目标与风险, description: 机密性、完整性、可用性、真实性和不可否认性。, aliases: [CIA三要素], keywords: [机密性, 完整性, 可用性, 风险], classification_guidance: 判断安全属性受损或安全目标时匹配。, syllabus_refs: [网络与信息安全/信息安全基础]}
+          - {code: security.foundation-crypto.symmetric, name: 对称加密, description: 分组和流加密、密钥共享及常见对称算法。, aliases: [秘密密钥加密], keywords: [AES, DES, 对称密钥], classification_guidance: 加解密使用相同共享密钥时匹配。, syllabus_refs: [网络与信息安全/加密与解密]}
+          - {code: security.foundation-crypto.asymmetric, name: 非对称加密, description: 公私钥体系及RSA等算法的基本用途。, aliases: [公钥加密], keywords: [RSA, 公钥, 私钥], classification_guidance: 使用公私钥对进行加密或密钥交换时匹配。, syllabus_refs: [网络与信息安全/加密与解密]}
+          - {code: security.foundation-crypto.hash-mac, name: 散列与消息认证码, description: 单向散列、摘要、HMAC及完整性校验。, aliases: [哈希摘要, MAC], keywords: [Hash, SHA, HMAC, 摘要], classification_guidance: 不可逆摘要或共享密钥消息认证时匹配。, syllabus_refs: [网络与信息安全/摘要与认证]}
+          - {code: security.foundation-crypto.signature-pki, name: 数字签名与PKI, description: 数字签名、证书、CA和公钥基础设施。, aliases: [电子签名, 数字证书], keywords: [数字签名, CA, 证书, PKI], classification_guidance: 身份鉴别、不可否认或证书信任链问题匹配。, syllabus_refs: [网络与信息安全/数字签名与认证]}
+      - code: security.access-network
+        name: 访问控制与网络安全
+        description: 身份、权限和网络边界防护。
+        topics:
+          - {code: security.access-network.authentication, name: 身份认证, description: 口令、令牌、生物特征和多因素认证。, aliases: [用户认证], keywords: [口令, MFA, 生物识别, 令牌], classification_guidance: 验证主体身份或认证因子时匹配。, syllabus_refs: [网络与信息安全/认证]}
+          - {code: security.access-network.access-control, name: 访问控制模型, description: 自主、强制、基于角色和最小权限原则。, aliases: [权限控制, RBAC], keywords: [DAC, MAC, RBAC, 最小权限], classification_guidance: 根据主体客体或角色分配访问权限时匹配。, syllabus_refs: [网络与信息安全/信息安全技术]}
+          - {code: security.access-network.firewall, name: 防火墙, description: 包过滤、状态检测和应用代理防火墙。, aliases: [边界防护], keywords: [包过滤, 状态检测, 代理防火墙], classification_guidance: 依据规则控制网络边界流量时匹配。, syllabus_refs: [网络与信息安全/网络安全技术]}
+          - {code: security.access-network.ids-vpn, name: 入侵检测与VPN, description: IDS/IPS检测响应和VPN隧道技术。, aliases: [IDS, IPS, 虚拟专用网], keywords: [入侵检测, 入侵防御, VPN, 隧道], classification_guidance: 监测攻击行为或建立加密专用隧道时匹配。, syllabus_refs: [网络与信息安全/网络安全技术]}
+          - {code: security.access-network.tls-ipsec, name: TLS与IPsec, description: 传输层安全、IP层安全和典型保护范围。, aliases: [SSL, 安全协议], keywords: [TLS, SSL, IPsec, AH, ESP], classification_guidance: 比较网络安全协议层次和保护机制时匹配。, syllabus_refs: [网络与信息安全/网络安全技术]}
+      - code: security.threat-protection
+        name: 威胁、防护与合规
+        description: 常见攻击、恶意代码、容灾和等级保护。
+        topics:
+          - {code: security.threat-protection.network-attack, name: 常见网络攻击, description: 欺骗、重放、拒绝服务、中间人和Web攻击。, aliases: [网络威胁], keywords: [DoS, 重放, 中间人, SQL注入, XSS], classification_guidance: 根据攻击过程或结果辨识攻击类型时匹配。, syllabus_refs: [网络与信息安全/网络安全技术]}
+          - {code: security.threat-protection.malware, name: 恶意代码, description: 病毒、蠕虫、木马、勒索软件及传播特征。, aliases: [恶意软件], keywords: [病毒, 蠕虫, 木马, 勒索], classification_guidance: 以恶意程序传播方式或行为为主时匹配。, syllabus_refs: [网络与信息安全/网络安全技术]}
+          - {code: security.threat-protection.backup-disaster, name: 备份与灾难恢复, description: 备份策略、容灾、RPO和RTO基础。, aliases: [业务连续性], keywords: [备份, 容灾, RPO, RTO], classification_guidance: 数据恢复点、恢复时间或备份组合问题匹配。, syllabus_refs: [网络与信息安全/完整性与可用性]}
+          - {code: security.threat-protection.security-level, name: 安全等级与管理, description: 安全等级保护、管理制度和安全审计基础。, aliases: [等级保护], keywords: [安全等级, 审计, 安全管理], classification_guidance: 涉及安全分级、管理措施或审计时匹配。, syllabus_refs: [网络与信息安全/安全等级及法规]}
+
+  - code: standards-ip
+    name: 标准化、信息化与知识产权
+    description: 标准、信息化、法律法规与软件知识产权。
+    modules:
+      - code: standards-ip.standardization
+        name: 标准化基础
+        description: 标准体系、组织和编号。
+        topics:
+          - {code: standards-ip.standardization.classification, name: 标准分类与层级, description: 国际、国家、行业、地方和团体企业标准。, aliases: [标准级别], keywords: [国际标准, 国家标准, 行业标准], classification_guidance: 判断标准适用范围或层级时匹配。, syllabus_refs: [标准化信息化知识产权/标准化基础]}
+          - {code: standards-ip.standardization.organization, name: 标准化组织, description: ISO、IEC、ITU、IEEE等组织及职责。, aliases: [国际标准组织], keywords: [ISO, IEC, ITU, IEEE], classification_guidance: 根据标准代号辨识制定组织时匹配。, syllabus_refs: [标准化信息化知识产权/标准化基础]}
+          - {code: standards-ip.standardization.numbering, name: 标准代号与编号, description: 常见标准代号、编号和采用关系。, aliases: [标准编号], keywords: [GB, GB-T, ISO, 标准代号], classification_guidance: 解释标准编号组成或采用程度时匹配。, syllabus_refs: [标准化信息化知识产权/标准化基础]}
+      - code: standards-ip.informatization
+        name: 信息化基础
+        description: 国家企业信息化和网络应用形态。
+        topics:
+          - {code: standards-ip.informatization.strategy, name: 国家与企业信息化, description: 信息化战略、信息资源和企业信息化建设。, aliases: [信息化战略], keywords: [国家信息化, 企业信息化, 信息资源], classification_guidance: 讨论信息化体系、战略或资源管理时匹配。, syllabus_refs: [标准化信息化知识产权/信息化基础]}
+          - {code: standards-ip.informatization.ecommerce-egovernment, name: 电子商务与电子政务, description: 电子商务模式和电子政务基本应用。, aliases: [电商, 政务信息化], keywords: [B2B, B2C, 电子政务], classification_guidance: 辨识电子交易模式或政务服务形态时匹配。, syllabus_refs: [标准化信息化知识产权/信息化基础]}
+          - {code: standards-ip.informatization.enterprise-resource, name: 企业信息资源管理, description: 企业信息资源规划、组织和利用基础。, aliases: [IRM], keywords: [信息资源, 企业数据, 资源规划], classification_guidance: 以企业信息资产组织利用为主时匹配。, syllabus_refs: [标准化信息化知识产权/企业信息资源管理]}
+          - {code: standards-ip.informatization.personal-information, name: 网络与个人信息保护, description: 网络行为、个人信息处理和保护原则基础。, aliases: [个人信息保护], keywords: [个人信息, 合法正当必要, 网络法规], classification_guidance: 涉及个人数据收集使用边界或网络责任时匹配。, syllabus_refs: [标准化信息化知识产权/互联网法规与个人信息保护]}
+      - code: standards-ip.intellectual-property
+        name: 知识产权
+        description: 软件相关著作权、专利、商标和商业秘密。
+        topics:
+          - {code: standards-ip.intellectual-property.copyright, name: 著作权基础, description: 著作权主体、客体、人身权、财产权和保护期。, aliases: [版权], keywords: [著作权, 署名权, 发表权, 保护期], classification_guidance: 判断作品权利归属、权利类型或期限时匹配。, syllabus_refs: [标准化信息化知识产权/知识产权]}
+          - {code: standards-ip.intellectual-property.software-copyright, name: 计算机软件著作权, description: 软件作品、职务开发、委托开发和权利归属。, aliases: [软件版权], keywords: [软件著作权, 职务作品, 委托开发], classification_guidance: 以计算机程序文档权利归属为主时匹配。, syllabus_refs: [标准化信息化知识产权/知识产权]}
+          - {code: standards-ip.intellectual-property.patent, name: 专利权, description: 发明、实用新型、外观设计和专利条件。, aliases: [专利法], keywords: [发明, 新颖性, 创造性, 专利], classification_guidance: 判断技术成果能否获得专利或权利期限时匹配。, syllabus_refs: [标准化信息化知识产权/知识产权]}
+          - {code: standards-ip.intellectual-property.trademark-secret, name: 商标与商业秘密, description: 商标专用权和商业秘密保护条件。, aliases: [商标权, 技术秘密], keywords: [商标, 商业秘密, 保密措施], classification_guidance: 以标识保护或非公开技术信息保护为主时匹配。, syllabus_refs: [标准化信息化知识产权/知识产权]}
+          - {code: standards-ip.intellectual-property.license-infringement, name: 软件许可与侵权判定, description: 软件许可使用、合理使用和常见侵权责任。, aliases: [软件授权], keywords: [许可证, 侵权, 合理使用, 复制], classification_guidance: 判断软件复制传播是否合法或许可范围时匹配。, syllabus_refs: [标准化信息化知识产权/知识产权]}
+
+  - code: multimedia
+    name: 多媒体技术
+    description: 音频、图像、视频、压缩和多媒体系统基础。
+    modules:
+      - code: multimedia.audio
+        name: 数字音频
+        description: 声音数字化、编码和容量。
+        topics:
+          - {code: multimedia.audio.sampling-quantization, name: 音频采样与量化, description: 采样频率、量化位数和奈奎斯特条件。, aliases: [声音数字化], keywords: [采样频率, 量化, 奈奎斯特], classification_guidance: 计算声音采样参数或还原频率条件时匹配。, syllabus_refs: [多媒体基础知识/声音表示]}
+          - {code: multimedia.audio.capacity-codec, name: 音频容量与编码, description: 声道、采样、量化对应的数据率和存储容量。, aliases: [音频数据量], keywords: [声道, 码率, WAV, MP3], classification_guidance: 计算未经压缩音频容量或比较音频格式时匹配。, syllabus_refs: [多媒体基础知识/声音表示]}
+      - code: multimedia.image-video
+        name: 图像与视频
+        description: 图像色彩、容量、格式及视频基础。
+        topics:
+          - {code: multimedia.image-video.color-model, name: 颜色模型, description: RGB、CMY/CMYK、YUV等颜色模型。, aliases: [色彩空间], keywords: [RGB, CMYK, YUV], classification_guidance: 比较显示、印刷或视频颜色表示时匹配。, syllabus_refs: [多媒体基础知识/图像表示]}
+          - {code: multimedia.image-video.image-capacity, name: 图像分辨率与容量, description: 像素、分辨率、色深和图像数据量计算。, aliases: [位图容量], keywords: [像素, 分辨率, 色深, 图像容量], classification_guidance: 根据宽高和位深计算图像存储量时匹配。, syllabus_refs: [多媒体基础知识/图像表示]}
+          - {code: multimedia.image-video.image-format, name: 图像格式, description: BMP、JPEG、PNG、GIF及矢量图特点。, aliases: [图片格式], keywords: [BMP, JPEG, PNG, GIF, SVG], classification_guidance: 比较图像文件压缩、透明或动画特性时匹配。, syllabus_refs: [多媒体基础知识/图像处理]}
+          - {code: multimedia.image-video.video, name: 数字视频基础, description: 帧率、分辨率、码率和视频数据量。, aliases: [视频数字化], keywords: [帧率, 视频码率, 分辨率], classification_guidance: 计算视频数据量或解释帧率码率时匹配。, syllabus_refs: [多媒体基础知识/视频表示]}
+      - code: multimedia.compression-system
+        name: 压缩与多媒体系统
+        description: 媒体压缩原理、标准和设备。
+        topics:
+          - {code: multimedia.compression-system.compression, name: 有损与无损压缩, description: 信息冗余、压缩比及有损无损编码特点。, aliases: [数据压缩], keywords: [有损压缩, 无损压缩, 压缩比], classification_guidance: 比较压缩是否可逆或计算压缩率时匹配。, syllabus_refs: [多媒体基础知识/数据压缩]}
+          - {code: multimedia.compression-system.codec-standard, name: 多媒体编码标准, description: JPEG、MPEG等常见静态与动态图像编码标准。, aliases: [媒体编码], keywords: [JPEG, MPEG, H.264], classification_guidance: 辨识图像视频压缩标准及应用时匹配。, syllabus_refs: [多媒体基础知识/数据压缩]}
+          - {code: multimedia.compression-system.device-system, name: 多媒体设备与系统, description: 声卡、显卡、采集设备及多媒体系统组成。, aliases: [多媒体硬件], keywords: [声卡, 显卡, 采集卡, 多媒体系统], classification_guidance: 询问多媒体输入输出设备或系统组成时匹配。, syllabus_refs: [多媒体基础知识]}
+
+  - code: new-technology
+    name: 软件开发新技术
+    description: 云计算、大数据、组件服务、物联网和人工智能基础。
+    modules:
+      - code: new-technology.cloud-bigdata
+        name: 云计算与大数据
+        description: 云服务、虚拟化和大数据处理基础。
+        topics:
+          - {code: new-technology.cloud-bigdata.cloud-service, name: 云计算服务与部署模型, description: IaaS、PaaS、SaaS及公有私有混合云。, aliases: [云服务模型], keywords: [IaaS, PaaS, SaaS, 公有云], classification_guidance: 判断云能力交付层次或部署形态时匹配。, syllabus_refs: [软件开发新进展/云计算]}
+          - {code: new-technology.cloud-bigdata.virtualization, name: 虚拟化与容器基础, description: 计算虚拟化、虚拟机和容器隔离基本概念。, aliases: [虚拟机, 容器], keywords: [Hypervisor, VM, Container], classification_guidance: 以资源抽象、隔离或虚拟运行环境为主时匹配。, syllabus_refs: [软件开发新进展/云计算]}
+          - {code: new-technology.cloud-bigdata.big-data, name: 大数据特征与处理, description: 大数据基本特征、分布式存储和批流处理概念。, aliases: [Big Data], keywords: [数据规模, Hadoop, MapReduce, 流处理], classification_guidance: 涉及海量数据特征和分布式处理方式时匹配。, syllabus_refs: [软件开发新进展/大数据]}
+      - code: new-technology.software-platform
+        name: 软件平台与新兴应用
+        description: 中间件、服务、Web移动、物联网和AI基础。
+        topics:
+          - {code: new-technology.software-platform.middleware-component, name: 中间件与组件技术, description: 中间件、软件组件及复用和集成基础。, aliases: [构件技术], keywords: [中间件, 组件, 构件, 复用], classification_guidance: 平台服务、组件封装或系统集成问题匹配。, syllabus_refs: [软件开发新进展/软件开发新技术]}
+          - {code: new-technology.software-platform.service-oriented, name: 面向服务与微服务基础, description: 服务契约、松耦合、SOA和微服务基本思想。, aliases: [SOA, 微服务], keywords: [服务, 松耦合, API, 微服务], classification_guidance: 通过独立服务能力组合系统时匹配。, syllabus_refs: [软件开发新进展/软件开发新技术]}
+          - {code: new-technology.software-platform.web-mobile, name: Web与移动开发基础, description: Web应用、客户端服务端和移动应用基本架构。, aliases: [互联网应用开发], keywords: [Web应用, 移动应用, 前后端], classification_guidance: 以Web或移动应用平台特征为主时匹配。, syllabus_refs: [软件开发新进展/应用领域进展]}
+          - {code: new-technology.software-platform.iot, name: 物联网基础, description: 感知、网络、应用层和典型物联网技术。, aliases: [IoT], keywords: [传感器, 感知层, 物联网], classification_guidance: 设备感知、联网和物联应用场景时匹配。, syllabus_refs: [软件开发新进展/应用领域进展]}
+          - {code: new-technology.software-platform.ai, name: 人工智能基础, description: 机器学习、知识表示和智能应用基本概念。, aliases: [AI, 机器学习], keywords: [人工智能, 机器学习, 模型], classification_guidance: 以智能模型学习、推理或应用为主时匹配。, syllabus_refs: [软件开发新进展/应用领域进展]}
+
+  - code: professional-english
+    name: 计算机专业英语
+    description: 计算机领域英文术语、阅读和语义理解。
+    modules:
+      - code: professional-english.terminology
+        name: 专业术语
+        description: 各主要技术领域的英文术语。
+        topics:
+          - {code: professional-english.terminology.computer-system, name: 计算机系统英语, description: 计算机组成、操作系统和程序语言相关英文术语。, aliases: [系统专业词汇], keywords: [processor, memory, operating system], classification_guidance: 英文题核心语义属于计算机系统或操作系统时匹配。, syllabus_refs: [计算机专业英语/本领域术语]}
+          - {code: professional-english.terminology.software-engineering, name: 软件工程英语, description: 需求、设计、测试、维护和项目管理英文术语。, aliases: [软件工程词汇], keywords: [requirement, design, testing, maintenance], classification_guidance: 英文题核心语义属于软件工程过程时匹配。, syllabus_refs: [计算机专业英语/本领域术语]}
+          - {code: professional-english.terminology.database-network, name: 数据库与网络英语, description: 数据库、数据通信和网络协议相关英文术语。, aliases: [数据库网络词汇], keywords: [database, transaction, protocol, network], classification_guidance: 英文题核心语义属于数据库或网络时匹配。, syllabus_refs: [计算机专业英语/本领域术语]}
+          - {code: professional-english.terminology.security, name: 信息安全英语, description: 加密、认证、攻击和安全管理相关英文术语。, aliases: [安全词汇], keywords: [encryption, authentication, attack, security], classification_guidance: 英文题核心语义属于密码或网络安全时匹配。, syllabus_refs: [计算机专业英语/本领域术语]}
+      - code: professional-english.reading
+        name: 技术英语阅读
+        description: 技术短文理解和语境判断。
+        topics:
+          - {code: professional-english.reading.comprehension, name: 技术短文理解, description: 理解计算机技术英文段落的主旨、细节和逻辑关系。, aliases: [专业英语阅读], keywords: [reading, main idea, detail], classification_guidance: 需要依据英文技术短文回答主旨或细节时匹配。, syllabus_refs: [计算机专业英语/英语阅读]}
+          - {code: professional-english.reading.context-inference, name: 上下文与术语辨析, description: 根据上下文推断词义并辨析相近技术术语。, aliases: [语境推断], keywords: [context, inference, terminology], classification_guidance: 依赖上下文选择正确英文术语或含义时匹配。, syllabus_refs: [计算机专业英语/英语阅读]}

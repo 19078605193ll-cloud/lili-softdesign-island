@@ -1,0 +1,56 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "software-designer-ai-practice"
+version = "0.2.0"
+description = "软件设计师（中级）AI 智能刷题系统的数据基础服务"
+readme = "README.md"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "httpx>=0.28,<1",
+  "markdown-it-py>=3,<5",
+  "mdit-py-plugins>=0.4,<1",
+  "latex2mathml>=3.77,<4",
+  "bleach>=6,<7",
+  "alembic>=1.14,<2",
+  "fastapi>=0.115,<1",
+  "psycopg[binary]>=3.2,<4",
+  "pydantic-settings>=2.7,<3",
+  "python-multipart>=0.0.9,<1",
+  "python-docx>=1.1,<2",
+  "jinja2>=3.1,<4",
+  "openai>=1.104.2,<3",
+  "pillow>=11,<13",
+  "PyMuPDF>=1.25,<2",
+  "PyYAML>=6.0,<7",
+  "sqlalchemy>=2.0.36,<3",
+  "uvicorn[standard]>=0.34,<1",
+]
+
+[project.scripts]
+software-designer-api = "app.server:main"
+
+[project.optional-dependencies]
+dev = [
+  "httpx>=0.28,<1",
+  "pytest>=8.3,<9",
+  "pytest-asyncio>=0.25,<1",
+]
+pdf-ocr = [
+  "paddleocr>=3.5,<4",
+  "paddlepaddle>=3.0,<4",
+  "onnxruntime>=1.23,<2",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["app"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["tests"]
+markers = [
+  "integration: requires a PostgreSQL database",
+]

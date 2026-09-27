@@ -1,0 +1,155 @@
+- generic [active] [ref=f3e1]:
+  - banner [ref=f3e2]:
+    - link "真题导入审核" [ref=f3e3] [cursor=pointer]:
+      - /url: /admin/imports
+    - generic [ref=f3e4]: 本地管理界面
+  - main [ref=f3e5]:
+    - generic [ref=f3e6]:
+      - generic [ref=f3e7]:
+        - generic [ref=f3e8]:
+          - heading "2020年11月软件设计师真题及解析" [level=1] [ref=f3e9]
+          - paragraph [ref=f3e10]: 2020 / second_half / default · 考生回忆版
+        - link "返回批次" [ref=f3e11] [cursor=pointer]:
+          - /url: /admin/imports
+      - paragraph [ref=f3e35]: 56 道题 / 74 个小问 · 排除 0 道 · 状态：in_review
+      - group [ref=f3e12]:
+        - generic "批次操作" [ref=f3e13] [cursor=pointer]
+      - status [ref=f3e14]: 解析完成，请核对原文和分类
+      - navigation "题目导航" [ref=f3e15]:
+        - button "上一题" [disabled] [ref=f3e16]
+        - button "下一题" [ref=f3e17] [cursor=pointer]
+        - generic [ref=f3e18]:
+          - text: 跳至题目
+          - combobox "跳至题目" [ref=f3e19]:
+            - option "第 42-43 题 · 2 问 · 需核对" [selected]
+            - option "第 54-55 题 · 2 问 · 需核对"
+            - option "第 67 题 · 1 问 · 需核对"
+        - generic [ref=f3e20]:
+          - text: 状态
+          - combobox "状态" [ref=f3e21]:
+            - option "全部"
+            - option "待审核"
+            - option "需核对" [selected]
+            - option "已审核/已发布"
+            - option "已排除"
+        - generic [ref=f3e36]: 1 / 3 道
+      - generic [ref=f3e22]:
+        - region "原文对照" [ref=f3e23]:
+          - generic [ref=f3e24]:
+            - generic [ref=f3e25]:
+              - heading "原文对照" [level=2] [ref=f3e26]
+              - paragraph [ref=f3e37]: 第 365～383 行 · 第 42-43 题
+            - generic [ref=f3e27]:
+              - button "排版与图片" [pressed] [ref=f3e28] [cursor=pointer]
+              - button "Markdown 原文" [ref=f3e29] [cursor=pointer]
+          - generic [ref=f3e30]: 正在生成原文预览…
+        - region "解析结果" [ref=f3e31]:
+          - generic [ref=f3e32]:
+            - heading "第 42-43 题（2 个小问）" [level=2] [ref=f3e105]
+            - paragraph [ref=f3e106]: 需核对 · 共享题干及每个小问逐项核对
+            - paragraph [ref=f3e107]: 题号有 2 个，但识别到 1 组选项；第 43 小问选项不完整或有歧义
+            - group [ref=f3e108]:
+              - generic "查看解析结果的排版预览" [ref=f3e109] [cursor=pointer]
+            - generic [ref=f3e110]:
+              - generic [ref=f3e111]: 共享题干（普通单题留空）
+              - textbox "共享题干（普通单题留空）" [ref=f3e112]: UML图中，对象图展现了（），（）所示对象图与下图所示类图不一致。 ![](asset://8bc1a5f5-69df-471f-8520-82f1ab9cc5a4) ![](asset://43a78db0-fa46-4609-a125-fa52fb184b76)
+            - generic [ref=f3e113]:
+              - heading "小问 1" [level=3] [ref=f3e114]
+              - generic [ref=f3e115]:
+                - generic [ref=f3e116]: 原文题号
+                - spinbutton "原文题号" [ref=f3e117]: "42"
+              - generic [ref=f3e118]:
+                - generic [ref=f3e119]: 小问题干（共享题干已包含问题时可留空）
+                - textbox "小问题干（共享题干已包含问题时可留空）" [ref=f3e120]
+              - generic [ref=f3e121]:
+                - generic [ref=f3e122]:
+                  - generic [ref=f3e123]: 选项 A
+                  - textbox "选项 A" [ref=f3e124]: 一组对象、接口、协作和它们之间的关系
+                - generic [ref=f3e125]:
+                  - generic [ref=f3e126]: 选项 B
+                  - textbox "选项 B" [ref=f3e127]: 一组用例、参与者以及它们之间的关系
+                - generic [ref=f3e128]:
+                  - generic [ref=f3e129]: 选项 C
+                  - textbox "选项 C" [ref=f3e130]: 某一时刻一组对象以及它们之间的关系
+                - generic [ref=f3e131]:
+                  - generic [ref=f3e132]: 选项 D
+                  - textbox "选项 D" [ref=f3e133]: 以时间顺序组织的对象之间的交互活动
+              - generic [ref=f3e134]:
+                - generic [ref=f3e135]: 正确答案
+                - combobox "正确答案" [ref=f3e136]:
+                  - option "请选择"
+                  - option "A"
+                  - option "B"
+                  - option "C" [selected]
+                  - option "D"
+              - generic [ref=f3e137]:
+                - generic [ref=f3e138]: 解析
+                - textbox "解析" [ref=f3e139]: 对象图是类图的快照，是某一时刻的对象之间的关系。题中A和B是1对多的关系，而D反应的是A是多，B是1，是相反的。
+              - generic [ref=f3e140]:
+                - heading "知识点审核" [level=4] [ref=f3e141]
+                - generic [ref=f3e142]:
+                  - generic [ref=f3e143]: 主知识点（必选）
+                  - generic [ref=f3e144]: 尚未选择
+                  - combobox "主知识点（必选）" [ref=f3e146]
+                  - paragraph [ref=f3e147]: 搜索名称或编码，选择一个主知识点
+                  - paragraph [ref=f3e148]
+                - generic [ref=f3e149]:
+                  - generic [ref=f3e150]: 关联知识点（最多 3 个）
+                  - generic [ref=f3e151]: 尚未选择
+                  - combobox "关联知识点（最多 3 个）" [ref=f3e153]
+                  - paragraph [ref=f3e154]: 已选 0 / 3 个；搜索名称或编码添加
+                  - paragraph [ref=f3e155]
+              - paragraph [ref=f3e156]: 题号有 2 个，但识别到 1 组选项；第 43 小问选项不完整或有歧义
+            - generic [ref=f3e157]:
+              - heading "小问 2" [level=3] [ref=f3e158]
+              - generic [ref=f3e159]:
+                - generic [ref=f3e160]: 原文题号
+                - spinbutton "原文题号" [ref=f3e161]: "43"
+              - generic [ref=f3e162]:
+                - generic [ref=f3e163]: 小问题干（共享题干已包含问题时可留空）
+                - textbox "小问题干（共享题干已包含问题时可留空）" [ref=f3e164]
+              - generic [ref=f3e165]:
+                - generic [ref=f3e166]:
+                  - generic [ref=f3e167]: 选项 A
+                  - textbox "选项 A" [ref=f3e168]
+                - generic [ref=f3e169]:
+                  - generic [ref=f3e170]: 选项 B
+                  - textbox "选项 B" [ref=f3e171]
+                - generic [ref=f3e172]:
+                  - generic [ref=f3e173]: 选项 C
+                  - textbox "选项 C" [ref=f3e174]
+                - generic [ref=f3e175]:
+                  - generic [ref=f3e176]: 选项 D
+                  - textbox "选项 D" [ref=f3e177]
+              - generic [ref=f3e178]:
+                - generic [ref=f3e179]: 正确答案
+                - combobox "正确答案" [ref=f3e180]:
+                  - option "请选择"
+                  - option "A"
+                  - option "B"
+                  - option "C"
+                  - option "D" [selected]
+              - generic [ref=f3e181]:
+                - generic [ref=f3e182]: 解析
+                - textbox "解析" [ref=f3e183]: 对象图是类图的快照，是某一时刻的对象之间的关系。题中A和B是1对多的关系，而D反应的是A是多，B是1，是相反的。
+              - generic [ref=f3e184]:
+                - heading "知识点审核" [level=4] [ref=f3e185]
+                - generic [ref=f3e186]:
+                  - generic [ref=f3e187]: 主知识点（必选）
+                  - generic [ref=f3e188]: 尚未选择
+                  - combobox "主知识点（必选）" [ref=f3e190]
+                  - paragraph [ref=f3e191]: 搜索名称或编码，选择一个主知识点
+                  - paragraph [ref=f3e192]
+                - generic [ref=f3e193]:
+                  - generic [ref=f3e194]: 关联知识点（最多 3 个）
+                  - generic [ref=f3e195]: 尚未选择
+                  - combobox "关联知识点（最多 3 个）" [ref=f3e197]
+                  - paragraph [ref=f3e198]: 已选 0 / 3 个；搜索名称或编码添加
+                  - paragraph [ref=f3e199]
+              - paragraph [ref=f3e200]: 上午单选题必须按 A、B、C、D 提供四个选项；正确答案没有对应选项；题号有 2 个，但识别到 1 组选项；第 43 小问选项不完整或有歧义
+          - generic [ref=f3e34]:
+            - button "保存题目内容" [ref=f3e201] [cursor=pointer]
+            - button "文本辅助提取" [ref=f3e202] [cursor=pointer]
+            - button "确认整题并批准" [ref=f3e203] [cursor=pointer]
+            - button "排除整道题" [ref=f3e204] [cursor=pointer]
+            - button "增加小问" [ref=f3e205] [cursor=pointer]

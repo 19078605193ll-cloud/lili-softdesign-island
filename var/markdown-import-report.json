@@ -1,0 +1,214 @@
+[
+  {
+    "file": "2020年11月软件设计师真题及解析.md",
+    "question_count": 56,
+    "subquestion_count": 74,
+    "unresolved": [
+      {
+        "label": "42-43",
+        "lines": [
+          365,
+          383
+        ],
+        "issues": [
+          "题号有 2 个，但识别到 1 组选项",
+          "第 43 小问选项不完整或有歧义"
+        ]
+      },
+      {
+        "label": "54-55",
+        "lines": [
+          471,
+          493
+        ],
+        "issues": [
+          "题号有 2 个，但识别到 1 组选项",
+          "第 55 小问选项不完整或有歧义"
+        ]
+      },
+      {
+        "label": "67",
+        "lines": [
+          584,
+          588
+        ],
+        "issues": [
+          "题号有 1 个，但识别到 0 组选项",
+          "第 67 小问选项不完整或有歧义"
+        ]
+      }
+    ],
+    "local_images": 11,
+    "remote_images": 0,
+    "missing_images": [],
+    "batch_id": "74b22248-2e28-4c16-bdb9-3ae958196111",
+    "skipped": true
+  },
+  {
+    "file": "2023年05月软件设计师真题及解析.md",
+    "question_count": 57,
+    "subquestion_count": 70,
+    "unresolved": [
+      {
+        "label": "22",
+        "lines": [
+          210,
+          216
+        ],
+        "issues": [
+          "题号有 1 个，但识别到 0 组选项",
+          "第 22 小问选项不完整或有歧义"
+        ]
+      },
+      {
+        "label": "34",
+        "lines": [
+          332,
+          342
+        ],
+        "issues": [
+          "同一题干有多组选项但未明确标注完整题号范围，请确认组合关系",
+          "题号有 1 个，但识别到 2 组选项",
+          "题号有 1 个，但识别到 2 个答案"
+        ]
+      },
+      {
+        "label": "37-38",
+        "lines": [
+          355,
+          361
+        ],
+        "issues": [
+          "题号有 2 个，但识别到 1 组选项",
+          "第 38 小问选项不完整或有歧义"
+        ]
+      },
+      {
+        "label": "44",
+        "lines": [
+          411,
+          421
+        ],
+        "issues": [
+          "同一题干有多组选项但未明确标注完整题号范围，请确认组合关系",
+          "题号有 1 个，但识别到 2 组选项",
+          "题号有 1 个，但识别到 2 个答案"
+        ]
+      },
+      {
+        "label": "46-47",
+        "lines": [
+          423,
+          433
+        ],
+        "issues": [
+          "题号有 2 个，但识别到 0 个答案"
+        ]
+      },
+      {
+        "label": "62",
+        "lines": [
+          555,
+          572
+        ],
+        "issues": [
+          "答案区域包含非答案内容，请核对",
+          "同一题干有多组选项但未明确标注完整题号范围，请确认组合关系",
+          "题号有 1 个，但识别到 2 组选项",
+          "题号有 1 个，但识别到 2 个答案"
+        ]
+      },
+      {
+        "label": "64",
+        "lines": [
+          574,
+          584
+        ],
+        "issues": [
+          "同一题干有多组选项但未明确标注完整题号范围，请确认组合关系",
+          "题号有 1 个，但识别到 2 组选项",
+          "题号有 1 个，但识别到 2 个答案"
+        ]
+      },
+      {
+        "label": "67",
+        "lines": [
+          594,
+          602
+        ],
+        "issues": [
+          "同一题干有多组选项但未明确标注完整题号范围，请确认组合关系",
+          "题号有 1 个，但识别到 2 组选项",
+          "题号有 1 个，但识别到 2 个答案"
+        ]
+      }
+    ],
+    "local_images": 8,
+    "remote_images": 0,
+    "missing_images": [],
+    "batch_id": "90ed2022-6b8f-48e1-a36b-e85c682fc9a1",
+    "skipped": true
+  },
+  {
+    "file": "2023年11月软件设计师真题答案解析.md",
+    "question_count": 56,
+    "subquestion_count": 73,
+    "unresolved": [
+      {
+        "label": "32-33",
+        "lines": [
+          288,
+          298
+        ],
+        "issues": [
+          "第 32 小问选项不完整或有歧义",
+          "第 33 小问选项不完整或有歧义"
+        ]
+      },
+      {
+        "label": "54-55",
+        "lines": [
+          490,
+          501
+        ],
+        "issues": [
+          "题号有 2 个，但识别到 1 个答案"
+        ]
+      }
+    ],
+    "local_images": 5,
+    "remote_images": 0,
+    "missing_images": [],
+    "batch_id": "618f074a-96d4-4bbd-9518-9d1d32ebbb01"
+  },
+  {
+    "file": "2024年上半年软件设计师上午真题及答案.md",
+    "question_count": 64,
+    "subquestion_count": 71,
+    "unresolved": [],
+    "local_images": 3,
+    "remote_images": 0,
+    "missing_images": [],
+    "batch_id": "3e0ca58b-8356-4936-9278-1b195d49b501"
+  },
+  {
+    "file": "2025年11月软件设计师选择题（回忆版）.md",
+    "question_count": 52,
+    "subquestion_count": 52,
+    "unresolved": [],
+    "local_images": 0,
+    "remote_images": 1,
+    "missing_images": [],
+    "batch_id": "dcd01ea7-6e78-48c0-aff7-be1c48321fc1"
+  },
+  {
+    "file": "2025年5月软件设计师选择题（回忆版）.md",
+    "question_count": 31,
+    "subquestion_count": 31,
+    "unresolved": [],
+    "local_images": 0,
+    "remote_images": 3,
+    "missing_images": [],
+    "batch_id": "1423615e-3e95-4d38-8a1e-397b162a2ce5"
+  }
+]

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Markdown 真题审核{% endblock %}
+{% block main_class %}review-main{% endblock %}
+{% block head %}<style>
+/* Hallmark · macrostructure: split workbench · tone: editorial utility · anchor hue: blue */
+.review-main{max-width:none;padding:16px clamp(12px,2vw,28px)}
+.review-page{--review-surface:#fff;--review-ink:#18212f;--review-muted:#52606d;--review-rule:#dfe4ea;--review-soft:#f4f7fa;--review-accent:#1769aa;--review-focus:#0f70bb;min-width:0;overflow-x:clip}
+.review-page .card{box-shadow:none}
+.batch-heading{display:flex;justify-content:space-between;align-items:start;gap:12px;margin-bottom:10px}
+.batch-heading h1{font-size:22px;margin:0 0 4px;overflow-wrap:anywhere}.batch-heading p{margin:0;color:var(--review-muted)}.batch-heading .button{white-space:nowrap;flex:0 0 auto}
+.batch-tools{margin:0 0 12px}.batch-tools summary{cursor:pointer;font-weight:600}.batch-tools .actions{margin-top:12px}
+.review-nav{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:12px;padding:10px 14px;background:var(--review-surface);border:1px solid var(--review-rule);border-radius:10px}
+.review-nav label{display:flex;align-items:center;gap:7px;margin:0;white-space:nowrap}.review-nav select{width:auto;min-width:150px;max-width:min(52vw,340px)}
+.review-nav button{white-space:nowrap}.review-nav .position{color:var(--review-muted);font-size:13px;margin-left:auto}
+.workspace{display:grid;grid-template-columns:minmax(0,35fr) minmax(0,65fr);gap:14px;align-items:start}
+.pane{min-width:0;background:var(--review-surface);border:1px solid var(--review-rule);border-radius:10px}
+.source-pane{overflow:visible}.pane-heading{position:relative;z-index:2;background:var(--review-surface);border-bottom:1px solid var(--review-rule);padding:14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.pane-heading h2{font-size:18px;margin:0}.pane-heading .muted{margin:2px 0 0}
+.source-modes{display:flex;gap:5px}.source-modes button{background:var(--review-soft);color:var(--review-ink);padding:7px 10px}.source-modes button[aria-pressed="true"]{background:var(--review-accent);color:white}
+.source-content{padding:18px;overflow-wrap:anywhere;line-height:1.7}.source-content img,.editor-preview img{display:block;max-width:100%;height:auto;margin:12px auto}.source-content table,.editor-preview table{display:block;max-width:100%;overflow:auto}
+.source-content p{white-space:pre-wrap;margin:0 0 12px}.source-content pre{white-space:pre-wrap;overflow-wrap:anywhere}
+.source-raw{padding:12px 0;font:13px/1.6 Consolas,"Microsoft YaHei",monospace;overflow-wrap:anywhere}
+.source-line{display:grid;grid-template-columns:4rem minmax(0,1fr);padding:0 16px}.source-line:nth-child(even){background:var(--review-soft)}.source-line-number{color:var(--review-muted);user-select:none}.source-line-text{white-space:pre-wrap;overflow-wrap:anywhere;min-width:0}
+.editor-pane{display:flex;flex-direction:column;overflow:visible}.editor-scroll{padding:18px}.editor-scroll h2{font-size:20px;margin-bottom:6px}.editor-scroll .editor-meta{margin:0 0 14px;color:var(--review-muted)}
+.editor-preview{padding:12px;border:1px solid var(--review-rule);border-radius:8px;margin:10px 0;overflow-wrap:anywhere}.editor-scroll details>summary{cursor:pointer}
+.part{border-top:1px solid var(--review-rule);padding-top:18px;margin-top:18px}.part h3{margin-bottom:12px;font-size:17px}
+.review-page label{font-size:13px}.review-page textarea{min-height:74px;line-height:1.45;overflow:hidden}.review-page textarea:focus-visible,.review-page input:focus-visible,.review-page select:focus-visible,.review-page button:focus-visible{outline:2px solid var(--review-focus);outline-offset:2px}
+.question-number{max-width:130px}.option-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}.option-grid>div{min-width:0}
+.answer-select{max-width:150px}.knowledge-section{margin-top:16px;padding:14px;background:var(--review-soft);border:1px solid var(--review-rule);border-radius:8px}.knowledge-section h4{margin:0 0 8px;font-size:15px}
+.topic-picker{position:relative;margin:12px 0}.topic-picker>label{font-weight:600}.topic-selected{display:flex;flex-wrap:wrap;gap:6px;min-height:30px;margin:7px 0}.topic-chip{display:inline-flex;align-items:center;gap:6px;background:#e7eef7;border-radius:6px;padding:4px 7px;max-width:100%;overflow-wrap:anywhere}.topic-chip button{padding:0 4px;background:transparent;color:var(--review-ink);font-weight:700}
+.topic-picker input{width:100%}.topic-results{position:absolute;z-index:8;left:0;right:0;top:100%;max-height:284px;overflow:auto;background:var(--review-surface);border:1px solid var(--review-rule);border-radius:7px;box-shadow:0 8px 20px #18212f1c;padding:4px}
+.topic-results button{display:block;width:100%;text-align:left;padding:8px;background:transparent;color:var(--review-ink);border-radius:4px;white-space:normal;overflow-wrap:anywhere}.topic-results button:hover,.topic-results button.active{background:#e7eef7}.topic-results small{display:block;color:var(--review-muted)}
+.topic-candidates{display:flex;gap:5px;flex-wrap:wrap;margin:7px 0}.topic-candidates button{background:#e7eef7;color:var(--review-ink);padding:5px 8px;font-size:12px;white-space:normal;text-align:left}.topic-note{color:var(--review-muted);font-size:12px;margin:5px 0}.topic-error{font-size:12px;color:#b42318;min-height:1em}
+.editor-actions{position:sticky;bottom:0;z-index:4;display:flex;flex-wrap:wrap;align-items:center;gap:7px;padding:10px 16px;background:var(--review-surface);border-top:1px solid var(--review-rule)}.editor-actions button{white-space:nowrap}.editor-actions .message{flex-basis:100%;min-height:0;margin:0}
+.review-page [hidden]{display:none!important}
+@media(min-width:981px){.source-pane{position:sticky;top:12px;display:flex;flex-direction:column;max-height:calc(100vh - 24px);overflow:hidden}.source-pane>.source-content,.source-pane>.source-raw{flex:1 1 auto;min-height:0;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}}
+@media(max-width:980px){.workspace{display:flex;flex-direction:column;height:auto;min-height:0}.source-pane,.editor-pane{overflow:visible}.source-pane{position:static;display:block;max-height:none}.source-pane>.source-content,.source-pane>.source-raw{max-height:none;overflow:visible;scrollbar-gutter:auto}.editor-scroll{overflow:visible}.pane-heading{position:static}.editor-actions{position:sticky;bottom:0;z-index:4}.review-nav .position{margin-left:0}}
+@media(max-width:600px){.review-main{padding:10px}.review-nav{gap:8px}.review-nav label{width:100%;justify-content:space-between}.review-nav select{width:60%;max-width:none;min-width:0}.option-grid{grid-template-columns:minmax(0,1fr)}.batch-heading h1{font-size:19px}.editor-scroll,.source-content{padding:12px}.editor-actions{padding:8px}.editor-actions button{flex:1 1 auto}.source-line{grid-template-columns:3rem minmax(0,1fr);padding:0 8px}}
+
+/* Hallmark ? pre-emit critique: P4 H4 E4 S5 R5 V4 ? utility workbench */
+html,body{overflow-x:clip}html{scroll-padding-bottom:160px}.editor-scroll textarea,.editor-scroll input,.editor-scroll select{scroll-margin-bottom:160px}.batch-tools h2{font-size:15px;margin:0}.batch-tools{padding:12px 16px}.batch-tools .actions{margin-top:8px}.batch-tools button{font-size:14px;white-space:nowrap}.review-page button,.review-page .button{white-space:nowrap}
+.workspace.source-hidden{grid-template-columns:minmax(0,1fr)}.workspace.source-hidden .source-pane{display:none}
+.list-toolbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin:16px 0}.list-toolbar label{margin:0}.list-toolbar input,.question-row input[type=checkbox]{width:auto}
+.question-table{background:var(--review-surface);border:1px solid var(--review-rule);border-radius:10px}.list-head,.question-row{display:grid;grid-template-columns:48px minmax(0,3fr) minmax(0,1.4fr) minmax(0,2fr) 72px;gap:16px;padding:16px;align-items:start}.list-head{font-weight:600;background:var(--review-soft)}.question-row{border-top:1px solid var(--review-rule)}.question-row>div{min-width:0;overflow-wrap:anywhere}.question-row a{color:var(--review-accent);text-decoration:none}.question-row a:hover{text-decoration:underline}.question-row .button{color:white}.question-row p{margin:6px 0;font-size:14px;line-height:1.6}.question-row .excerpt{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--review-ink)}.question-row details{font-size:13px}.question-row summary{cursor:pointer}.empty-list{padding:30px;text-align:center}.review-nav input{min-width:0}.review-nav{position:relative}.editor-actions{border-radius:0 0 10px 10px}.editor-scroll{scroll-margin-bottom:160px}
+@media(max-width:768px){.list-head{display:none}.question-row{grid-template-columns:28px minmax(0,1fr);gap:8px 12px}.question-row>div:nth-child(n+3){grid-column:2}.question-row>div:last-child{justify-self:start}.batch-heading{flex-wrap:wrap}.review-nav label{min-width:0}.review-nav input{width:60%}.batch-tools button{padding:8px;font-size:13px}.editor-actions button{font-size:13px;padding:8px}.question-row .excerpt{-webkit-line-clamp:3}}
+</style>{% endblock %}
+{% block content %}
+<div class="review-page">
+  <div class="batch-heading"><div><h1>{{ batch.title }}</h1><p>{{ batch.year }} / {{ batch.period }} / {{ batch.batch_code }} · 考生回忆版</p></div><a class="button secondary" id="back-link" href="{{ '/admin/imports/' ~ batch.id if block_id else '/admin/imports' }}">{{ '返回题目列表' if block_id else '返回批次' }}</a></div>
+  <p id="summary" class="muted"></p>
+  <section class="batch-tools card" id="batch-tools"><h2>批次操作</h2>
+    <div class="actions"><button id="classify">推荐知识点（每批 5 小问）</button><button id="images">重试下载图片</button><button id="conflicts">检查重复与冲突</button><button id="publish">发布已审核题目</button><button id="supplement">将排除题目转为补充批次</button></div>
+    <div id="image-errors"></div><div id="conflict-list"></div>
+  </section>
+  <p id="message" class="message" role="status"></p>
+  <nav class="review-nav" aria-label="题目导航"><button id="previous" {% if not block_id %}hidden{% endif %} class="secondary">上一题</button><button id="next" {% if not block_id %}hidden{% endif %} class="secondary">下一题</button><label for="jump" {% if not block_id %}hidden{% endif %}>跳至题目 <select id="jump"></select></label><label for="status-filter">状态 <select id="status-filter"><option value="all">全部</option><option value="pending">待审核</option><option value="issue">需核对</option><option value="approved">已审核/已发布</option><option value="excluded">已排除</option></select></label><label for="search" {% if block_id %}hidden{% endif %}>搜索 <input id="search" type="search" placeholder="题号或题干"></label><button id="toggle-source" class="secondary" {% if not block_id %}hidden{% endif %}>收起原文</button><span id="position" class="position"></span></nav>
+  <section id="question-list" {% if block_id %}hidden{% endif %}>
+    <div class="list-toolbar"><label><input id="select-all" type="checkbox"> 全选当前可批准题目</label><button id="bulk" disabled>批量批准（0）</button><span id="selection-info" class="muted"></span></div>
+    <div id="bulk-result" role="status"></div>
+    <div class="question-table"><div class="list-head"><span>选择</span><span>题号与题干</span><span>知识点</span><span>状态与问题</span><span>操作</span></div><div id="list-rows"></div></div>
+  </section>
+  <div class="workspace" {% if not block_id %}hidden{% endif %}>
+    <section class="pane source-pane" aria-label="原文对照"><div class="pane-heading"><div><h2>原文对照</h2><p id="source-range" class="muted"></p></div><div class="source-modes"><button id="mode-rendered" type="button" aria-pressed="true">排版与图片</button><button id="mode-raw" type="button" aria-pressed="false">Markdown 原文</button></div></div><div id="source-rendered" class="source-content"></div><div id="source-raw" class="source-raw" hidden></div></section>
+    <section class="pane editor-pane" aria-label="解析结果"><div id="editor" class="editor-scroll"><p>选择一道题开始核对。</p></div><div id="editor-actions" class="editor-actions"></div></section>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}<script>{% include 'markdown_script.html' %}</script>{% endblock %}

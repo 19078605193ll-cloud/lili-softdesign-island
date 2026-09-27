@@ -1,0 +1,17 @@
+async page => {
+await page.addInitScript(()=>{window.__confirmMessages=[];window.confirm=text=>{window.__confirmMessages.push(text);return window.__confirmAnswer!==false}});
+const check=(v,m)=>{if(!v)throw new Error(m)};
+await page.setViewportSize({width:1440,height:1000});
+await page.goto('http://review.test/admin/imports/qa-batch/blocks/two?status=all&q=');
+await page.waitForFunction(()=>!document.body.hasAttribute('aria-busy')&&document.querySelectorAll('.part').length===2);
+const field=page.locator('#editor textarea').first();await field.fill('未保存的修改');
+await page.evaluate(()=>window.__confirmAnswer=false);await page.locator('#next').click();check(await page.evaluate(()=>window.__confirmMessages.length>0),'unsaved prompt missing');check(page.url().includes('/two?'),'cancel must retain current question');check(await field.inputValue()==='未保存的修改','cancel loses draft');
+await page.route('**/api/v1/admin/markdown-batches/qa-batch/blocks/two',route=>route.fulfill({status:422,json:{detail:'模拟保存失败'}}));
+await page.getByRole('button',{name:'保存题目内容',exact:true}).click();await page.waitForFunction(()=>!document.body.hasAttribute('aria-busy'));check(await field.inputValue()==='未保存的修改','failure loses input');check((await page.locator('#message').textContent()).includes('模拟保存失败'),'failure not reported');
+await page.evaluate(()=>window.__confirmAnswer=true);await page.locator('#next').click();await page.waitForURL('**/blocks/three?**');await page.waitForFunction(()=>!document.body.hasAttribute('aria-busy'));check(await page.locator('#next').isDisabled(),'last next should be disabled');
+await page.route('**/blocks/three/review',route=>route.fulfill({status:422,json:{detail:'请先修复题目'}}));await page.getByRole('button',{name:'批准并下一题',exact:true}).click();await page.waitForFunction(()=>!document.body.hasAttribute('aria-busy'));check(page.url().includes('/three?'),'failed approval navigated');await page.unroute('**/blocks/three/review');
+await page.getByRole('button',{name:'批准并下一题',exact:true}).click();await page.waitForURL('http://review.test/admin/imports/qa-batch');await page.waitForFunction(()=>!document.body.hasAttribute('aria-busy'));check((await page.locator('#message').textContent()).includes('最后一题'),'last approval result missing');
+await page.locator('#status-filter').selectOption('pending');await page.locator('#search').fill('2');check(await page.locator('.question-row').count()===1,'filter list');await page.locator('.question-row').getByRole('link',{name:'审核',exact:true}).click();await page.waitForFunction(()=>!document.body.hasAttribute('aria-busy'));await page.locator('#back-link').click();await page.waitForFunction(()=>!document.body.hasAttribute('aria-busy'));check(await page.locator('#status-filter').inputValue()==='pending','filter restore');check(await page.locator('#search').inputValue()==='2','search restore');
+await page.locator('#select-all').check();await page.locator('#bulk').click();const confirmation=await page.evaluate(()=>window.__confirmMessages.at(-1));await page.waitForFunction(()=>!document.body.hasAttribute('aria-busy'));check(confirmation.includes('AI 推荐'),'knowledge source missing');check((await page.locator('#bulk-result').textContent()).includes('已批准 1 道'),'bulk result');
+return {passed:true,scenarios:['unsaved cancel','save failure preserves draft','last boundary','approval failure stays','last approval returns','filter restoration','bulk selected approval']};
+}

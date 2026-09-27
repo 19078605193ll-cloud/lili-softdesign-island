@@ -1,0 +1,136 @@
+- generic [active] [ref=f1e1]:
+  - banner [ref=f1e2]:
+    - link "真题导入审核" [ref=f1e3] [cursor=pointer]:
+      - /url: /admin/imports
+    - generic [ref=f1e4]: 本地管理界面
+  - main [ref=f1e5]:
+    - generic [ref=f1e6]:
+      - heading "新建真题导入" [level=1] [ref=f1e7]
+      - paragraph [ref=f1e8]: 上传 Markdown，或包含一份 Markdown 和图片目录的 ZIP。支持任意题量；相同年份、期次和批次编码将补充到已有试卷。
+      - generic [ref=f1e9]:
+        - generic [ref=f1e10]:
+          - generic [ref=f1e11]:
+            - generic [ref=f1e12]: Markdown 或 ZIP
+            - button "Choose File" [ref=f1e13]
+          - generic [ref=f1e14]:
+            - generic [ref=f1e15]: 年份
+            - spinbutton [ref=f1e16]: "2020"
+          - generic [ref=f1e17]:
+            - generic [ref=f1e18]: 考试期次
+            - combobox [ref=f1e19]:
+              - option "下半年" [selected]
+              - option "上半年"
+              - option "其他"
+          - generic [ref=f1e20]:
+            - generic [ref=f1e21]: 批次编码
+            - textbox [ref=f1e22]: default
+          - generic [ref=f1e23]:
+            - generic [ref=f1e24]: 标题
+            - textbox [ref=f1e25]: 软件设计师基础知识真题
+          - generic [ref=f1e26]:
+            - generic [ref=f1e27]: 知识树版本（留空使用最新版）
+            - textbox "1.0.0" [ref=f1e28]
+        - paragraph [ref=f1e29]
+        - button "上传并解析" [ref=f1e31] [cursor=pointer]
+    - generic [ref=f1e32]:
+      - heading "导入批次" [level=2] [ref=f1e33]
+      - table [ref=f1e34]:
+        - rowgroup [ref=f1e35]:
+          - row [ref=f1e36]:
+            - columnheader "标题" [ref=f1e37]
+            - columnheader "场次" [ref=f1e38]
+            - columnheader "知识树" [ref=f1e39]
+            - columnheader "状态" [ref=f1e40]
+            - columnheader "题目进度" [ref=f1e41]
+            - columnheader "失败原因" [ref=f1e42]
+            - columnheader "操作" [ref=f1e43]
+        - rowgroup [ref=f1e44]:
+          - row [ref=f1e45]:
+            - cell "2025年5月软件设计师选择题（回忆版）" [ref=f1e46]
+            - cell "2025 / first_half / default" [ref=f1e47]
+            - cell "1.0.0" [ref=f1e48]
+            - cell "待人工审核" [ref=f1e49]
+            - cell "已批准 1 待审核 30" [ref=f1e51]:
+              - generic [ref=f1e52]: 已批准 1
+              - generic [ref=f1e53]: 待审核 30
+            - cell [ref=f1e54]
+            - cell [ref=f1e55]:
+              - generic [ref=f1e56]:
+                - link "打开" [ref=f1e57] [cursor=pointer]:
+                  - /url: /admin/imports/1423615e-3e95-4d38-8a1e-397b162a2ce5
+                - button "删除" [ref=f1e58] [cursor=pointer]
+          - row [ref=f1e59]:
+            - cell "2025年11月软件设计师选择题（回忆版）" [ref=f1e60]
+            - cell "2025 / second_half / default" [ref=f1e61]
+            - cell "1.0.0" [ref=f1e62]
+            - cell "待人工审核" [ref=f1e63]
+            - cell "待审核 52" [ref=f1e65]
+            - cell [ref=f1e67]
+            - cell [ref=f1e68]:
+              - generic [ref=f1e69]:
+                - link "打开" [ref=f1e70] [cursor=pointer]:
+                  - /url: /admin/imports/dcd01ea7-6e78-48c0-aff7-be1c48321fc1
+                - button "删除" [ref=f1e71] [cursor=pointer]
+          - row [ref=f1e72]:
+            - cell "2024年上半年软件设计师上午真题及答案" [ref=f1e73]
+            - cell "2024 / first_half / default" [ref=f1e74]
+            - cell "1.0.0" [ref=f1e75]
+            - cell "待人工审核" [ref=f1e76]
+            - cell "待审核 71" [ref=f1e78]
+            - cell [ref=f1e80]
+            - cell [ref=f1e81]:
+              - generic [ref=f1e82]:
+                - link "打开" [ref=f1e83] [cursor=pointer]:
+                  - /url: /admin/imports/3e0ca58b-8356-4936-9278-1b195d49b501
+                - button "删除" [ref=f1e84] [cursor=pointer]
+          - row [ref=f1e85]:
+            - cell "2023年11月软件设计师真题答案解析" [ref=f1e86]
+            - cell "2023 / second_half / default" [ref=f1e87]
+            - cell "1.0.0" [ref=f1e88]
+            - cell "待人工审核" [ref=f1e89]
+            - cell "待审核 73" [ref=f1e91]
+            - cell [ref=f1e93]
+            - cell [ref=f1e94]:
+              - generic [ref=f1e95]:
+                - link "打开" [ref=f1e96] [cursor=pointer]:
+                  - /url: /admin/imports/618f074a-96d4-4bbd-9518-9d1d32ebbb01
+                - button "删除" [ref=f1e97] [cursor=pointer]
+          - row [ref=f1e98]:
+            - cell "2023年05月软件设计师真题及解析" [ref=f1e99]
+            - cell "2023 / first_half / default" [ref=f1e100]
+            - cell "1.0.0" [ref=f1e101]
+            - cell "待人工审核" [ref=f1e102]
+            - cell "待审核 60 需处理 10" [ref=f1e104]:
+              - generic [ref=f1e105]: 待审核 60
+              - generic [ref=f1e106]: 需处理 10
+            - cell [ref=f1e107]
+            - cell [ref=f1e108]:
+              - generic [ref=f1e109]:
+                - link "打开" [ref=f1e110] [cursor=pointer]:
+                  - /url: /admin/imports/90ed2022-6b8f-48e1-a36b-e85c682fc9a1
+                - button "删除" [ref=f1e111] [cursor=pointer]
+          - row [ref=f1e112]:
+            - cell "2020年11月软件设计师真题及解析" [ref=f1e113]
+            - cell "2020 / second_half / default" [ref=f1e114]
+            - cell "1.0.0" [ref=f1e115]
+            - cell "待人工审核" [ref=f1e116]
+            - cell "待审核 69 需处理 5" [ref=f1e118]:
+              - generic [ref=f1e119]: 待审核 69
+              - generic [ref=f1e120]: 需处理 5
+            - cell [ref=f1e121]
+            - cell [ref=f1e122]:
+              - generic [ref=f1e123]:
+                - link "打开" [ref=f1e124] [cursor=pointer]:
+                  - /url: /admin/imports/74b22248-2e28-4c16-bdb9-3ae958196111
+                - button "删除" [ref=f1e125] [cursor=pointer]
+          - row [ref=f1e126]:
+            - cell "2020-11 Software Designer Foundation Morning Exam" [ref=f1e127]
+            - cell "2020 / second_half / 2020-11-morning" [ref=f1e128]
+            - cell "1.0.0" [ref=f1e129]
+            - cell "已发布" [ref=f1e130]
+            - cell "已发布 75" [ref=f1e132]
+            - cell [ref=f1e134]
+            - cell [ref=f1e135]:
+              - link "打开" [ref=f1e137] [cursor=pointer]:
+                - /url: /admin/imports/79058897-efce-48c1-9478-b31d5ee4aa7a
+      - paragraph [ref=f1e138]

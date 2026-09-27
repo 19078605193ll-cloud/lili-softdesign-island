@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}{{ batch.title }}{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="actions" style="justify-content:space-between"><div><h1>{{ batch.title }}</h1><div class="muted">{{ batch.year }} / {{ batch.period }} / {{ batch.batch_code }} · 知识树 {{ batch.taxonomy_version }}</div></div><span class="badge {{ batch.status }}">{% if batch.status == 'uploaded' %}已上传，待确认页码{% elif batch.status == 'sectioned' %}页码已确认，待解析{% elif batch.status == 'in_review' %}待人工审核{% elif batch.status == 'ready_to_publish' %}可发布{% elif batch.status == 'published' %}已发布{% elif batch.status == 'failed' %}处理失败{% else %}{{ batch.status }}{% endif %}</span></div>
+  {% if batch.status != 'published' and not batch.published_paper_id %}
+  <details style="margin-top:14px"><summary>修改年份、期次和标题</summary>
+    <div class="grid"><div><label>年份</label><input id="meta-year" type="number" min="2000" max="2100" value="{{ batch.year }}"></div><div><label>期次</label><select id="meta-period"><option value="first_half" {% if batch.period == 'first_half' %}selected{% endif %}>上半年</option><option value="second_half" {% if batch.period == 'second_half' %}selected{% endif %}>下半年</option><option value="other" {% if batch.period == 'other' %}selected{% endif %}>其他</option></select></div><div><label>标题</label><input id="meta-title" value="{{ batch.title }}" maxlength="300"></div></div>
+    <p id="metadata-warning" class="message error"></p><div class="actions"><button id="save-metadata" onclick="saveMetadata()">保存基本信息</button><span id="metadata-message" class="message"></span></div>
+  </details>{% endif %}
+</div>
+<div class="grid">
+  <div class="card">
+    <h2>1. 确认试题与答案页码</h2>
+    <p>源文件：<strong>{{ batch.documents[0].original_name if batch.documents else '无' }}</strong> · 共 <strong id="page-count">{{ batch.documents[0].page_count if batch.documents else '?' }}</strong> 页</p>
+    <p class="muted">AI 只提供建议；可修改后确认。题目与答案在同一页时，两组页码可以重叠。</p>
+    <p id="suggestion-status" class="message"></p>
+    <div class="actions"><button class="secondary" id="retry-suggestion" onclick="loadSuggestion(true)" {% if batch.documents and batch.documents[0].page_selections %}disabled title="页码已经确认"{% endif %}>重新识别页码</button></div>
+    <h3>试题页</h3><div id="question-ranges"></div><button class="secondary" type="button" onclick="addRange('questions')">增加试题范围</button>
+    <h3 style="margin-top:16px">答案解析页</h3><div id="answer-ranges"></div><button class="secondary" type="button" onclick="addRange('answers')">增加答案范围</button>
+    <div class="actions" style="margin-top:16px"><button id="save-sections" onclick="saveSections()" {% if batch.status in ['published','ready_to_publish'] or batch.item_counts.get('approved', 0) %}disabled title="审核已开始，不能修改页码"{% endif %}>确认并保存页码</button><button class="secondary" onclick="showPage()">预览页</button><input id="preview-page" type="number" min="1" max="{{ batch.documents[0].page_count if batch.documents else 1 }}" value="1" style="width:85px"></div>
+    <p id="sections-message" class="message"></p>
+  </div>
+  <div class="card">
+    <h2>2. 自动处理</h2>
+    <p id="parse-progress">实际页：{{ batch.parse_progress.get('completed_pages', 0) }}/{{ batch.parse_progress.get('total_pages', 0) }} 已完整解析；待处理 {{ batch.parse_progress.get('pending_pages', 0) }} 页；失败 {{ batch.parse_progress.get('failed_pages', 0) }} 页。<br>题目/答案结果：{{ batch.parse_progress.get('completed_results', 0) }} 条已完成，{{ batch.parse_progress.get('remaining_results', 0) }} 条未完成。<br>题目状态：{{ batch.item_counts }}</p>
+    <p>结构校验：{% if 'is_valid' not in batch.validation_summary %}<span class="muted">解析中，尚未结构校验</span>{% elif batch.validation_summary.is_valid %}<strong>通过</strong>{% else %}<strong class="error">未通过</strong>，待修复题号 {{ batch.validation_summary.get('repairable_question_numbers', []) }}{% endif %}</p>
+    <div class="actions"><button class="step-button" onclick="runStep('parse?limit=5','页面解析')" {% if batch.status not in ['sectioned','failed','parsed','in_review'] %}disabled title="请先确认页码"{% endif %}>解析下 5 页</button><button id="parse-all-button" class="step-button" onclick="parseAll()" {% if batch.status not in ['sectioned','failed','parsed','in_review'] %}disabled title="请先确认页码"{% endif %}>解析全部</button><button id="pause-parse-button" class="secondary" onclick="pauseParsing()" disabled>暂停</button><button class="secondary step-button" onclick="runStep('repair?limit=1','自动修复')" {% if batch.status not in ['parsed','in_review','failed'] %}disabled title="请先解析页面"{% endif %}>自动修复 1 个窗口</button><button class="step-button" onclick="runStep('classify?limit=5','知识点分类')" {% if batch.status not in ['parsed','in_review','ready_to_publish'] %}disabled title="请先解析题目"{% endif %}>分类下 5 题</button><button class="step-button" onclick="publishBatch()" {% if batch.status != 'ready_to_publish' %}disabled title="全部题目批准后才能发布"{% endif %}>发布整套试卷</button></div>
+    {% if batch.item_counts and not batch.item_counts.get('approved', 0) and batch.status != 'published' %}<div class="actions" style="margin-top:12px"><button class="secondary" onclick="reconcile(false)">本地 OCR 核对预览</button><button class="secondary" id="apply-reconcile" onclick="reconcile(true)" disabled>应用有证据的修正</button></div><div id="reconcile-preview" class="message"></div>{% endif %}
+    <div id="message" class="message"></div>
+    {% if batch.error_summary %}<p class="error">批次处理：{{ batch.error_summary }}</p>{% endif %}
+    {% if batch.failures %}<h3>已记录的失败原因</h3><ul class="error">{% for failure in batch.failures %}<li>{{ failure.stage }}{% if failure.page_no %} · 第 {{ failure.page_no }} 页{% endif %}{% if failure.page_numbers %} · 页码 {{ failure.page_numbers|join('、') }}{% endif %}{% if failure.question_numbers %} · 题号 {{ failure.question_numbers|join('、') }}{% endif %}{% if failure.role %} · {{ failure.role }}{% endif %}：{{ failure.reason }}</li>{% endfor %}</ul>{% endif %}
+  </div>
+</div>
+<div class="card" id="preview-card" hidden><h2>页面预览</h2><img id="preview" style="max-width:100%;max-height:760px;border:1px solid #ccd3da"></div>
+<div class="card">
+  <h2>3. 人工审核</h2>
+  <div class="actions" style="margin-bottom:12px"><label style="margin:0;display:flex;align-items:center;gap:7px"><input id="select-all-approvable" type="checkbox" style="width:auto" onchange="toggleAllApprovable(this.checked)">全选可批准题目</label><button id="bulk-approve-button" onclick="bulkApprove()" disabled>批量批准（0）</button><span id="bulk-message" class="message"></span></div>
+  <table><thead><tr><th style="width:44px"></th><th>题号</th><th>状态</th><th>AI 默认知识点</th><th>问题</th><th></th></tr></thead><tbody>
+  {% for item in items %}<tr><td><input class="approval-checkbox" type="checkbox" style="width:auto" data-item-id="{{ item.id }}" aria-label="选择第 {{ item.question_no }} 题" {% if not item.approval_eligible %}disabled{% endif %} onchange="updateBulkSelection()"></td><td>{{ item.question_no }}</td><td><span class="badge {{ item.status }}">{{ item.status }}</span></td><td>{% if item.approval_suggestion %}<strong>{{ item.approval_suggestion.primary_name }}</strong><br><code>{{ item.approval_suggestion.primary_code }}</code>{% if item.approval_suggestion.related %}<br><span class="muted">关联：{% for code, name in item.approval_suggestion.related %}{{ name }}（{{ code }}）{% if not loop.last %}、{% endif %}{% endfor %}</span>{% endif %}{% else %}<span class="muted">无可用候选</span>{% endif %}</td><td>{% if item.errors %}<span class="error">{{ item.errors }} 个错误</span>{% endif %} {% if item.warnings %}{{ item.warnings }} 个警告{% endif %}{% if item.approval_reason %}<span class="error">{{ item.approval_reason }}</span>{% endif %}</td><td><a class="button secondary" href="/admin/imports/{{ batch.id }}/items/{{ item.id }}">审核</a></td></tr>{% else %}<tr><td colspan="6" class="muted">页面解析完成后显示题目。</td></tr>{% endfor %}
+  </tbody></table>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+const batch={{ batch|tojson }};
+const documentInfo=batch.documents[0]||{},documentId=documentInfo.id,pageCount=documentInfo.page_count||0;
+const message=document.getElementById('message');
+async function reconcile(apply) {
+  const target = document.getElementById('reconcile-preview');
+  try {
+    target.textContent = apply ? '正在保存快照并应用修正…' : '正在读取原卷并生成差异…';
+    const data = await api(`/api/v1/admin/import-batches/${batch.id}/reconcile?apply=${apply}`, {method:'POST'});
+    const failures = (data.failed_pages || []).map(x => `第 ${x.page_no} 页 ${x.stage} 失败：${x.error}`);
+    const changes = data.changes.map(x => {
+      const refs = [...new Set(x.source_refs.map(r => `第 ${r.page_no} 页 ${r.role}${r.bbox ? ` (${r.bbox.x0.toFixed(2)},${r.bbox.y0.toFixed(2)})` : ''}`))];
+      return `第 ${x.question_no} 题：${x.fields.join('、') || '冲突'}；${x.auto_applicable ? '可应用' : '需人工核对'}；建议答案 ${(x.proposed_answer || []).join(',')}；来源 ${refs.join('、')}${x.conflicts.length ? '；' + x.conflicts.join('；') : ''}`;
+    });
+    target.textContent = [`本地 OCR ${data.ocr_pages} 页；历史视觉解析 ${data.vision_parse_calls} 次、修复 ${data.vision_repair_calls} 次（失败 ${data.failed_repair_windows} 次）；差异 ${data.changes.length} 题，可应用 ${data.auto_applicable_count} 题。`, ...failures, ...changes].join('\n');
+    target.style.whiteSpace = 'pre-wrap';
+    if (apply) setTimeout(() => location.reload(), 800);
+    else document.getElementById('apply-reconcile').disabled = data.auto_applicable_count === 0 || failures.length > 0;
+  } catch (e) { target.className = 'message error'; target.textContent = e.message; }
+}
+function setNotice(id,text,error=false){const target=document.getElementById(id);target.className=error?'message error':'message';target.textContent=text}
+function rangeContainer(role){return document.getElementById(role==='questions'?'question-ranges':'answer-ranges')}
+function addRange(role,range={start:'',end:''}){
+  const row=document.createElement('div');row.className='actions page-range';row.style.marginBottom='8px';row.dataset.role=role;
+  const label=role==='questions'?'试题':'答案解析';
+  row.innerHTML=`<label style="margin:0">${label}开始页 <input class="range-start" type="number" min="1" max="${pageCount}" style="width:110px"></label><label style="margin:0">结束页 <input class="range-end" type="number" min="1" max="${pageCount}" style="width:110px"></label><button class="secondary" type="button" onclick="this.closest('.page-range').remove()">移除</button>`;
+  row.querySelector('.range-start').value=range.start;row.querySelector('.range-end').value=range.end;rangeContainer(role).append(row);
+}
+function fillRanges(selection){
+  for(const role of ['questions','answers']){rangeContainer(role).replaceChildren();for(const range of selection[role]||[])addRange(role,range)}
+  setNotice('sections-message','');
+}
+function readRanges(role){
+  const rows=[...rangeContainer(role).querySelectorAll('.page-range')];
+  if(!rows.length)throw new Error(`${role==='questions'?'试题':'答案解析'}至少需要一组页码`);
+  const used=new Set(),ranges=[];
+  for(const [index,row] of rows.entries()){
+    const startInput=row.querySelector('.range-start'),endInput=row.querySelector('.range-end');
+    const start=Number(startInput.value),end=Number(endInput.value),label=`${role==='questions'?'试题':'答案解析'}第 ${index+1} 组`;
+    if(!Number.isInteger(start)||start<1){startInput.focus();throw new Error(`${label}开始页必须大于 0`)}
+    if(!Number.isInteger(end)||end<start){endInput.focus();throw new Error(`${label}结束页不能小于开始页`)}
+    if(end>pageCount){endInput.focus();throw new Error(`${label}结束页 ${end} 超出文件总页数 ${pageCount}`)}
+    for(let page=start;page<=end;page++){if(used.has(page)){startInput.focus();throw new Error(`${label}与同一角色的其他范围重复（第 ${page} 页）`)}used.add(page)}
+    ranges.push({start,end});
+  }
+  return ranges;
+}
+async function saveSections(){
+  const button=document.getElementById('save-sections');
+  try{const selection={questions:readRanges('questions'),answers:readRanges('answers')};button.disabled=true;setNotice('sections-message','正在保存页码…');
+    const data=await api(`/api/v1/admin/import-batches/${batch.id}/sections`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(selection)});
+    setNotice('sections-message','页码已确认，当前状态：'+data.status);setTimeout(()=>location.reload(),500);
+  }catch(error){setNotice('sections-message','选页阶段：'+error.message,true);button.disabled=false}
+}
+async function loadSuggestion(retry=false){
+  if(!documentId||documentInfo.page_selections?.questions?.length)return;
+  const button=document.getElementById('retry-suggestion');
+  try{button.disabled=true;setNotice('suggestion-status','正在识别有效内容页和答案版式，请稍候…');
+    const data=await api(`/api/v1/admin/import-batches/${batch.id}/suggest-sections${retry?'?retry=true':''}`,{method:'POST'});
+    const suggestion=data.documents[0]?.section_suggestion||{};
+    if(suggestion.status==='failed'){setNotice('suggestion-status','自动识别失败：'+(suggestion.error||'未知原因')+'；可重新识别或手工填页码。',true)}
+    else if(suggestion.status==='completed'){
+      fillRanges(suggestion);setNotice('suggestion-status',`AI 建议已回填（${suggestion.mode==='inline'?'题目与答案同页':'题目与答案分开'}）；请核对后点击“确认并保存页码”。${suggestion.inferred_question_pages?.length?' 第 '+suggestion.inferred_question_pages.join('、')+' 页按连续版式推断补入，请重点核对。':''}`);
+    }
+  }catch(error){setNotice('suggestion-status','自动识别失败：'+error.message+'；可手工填页码。',true)}finally{button.disabled=false}
+}
+function metadataWarnings(){
+  const filename=documentInfo.original_name||'',year=document.getElementById('meta-year')?.value,period=document.getElementById('meta-period')?.value,warnings=[];
+  const found=filename.match(/(?:19|20)\d{2}/);
+  if(found&&Number(found[0])!==Number(year))warnings.push(`文件名年份 ${found[0]} 与填写年份 ${year} 不一致`);
+  if(filename.includes('上半年')&&period==='second_half')warnings.push('文件名为上半年，但当前选择下半年');
+  if(filename.includes('下半年')&&period==='first_half')warnings.push('文件名为下半年，但当前选择上半年');
+  const target=document.getElementById('metadata-warning');if(target)target.textContent=warnings.join('；');
+}
+async function saveMetadata(){const button=document.getElementById('save-metadata');try{button.disabled=true;const payload={year:Number(document.getElementById('meta-year').value),period:document.getElementById('meta-period').value,title:document.getElementById('meta-title').value.trim()};await api(`/api/v1/admin/import-batches/${batch.id}`,{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});setNotice('metadata-message','基本信息已保存');setTimeout(()=>location.reload(),500)}catch(error){setNotice('metadata-message','修改失败：'+error.message,true);button.disabled=false}}
+async function runStep(action,stage){const buttons=[...document.querySelectorAll('.step-button')],original=buttons.map(button=>button.disabled);try{buttons.forEach(button=>button.disabled=true);message.className='message';message.textContent=`${stage}处理中…`;const data=await api(`/api/v1/admin/import-batches/${batch.id}/${action}`,{method:'POST'});message.textContent=`${stage}完成：${JSON.stringify(data)}`;setTimeout(()=>location.reload(),600)}catch(error){message.className='message error';message.textContent=`${stage}失败：${error.message}`;buttons.forEach((button,index)=>button.disabled=original[index])}}
+let parsing=false,pauseRequested=false;
+function showParseProgress(progress){
+  const state=progress.parse_progress||progress;
+  document.getElementById('parse-progress').textContent=`实际页：${state.completed_pages}/${state.total_pages} 已完整解析；待处理 ${state.pending_pages} 页；失败 ${state.failed_pages} 页。题目/答案结果：${state.completed_results??progress.completed} 条已完成，${state.remaining_results??progress.remaining} 条未完成。`;
+}
+function pauseParsing(){pauseRequested=true;message.textContent='将在当前 5 页处理结束后暂停；已完成结果会保留。'}
+async function parseAll(){
+  if(parsing)return;
+  parsing=true;pauseRequested=false;
+  const buttons=[...document.querySelectorAll('.step-button')],original=buttons.map(button=>button.disabled);
+  buttons.forEach(button=>button.disabled=true);
+  document.getElementById('pause-parse-button').disabled=false;
+  let retryFailed=true,latest=null;
+  try{
+    while(!pauseRequested){
+      message.className='message';message.textContent='正在解析下一批（最多 5 个实际页面）…请保持页面打开。';
+      try{
+        latest=await api(`/api/v1/admin/import-batches/${batch.id}/parse?limit=5&retry_failed=${retryFailed}`,{method:'POST'});
+      }catch(error){
+        if(!error.message.startsWith('网络请求失败'))throw error;
+        retryFailed=false;
+        message.textContent=`请求中断：${error.message}；正在读取服务器进度…`;
+        try{latest=await api(`/api/v1/admin/import-batches/${batch.id}`)}
+        catch(readError){throw new Error(`无法读取服务器进度：${readError.message}。请检查网络后重新点击“解析全部”，已保存结果不会丢失。`)}
+      }
+      retryFailed=false;showParseProgress(latest);
+      const state=latest.parse_progress||latest;
+      if(state.pending_pages===0||(latest.parse_progress===undefined&&latest.processed_pages===0))break;
+    }
+    if(pauseRequested){message.textContent='已暂停。重新打开页面或再次点击“解析全部”即可继续。'}
+    else{
+      const state=latest.parse_progress||latest;
+      const details=latest.failed_page_details||latest.failures?.filter(value=>value.stage==='页面解析')||[];
+      message.className=state.failed_pages?'message error':'message';
+      message.textContent=state.failed_pages?`已处理其余页面，${state.failed_pages} 页失败：${details.map(value=>`第 ${value.page_no} 页：${value.reason}`).join('；')}。再次点击可重试失败页。`:`解析完成：${state.completed_pages}/${state.total_pages} 页。`;
+    }
+    if(!pauseRequested)setTimeout(()=>location.reload(),1800);
+  }catch(error){message.className='message error';message.textContent=error.message}
+  finally{parsing=false;document.getElementById('pause-parse-button').disabled=true;buttons.forEach((button,index)=>button.disabled=original[index])}
+}
+async function publishBatch(){const buttons=[...document.querySelectorAll('.step-button')],original=buttons.map(button=>button.disabled);try{buttons.forEach(button=>button.disabled=true);message.className='message';message.textContent='正在发布…';const data=await api(`/api/v1/admin/import-batches/${batch.id}/publish`,{method:'POST'});message.textContent=`发布成功：${data.question_count} 题，试卷 ${data.paper_id}`;setTimeout(()=>location.reload(),600)}catch(error){message.className='message error';message.textContent='发布失败：'+error.message;buttons.forEach((button,index)=>button.disabled=original[index])}}
+function showPage(){if(!documentId)return;const input=document.getElementById('preview-page'),number=Number(input.value);if(!Number.isInteger(number)||number<1||number>pageCount){input.focus();setNotice('sections-message',`预览页码必须在 1–${pageCount} 之间`,true);return}document.getElementById('preview-card').hidden=false;document.getElementById('preview').src=`/api/v1/admin/source-documents/${documentId}/pages/${number}`}
+function approvableCheckboxes(){return [...document.querySelectorAll('.approval-checkbox:not(:disabled)')]}
+function updateBulkSelection(){const checkboxes=approvableCheckboxes(),selected=checkboxes.filter(value=>value.checked),selectAll=document.getElementById('select-all-approvable'),button=document.getElementById('bulk-approve-button');selectAll.checked=checkboxes.length>0&&selected.length===checkboxes.length;selectAll.indeterminate=selected.length>0&&selected.length<checkboxes.length;selectAll.disabled=checkboxes.length===0;button.disabled=selected.length===0;button.textContent=`批量批准（${selected.length}）`}
+function toggleAllApprovable(checked){approvableCheckboxes().forEach(value=>value.checked=checked);updateBulkSelection()}
+async function bulkApprove(){const selected=approvableCheckboxes().filter(value=>value.checked),button=document.getElementById('bulk-approve-button'),bulkMessage=document.getElementById('bulk-message');if(!selected.length)return;if(!confirm(`确认采用 AI 默认知识点批准选中的 ${selected.length} 题吗？`))return;try{button.disabled=true;bulkMessage.className='message';bulkMessage.textContent='批量批准中…';const data=await api(`/api/v1/admin/import-batches/${batch.id}/approve-items`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({item_ids:selected.map(value=>value.dataset.itemId)})});bulkMessage.textContent=`已批准 ${data.approved_count} 题`;setTimeout(()=>location.reload(),600)}catch(error){bulkMessage.className='message error';bulkMessage.textContent=error.message;updateBulkSelection()}}
+const saved=documentInfo.page_selections||{},suggestion=documentInfo.section_suggestion||{};
+if(saved.questions?.length){fillRanges(saved);setNotice('suggestion-status','已回填管理员确认过的页码。')}
+else if(suggestion.status==='completed'){fillRanges(suggestion);setNotice('suggestion-status',`已回填 AI 建议（${suggestion.mode==='inline'?'题目与答案同页':'题目与答案分开'}），请核对并确认。${suggestion.inferred_question_pages?.length?' 第 '+suggestion.inferred_question_pages.join('、')+' 页按连续版式推断补入，请重点核对。':''}`)}
+else{addRange('questions');addRange('answers');if(suggestion.status==='failed')setNotice('suggestion-status','上次自动识别失败：'+suggestion.error+'；可重试或手工填写。',true);else loadSuggestion()}
+['meta-year','meta-period'].forEach(id=>document.getElementById(id)?.addEventListener('change',metadataWarnings));metadataWarnings();updateBulkSelection();
+</script>
+{% endblock %}

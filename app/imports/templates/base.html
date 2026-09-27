@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>{% block title %}真题导入审核{% endblock %}</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, "Microsoft YaHei", sans-serif; color:#18212f; background:#f4f6f8; }
+    * { box-sizing:border-box; }
+    body { margin:0; }
+    header { background:#18212f; color:white; padding:14px 28px; display:flex; gap:20px; align-items:center; }
+    header a { color:white; text-decoration:none; }
+    main { max-width:1440px; margin:0 auto; padding:24px; }
+    h1,h2,h3 { margin-top:0; }
+    .card { background:white; border:1px solid #dfe4ea; border-radius:10px; padding:18px; margin-bottom:18px; box-shadow:0 1px 3px #0000000d; }
+    .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+    .split { display:grid; grid-template-columns:minmax(420px,1.15fr) minmax(420px,.85fr); gap:18px; align-items:start; }
+    label { display:block; font-size:13px; color:#52606d; margin:10px 0 5px; }
+    input,select,textarea,button { font:inherit; }
+    input,select,textarea { width:100%; border:1px solid #bac4cf; border-radius:6px; padding:9px; background:white; }
+    textarea { min-height:90px; resize:vertical; }
+    button,.button { display:inline-block; border:0; border-radius:6px; padding:9px 14px; background:#1769aa; color:white; cursor:pointer; text-decoration:none; }
+    button.secondary,.button.secondary { background:#596878; }
+    button.danger { background:#b42318; }
+    button:disabled { opacity:.5; cursor:not-allowed; }
+    table { width:100%; border-collapse:collapse; }
+    th,td { padding:9px 10px; border-bottom:1px solid #e6eaee; text-align:left; }
+    .badge { display:inline-block; padding:3px 8px; border-radius:999px; font-size:12px; background:#e7eef7; }
+    .badge.approved,.badge.published,.badge.ready_to_publish { background:#d8f3df; color:#176b35; }
+    .badge.blocked,.badge.failed,.badge.rejected { background:#fee4e2; color:#b42318; }
+    .muted { color:#697786; font-size:13px; }
+    .actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+    .message { min-height:24px; color:#1769aa; white-space:pre-wrap; }
+    .error { color:#b42318; }
+    @media (max-width:1000px) { .split { grid-template-columns:1fr; } }
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+<header><a href="/admin/imports">真题导入审核</a><span class="muted">本地管理界面</span></header>
+<main class="{% block main_class %}{% endblock %}">{% block content %}{% endblock %}</main>
+<script>
+function formatApiError(detail){
+  if(detail==null)return '操作失败';
+  if(typeof detail==='string')return detail;
+  if(Array.isArray(detail))return detail.map(value=>{
+    if(typeof value==='string')return value;
+    const location=Array.isArray(value?.loc)?value.loc.filter(part=>part!=='body').join('.'):'',message=value?.msg||formatApiError(value);
+    return location?`${location}：${message}`:message;
+  }).join('\n');
+  if(typeof detail==='object'){
+    const lines=[];
+    if(detail.message)lines.push(detail.message);
+    if(Array.isArray(detail.items))lines.push(...detail.items.map(value=>{
+      const label=value.question_no?`第 ${value.question_no} 题`:(value.item_id||'题目');
+      return `${label}：${value.reason||formatApiError(value)}`;
+    }));
+    if(lines.length)return lines.join('\n');
+    try{return JSON.stringify(detail)}catch(_error){return '操作失败'}
+  }
+  return String(detail);
+}
+async function api(url,options={}){
+  let response;
+  try{response=await fetch(url,options)}catch(error){throw new Error('网络请求失败，请检查服务连接后重试：'+error.message)}
+  const text=await response.text();
+  let data=null;
+  if(text){try{data=JSON.parse(text)}catch(_error){data=text}}
+  if(!response.ok)throw new Error(formatApiError(data?.detail??data));
+  return data;
+}
+</script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

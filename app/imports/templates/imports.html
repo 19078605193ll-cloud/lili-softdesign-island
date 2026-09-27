@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% block title %}导入批次{% endblock %}
+{% block content %}
+<div class="card">
+  <h1>新建真题导入</h1>
+  <p class="muted">上传 Markdown，或包含一份 Markdown 和图片目录的 ZIP。支持任意题量；相同年份、期次和批次编码将补充到已有试卷。</p>
+  <form id="upload-form" enctype="multipart/form-data">
+    <div class="grid">
+      <div><label>Markdown 或 ZIP</label><input id="upload-file" type="file" name="file" accept=".md,.zip" required></div>
+      <div><label>年份</label><input id="upload-year" type="number" name="year" value="2020" min="2000" max="2100" required></div>
+      <div><label>考试期次</label><select id="upload-period" name="period"><option value="second_half">下半年</option><option value="first_half">上半年</option><option value="other">其他</option></select></div>
+      <div><label>批次编码</label><input name="batch_code" value="default" required></div>
+      <div><label>标题</label><input name="title" value="软件设计师基础知识真题" required></div>
+      <div><label>知识树版本（留空使用最新版）</label><input name="taxonomy_version" placeholder="1.0.0"></div>
+    </div>
+    <input type="hidden" name="subject_code" value="software-designer.foundation">
+    <p id="filename-warning" class="message error"></p>
+    <div class="actions"><button id="upload-button" type="submit">上传并解析</button><span id="message" class="message"></span></div>
+  </form>
+</div>
+<div class="card">
+  <h2>导入批次</h2>
+  <table><thead><tr><th>标题</th><th>场次</th><th>知识树</th><th>状态</th><th>题目进度</th><th>失败原因</th><th>操作</th></tr></thead><tbody>
+  {% for batch in batches %}
+    <tr data-batch-id="{{ batch.id }}">
+      <td>{{ batch.title }}</td><td>{{ batch.year }} / {{ batch.period }} / {{ batch.batch_code }}</td><td>{{ batch.taxonomy_version }}</td>
+      <td><span class="badge {{ batch.status }}">{% if batch.status == 'uploaded' %}已上传，待确认页码{% elif batch.status == 'sectioned' %}页码已确认，待解析{% elif batch.status == 'in_review' %}待人工审核{% elif batch.status == 'ready_to_publish' %}可发布{% elif batch.status == 'published' %}已发布{% elif batch.status == 'failed' %}处理失败{% else %}{{ batch.status }}{% endif %}</span></td>
+      <td>{% set labels = {'needs_review':'待审核','approved':'已批准','published':'已发布','blocked':'需处理','rejected':'已排除','pending':'待解析','parsed':'已解析'} %}{% for status, count in batch.item_counts.items() %}<span class="badge">{{ labels.get(status, status) }} {{ count }}</span> {% else %}暂无题目{% endfor %}</td>
+      <td class="error">{{ batch.error_summary or '' }}{% if batch.failures %}{% for failure in batch.failures[:3] %}<div>{{ failure.stage }}{% if failure.page_no %}第 {{ failure.page_no }} 页{% endif %}{% if failure.question_numbers %}第 {{ failure.question_numbers|join('、') }} 题{% endif %}：{{ failure.reason }}</div>{% endfor %}{% endif %}</td>
+      <td><div class="actions"><a class="button secondary" href="/admin/imports/{{ batch.id }}">打开</a>{% if batch.status != 'published' and not batch.published_paper_id %}<button class="danger delete-batch" type="button" data-batch-id="{{ batch.id }}" data-batch-title="{{ batch.title }}">删除</button>{% endif %}</div></td>
+    </tr>
+  {% else %}<tr><td colspan="7" class="muted">暂无导入批次</td></tr>{% endfor %}
+  </tbody></table>
+  <p id="list-message" class="message"></p>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+function filenameWarnings(name,year,period){
+  const warnings=[];
+  const found=name.match(/(?:19|20)\d{2}/);
+  if(found&&Number(found[0])!==Number(year))warnings.push(`文件名年份 ${found[0]} 与填写年份 ${year} 不一致`);
+  if(name.includes('上半年')&&period==='second_half')warnings.push('文件名为上半年，但当前选择下半年');
+  if(name.includes('下半年')&&period==='first_half')warnings.push('文件名为下半年，但当前选择上半年');
+  return warnings;
+}
+function updateFilenameWarning(){
+  const name=document.getElementById('upload-file').files[0]?.name||'';
+  document.getElementById('filename-warning').textContent=filenameWarnings(name,document.getElementById('upload-year').value,document.getElementById('upload-period').value).join('；');
+}
+['upload-file','upload-year','upload-period'].forEach(id=>document.getElementById(id).addEventListener('change',updateFilenameWarning));
+document.getElementById('upload-form').addEventListener('submit',async event=>{
+  event.preventDefault();const message=document.getElementById('message'),button=document.getElementById('upload-button');
+  const form=new FormData(event.target);if(!form.get('taxonomy_version'))form.delete('taxonomy_version');
+  try{button.disabled=true;message.className='message';message.textContent='正在解析题目并归档图片，请稍候…';
+    const data=await api('/api/v1/admin/import-batches',{method:'POST',body:form});
+    message.textContent='解析完成，正在打开审核页面…';
+    location.href='/admin/imports/'+data.id;
+  }catch(error){message.className='message error';message.textContent='上传阶段：'+error.message;button.disabled=false}
+});
+async function deleteBatch(id,title){
+  if(!confirm(`确认删除未发布批次“${title}”吗？导入记录、源文件和预览图将被永久删除。`))return;
+  const message=document.getElementById('list-message');
+  try{message.className='message';message.textContent='正在删除…';const result=await api(`/api/v1/admin/import-batches/${id}`,{method:'DELETE'});
+    document.querySelector(`tr[data-batch-id="${id}"]`)?.remove();
+    message.className=result.warning?'message error':'message';message.textContent=result.warning||'批次已删除';
+  }catch(error){message.className='message error';message.textContent='删除失败：'+error.message}
+}
+document.addEventListener('click',event=>{
+  const button=event.target.closest('.delete-batch');
+  if(button)deleteBatch(button.dataset.batchId,button.dataset.batchTitle);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,113 @@
+[
+  {
+    "title": "2020年11月软件设计师真题及解析",
+    "batch_id": "74b22248-2e28-4c16-bdb9-3ae958196111",
+    "status": "in_review",
+    "parser_version": "markdown-v2",
+    "changed_rules": 0,
+    "practice_units": 56,
+    "subquestions": 74,
+    "ambiguous_blocks": 3,
+    "item_counts": {
+      "blocked": 5,
+      "needs_review": 69
+    },
+    "completed_classifications": 69,
+    "archived_images": 11,
+    "missing_archived_files": [],
+    "image_errors": {},
+    "ai_suggestions": 3
+  },
+  {
+    "title": "2023年05月软件设计师真题及解析",
+    "batch_id": "90ed2022-6b8f-48e1-a36b-e85c682fc9a1",
+    "status": "in_review",
+    "parser_version": "markdown-v2",
+    "changed_rules": 0,
+    "practice_units": 57,
+    "subquestions": 70,
+    "ambiguous_blocks": 8,
+    "item_counts": {
+      "blocked": 10,
+      "needs_review": 60
+    },
+    "completed_classifications": 60,
+    "archived_images": 8,
+    "missing_archived_files": [],
+    "image_errors": {},
+    "ai_suggestions": 8
+  },
+  {
+    "title": "2023年11月软件设计师真题答案解析",
+    "batch_id": "618f074a-96d4-4bbd-9518-9d1d32ebbb01",
+    "status": "in_review",
+    "parser_version": "markdown-v2",
+    "changed_rules": 0,
+    "practice_units": 56,
+    "subquestions": 73,
+    "ambiguous_blocks": 2,
+    "item_counts": {
+      "blocked": 4,
+      "needs_review": 69
+    },
+    "completed_classifications": 69,
+    "archived_images": 5,
+    "missing_archived_files": [],
+    "image_errors": {},
+    "ai_suggestions": 2
+  },
+  {
+    "title": "2024年上半年软件设计师上午真题及答案",
+    "batch_id": "3e0ca58b-8356-4936-9278-1b195d49b501",
+    "status": "in_review",
+    "parser_version": "markdown-v2",
+    "changed_rules": 0,
+    "practice_units": 64,
+    "subquestions": 71,
+    "ambiguous_blocks": 0,
+    "item_counts": {
+      "needs_review": 71
+    },
+    "completed_classifications": 71,
+    "archived_images": 3,
+    "missing_archived_files": [],
+    "image_errors": {},
+    "ai_suggestions": 0
+  },
+  {
+    "title": "2025年11月软件设计师选择题（回忆版）",
+    "batch_id": "dcd01ea7-6e78-48c0-aff7-be1c48321fc1",
+    "status": "in_review",
+    "parser_version": "markdown-v2",
+    "changed_rules": 0,
+    "practice_units": 52,
+    "subquestions": 52,
+    "ambiguous_blocks": 0,
+    "item_counts": {
+      "needs_review": 52
+    },
+    "completed_classifications": 52,
+    "archived_images": 1,
+    "missing_archived_files": [],
+    "image_errors": {},
+    "ai_suggestions": 0
+  },
+  {
+    "title": "2025年5月软件设计师选择题（回忆版）",
+    "batch_id": "1423615e-3e95-4d38-8a1e-397b162a2ce5",
+    "status": "in_review",
+    "parser_version": "markdown-v2",
+    "changed_rules": 0,
+    "practice_units": 31,
+    "subquestions": 31,
+    "ambiguous_blocks": 0,
+    "item_counts": {
+      "needs_review": 31
+    },
+    "completed_classifications": 31,
+    "archived_images": 3,
+    "missing_archived_files": [],
+    "image_errors": {},
+    "ai_suggestions": 0
+  }
+]
