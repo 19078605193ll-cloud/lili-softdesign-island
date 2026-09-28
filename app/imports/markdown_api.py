@@ -13,7 +13,7 @@ from pydantic import BaseModel, Field
 from sqlalchemy import delete, select, text
 
 from app.config import get_settings
-from app.imports.api import SessionDependency, StorageDependency, _http_error
+from app.imports.dependencies import SessionDependency, StorageDependency, _http_error
 from app.imports import markdown_workflow as workflow
 from app.imports.markdown_approval import approval_preview
 from app.imports.markdown_parser import Unit, IMAGE, ANSWER, EXPLANATION, part_locator
@@ -32,17 +32,7 @@ router = APIRouter(prefix="/api/v1/admin/markdown-batches", tags=["markdown-impo
 public_router = APIRouter(prefix="/api/v1", tags=["practice-questions"])
 
 
-async def context(session, batch_id, *, writable=False):
-    query = select(QuestionImportBatch).where(QuestionImportBatch.id == batch_id)
-    if writable:
-        query = query.with_for_update()
-    batch = await session.scalar(query)
-    if batch is None:
-        raise HTTPException(404, "导入批次不存在")
-    if writable and batch.status == "published":
-        raise HTTPException(409, "已发布批次不可修改，请创建补充批次")
-    doc = await workflow.document_for(session, batch_id, lock=writable)
-    return batch, doc
+from app.imports.review_context import context, block_for, replace_block
 
 
 async def _load_batch_review_data(session, batch, groups_by_id, items):
@@ -166,21 +156,19 @@ async def _load_batch_review_data(session, batch, groups_by_id, items):
     return item_reads, suggestions, selection_rows_by_item
 
 
-def block_for(doc, block_id):
-    block = next((b for b in doc.extracted_content["blocks"] if b["id"] == block_id), None)
-    if block is None:
-        raise HTTPException(404, "题块不存在")
-    return dict(block)
-
-
-def replace_block(doc, block):
-    doc.extracted_content = dict(doc.extracted_content,
-        blocks=[block if b["id"] == block["id"] else b for b in doc.extracted_content["blocks"]])
-
-
 @router.get("/{batch_id}")
 async def read_batch(batch_id: uuid.UUID, session: SessionDependency):
-    batch, doc = await context(session, batch_id)
+    pending = await session.get(QuestionImportBatch, batch_id)
+    if pending is None:
+        raise HTTPException(404, "批次不存在")
+    from app.models import QuestionSourceDocument
+    doc = await session.scalar(select(QuestionSourceDocument).where(QuestionSourceDocument.batch_id == batch_id))
+    if doc is None and pending.parser_version.startswith("markdown-"):
+        return dict(id=str(pending.id), revision=pending.revision, ai_configured=False,
+                    status=pending.status, summary={}, blocks=[], image_errors={}, topics=[])
+    if doc is None or doc.mime_type != "text/markdown":
+        raise HTTPException(422, "不是 Markdown 批次")
+    batch = pending
     group_ids = [uuid.UUID(raw["group_id"]) for raw in doc.extracted_content["blocks"] if raw.get("group_id")]
     groups = list(await session.scalars(select(QuestionImportGroup).where(
         QuestionImportGroup.id.in_(group_ids)))) if group_ids else []
@@ -228,7 +216,7 @@ async def read_batch(batch_id: uuid.UUID, session: SessionDependency):
         while node.parent_id in by_id and node.parent_id not in seen:
             node = by_id[node.parent_id]; seen.add(node.id); names.append(node.name)
         return ' / '.join(reversed(names))
-    return dict(id=str(batch.id), status=batch.status, summary=batch.validation_summary, blocks=blocks,
+    return dict(id=str(batch.id), revision=batch.revision, ai_configured=bool(get_settings().ai_api_key), status=batch.status, summary=batch.validation_summary, blocks=blocks,
         image_errors=doc.extracted_content.get("image_errors", {}),
         topics=[dict(code=n.code, name=n.name, path=topic_path(n)) for n in topics])
 
@@ -285,7 +273,11 @@ async def edit_block(batch_id: uuid.UUID, block_id: str, payload: EditBlock, ses
             block["group_id"] = old_group_id
         replace_block(doc, block)
         await workflow.materialize(session, batch, doc, block_id)
-        await workflow.auto_classify(session, batch, storage, item_ids=set(await session.scalars(select(QuestionImportItem.id).where(QuestionImportItem.group_id == uuid.UUID(block['group_id'])))) if block.get('group_id') else None)
+        from app.infrastructure.jobs import enqueue
+        actor = session.info.get("audit", {}).get("user_id")
+        if actor and get_settings().ai_api_key:
+            await enqueue(session, user_id=actor, batch=batch, kind="classify",
+                payload={"request": {"block_id": block_id}}, key="edit:" + str(uuid.uuid4()))
         await session.commit()
         return {"saved": True}
     except Exception as exc:
@@ -475,27 +467,7 @@ async def retry_images(batch_id: uuid.UUID, session: SessionDependency, storage:
     return doc.extracted_content.get("image_errors", {})
 
 
-async def apply_asset_mapping(session, batch, doc):
-    mapping = doc.extracted_content["assets"]
-    changed_groups = set()
-    for group in await session.scalars(select(QuestionImportGroup).where(QuestionImportGroup.batch_id == batch.id)):
-        items = list(await session.scalars(select(QuestionImportItem).where(QuestionImportItem.group_id == group.id)))
-        before = {item.id: classification_fingerprint(item, group) for item in items}
-        group.material_markdown = workflow.rewritten(group.material_markdown, mapping)
-        group.explanation_markdown = workflow.rewritten(group.explanation_markdown, mapping)
-        await workflow.synchronize_assets(session, group, [("group_material", group.material_markdown), ("explanation", group.explanation_markdown)], doc)
-        for item in items:
-            item.stem_markdown = workflow.rewritten(item.stem_markdown, mapping)
-            item.explanation_markdown = workflow.rewritten(item.explanation_markdown, mapping)
-            item.options_payload = [dict(o, content_markdown=workflow.rewritten(o["content_markdown"], mapping)) for o in item.options_payload]
-            if before[item.id] != classification_fingerprint(item, group):
-                await workflow.sync_item(session, item, group, doc)
-                await session.execute(delete(QuestionImportKnowledgeSelection).where(QuestionImportKnowledgeSelection.import_item_id == item.id))
-                changed_groups.add(str(group.id))
-    for raw in list(doc.extracted_content['blocks']):
-        if raw.get('group_id') in changed_groups:
-            replace_block(doc, dict(raw, confirmed=False))
-    await workflow.refresh(session, batch, doc)
+from app.imports.asset_mapping import apply_asset_mapping
 
 
 @router.post("/{batch_id}/images")
@@ -686,9 +658,11 @@ async def supplement(batch_id: uuid.UUID, session: SessionDependency, storage: S
 async def list_questions(paper_id: uuid.UUID, session: SessionDependency, offset: int = 0, limit: int = 50):
     if offset < 0 or not 1 <= limit <= 100:
         raise HTTPException(422, "分页参数无效")
-    units = list(await session.scalars(select(PracticeQuestion).join(ExamPaper).where(PracticeQuestion.paper_id == paper_id,
-        ExamPaper.status == "verified").order_by(PracticeQuestion.created_at, PracticeQuestion.id).offset(offset).limit(limit)))
-    return [await read_question(u.id, session) for u in units]
+    from app.practice.service import load, visible
+    ids = list(await session.scalars(select(PracticeQuestion.id).join(ExamPaper).where(PracticeQuestion.paper_id == paper_id,
+        *visible()).order_by(PracticeQuestion.created_at, PracticeQuestion.id).offset(offset).limit(limit)))
+    data = await load(session, ids)
+    return [{k:v for k,v in data[i].items() if k != "content_version"} for i in ids]
 
 
 async def public_unit(session, unit_id):
@@ -708,14 +682,11 @@ def urls(value):
 
 @public_router.get("/practice-questions/{unit_id}")
 async def read_question(unit_id: uuid.UUID, session: SessionDependency):
-    unit, paper, questions, payload = await public_unit(session, unit_id)
-    parts = [dict(id=str(q.id), question_no=p["question_no"], stem_markdown=urls(p["stem"]),
-        options=[dict(o, content_markdown=urls(o["content_markdown"])) for o in p["options"]], score=p["score"], locator=part_locator(payload["material"], p["question_no"]))
-        for q, p in zip(questions, payload["parts"])]
-    return dict(id=str(unit.id), type="composite" if len(parts) > 1 else "single_choice",
-        material_markdown=urls(payload["material"]), parts=parts, subquestion_count=len(parts),
-        source=dict(paper_id=str(paper.id), year=paper.year, period=paper.period, batch_code=paper.batch_code,
-                    title=paper.title, source_type=questions[0].source_type, label=unit.source_label))
+    from app.practice.service import load
+    data = (await load(session, [unit_id])).get(unit_id)
+    if data is None:
+        raise HTTPException(404, "题目不存在")
+    return {k:v for k,v in data.items() if k != "content_version"}
 
 
 @public_router.get("/practice-questions/{unit_id}/solution")
@@ -748,17 +719,13 @@ async def check(unit_id: uuid.UUID, payload: Submission, session: SessionDepende
 @public_router.get("/question-assets/{asset_id}")
 async def asset(asset_id: uuid.UUID, session: SessionDependency, storage: StorageDependency):
     a = await session.get(QuestionAsset, asset_id)
-    usages = list(await session.scalars(select(QuestionAssetUsage).where(QuestionAssetUsage.asset_id == asset_id)))
-    accessible = False
-    for usage in usages:
-        if usage.question_id:
-            q = await session.get(Question, usage.question_id)
-            paper = await session.get(ExamPaper, q.paper_id) if q else None
-            accessible |= bool(q and q.status == "published" and paper and paper.status == "verified")
-        elif usage.question_group_id:
-            q = await session.scalar(select(Question).join(ExamPaper, ExamPaper.id == Question.paper_id).where(
-                Question.group_id == usage.question_group_id, Question.status == "published", ExamPaper.status == "verified"))
-            accessible |= q is not None
+    from sqlalchemy import exists, or_
+    question_visible = exists(select(Question.id).join(ExamPaper).where(
+        Question.id == QuestionAssetUsage.question_id, Question.status == "published", ExamPaper.status == "verified"))
+    group_visible = exists(select(Question.id).join(ExamPaper).where(
+        Question.group_id == QuestionAssetUsage.question_group_id, Question.status == "published", ExamPaper.status == "verified"))
+    accessible = await session.scalar(select(exists(select(QuestionAssetUsage.id).where(
+        QuestionAssetUsage.asset_id == asset_id, or_(question_visible, group_visible)))))
     if not a or not accessible or not storage.resolve(a.storage_path).is_file():
         raise HTTPException(404, "图片不存在")
     return FileResponse(storage.resolve(a.storage_path), media_type=a.mime_type)

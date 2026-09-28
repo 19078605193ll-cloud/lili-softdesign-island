@@ -87,6 +87,7 @@ class OpenAICompatibleQuestionClient:
         kwargs: dict[str, Any] = {
             "api_key": settings.ai_api_key,
             "timeout": settings.ai_timeout_seconds,
+            "max_retries": 0,
         }
         if settings.ai_base_url:
             kwargs["base_url"] = settings.ai_base_url

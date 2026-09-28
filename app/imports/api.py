@@ -64,40 +64,7 @@ from app.models import QuestionAsset, QuestionImportBatch, QuestionSourceDocumen
 
 router = APIRouter(prefix="/api/v1/admin", tags=["question-import"])
 logger = logging.getLogger(__name__)
-SessionDependency = Annotated[AsyncSession, Depends(get_session)]
-
-
-@lru_cache
-def get_import_storage() -> LocalImportStorage:
-    settings = get_settings()
-    return LocalImportStorage(
-        settings.import_storage_root,
-        max_file_size_mb=settings.import_max_file_size_mb,
-        render_dpi=settings.pdf_render_dpi,
-        libreoffice_path=settings.libreoffice_path,
-        use_local_ocr=settings.import_use_local_ocr,
-    )
-
-
-def get_ai_client(settings: Annotated[Settings, Depends(get_settings)]) -> QuestionAIClient:
-    try:
-        return OpenAICompatibleQuestionClient(settings)
-    except AIConfigurationError as exc:
-        raise HTTPException(status_code=503, detail=str(exc)) from exc
-
-
-StorageDependency = Annotated[LocalImportStorage, Depends(get_import_storage)]
-AIClientDependency = Annotated[QuestionAIClient, Depends(get_ai_client)]
-
-
-def _http_error(exc: Exception) -> HTTPException:
-    if isinstance(exc, ImportNotFoundError):
-        return HTTPException(status_code=404, detail=str(exc))
-    if isinstance(exc, ImportConflictError):
-        return HTTPException(status_code=409, detail=str(exc))
-    if isinstance(exc, (ImportWorkflowError, ImportStorageError)):
-        return HTTPException(status_code=422, detail=str(exc))
-    return HTTPException(status_code=500, detail="question import failed")
+from app.imports.dependencies import SessionDependency, StorageDependency, AIClientDependency, get_import_storage, get_ai_client, _http_error
 
 
 @router.post("/import-batches", response_model=ImportBatchRead, status_code=201)
@@ -115,6 +82,7 @@ async def create_import_batch(
     source_reference: Annotated[str | None, Form()] = None,
 ) -> ImportBatchRead:
     batch_id_for_cleanup: uuid.UUID | None = None
+    commit_attempted = False
     try:
         batch = await create_batch_record(
             session,
@@ -134,11 +102,14 @@ async def create_import_batch(
         document_path = unpack(storage, batch.id, file.filename or "source.md", data)
         await initialize(session, batch, storage, document_path, file.filename or "source.md",
                          storage.resolve(f"{batch.id}/markdown"))
+        commit_attempted = True
         await session.commit()
         return await get_batch_read(session, batch.id)
     except Exception as exc:
         await session.rollback()
-        if batch_id_for_cleanup is not None:
+        # A transport error during commit is ambiguous. Preserve the directory
+        # for storage reconciliation instead of deleting possibly committed data.
+        if batch_id_for_cleanup is not None and not commit_attempted:
             storage.remove_batch(batch_id_for_cleanup)
         raise _http_error(exc) from exc
     finally:

@@ -8,8 +8,10 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import SessionFactory
+from app.core.runtime import run_async
 from app.knowledge.catalog import default_catalog_path, flatten_catalog, load_catalog
 from app.models import ExamSubject, KnowledgeNode, KnowledgeTaxonomyRelease
+from app.knowledge.versions import snapshot
 
 
 async def sync_catalog(session: AsyncSession, path: Path | None = None) -> dict[str, int | str]:
@@ -43,6 +45,8 @@ async def sync_catalog(session: AsyncSession, path: Path | None = None) -> dict[
             f"taxonomy version {catalog.version} already exists with a different checksum; "
             "publish a new version instead"
         )
+    if existing_release is not None and existing_release.catalog_snapshot is None:
+        existing_release.catalog_snapshot = snapshot(catalog)
 
     existing_nodes = {
         node.code: node
@@ -82,9 +86,10 @@ async def sync_catalog(session: AsyncSession, path: Path | None = None) -> dict[
                 source_name=catalog.source_name,
                 source_reference=catalog.source_reference,
                 checksum_sha256=checksum,
+                catalog_snapshot=snapshot(catalog),
             )
         )
-    await session.commit()
+    await session.flush()
     return {
         "subject": subject.code,
         "version": catalog.version,
@@ -95,7 +100,7 @@ async def sync_catalog(session: AsyncSession, path: Path | None = None) -> dict[
 
 
 async def _run(path: Path) -> None:
-    async with SessionFactory() as session:
+    async with SessionFactory.begin() as session:
         result = await sync_catalog(session, path)
         print(
             f"Synced {result['subject']} taxonomy {result['version']}: "
@@ -107,7 +112,7 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Synchronize the versioned knowledge taxonomy")
     parser.add_argument("--file", type=Path, default=default_catalog_path())
     args = parser.parse_args()
-    asyncio.run(_run(args.file))
+    run_async(_run(args.file))
 
 
 if __name__ == "__main__":

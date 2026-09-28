@@ -1,0 +1,27 @@
+x-runtime: &runtime
+  image: softdesign-island:review
+  environment:
+    APP_ENV: test
+    DATABASE_URL: postgresql+psycopg://island_test:${ISLAND_TEST_PASSWORD}@db:5432/island_isolated_test
+    REDIS_URL: redis://redis:6379/0
+    CELERY_BROKER_URL: redis://redis:6379/1
+    PUBLIC_ORIGIN: http://127.0.0.1:${ISLAND_TEST_API_PORT}
+    IMPORT_STORAGE_ROOT: /srv/island/var/imports
+    AI_API_KEY: ""
+  volumes:
+    - ./app:/srv/island/app:ro
+    - ./alembic:/srv/island/alembic:ro
+    - smoke_assets:/srv/island/var/imports
+  networks: [isolated]
+services:
+  api:
+    <<: *runtime
+    ports: ["127.0.0.1:${ISLAND_TEST_API_PORT}:8000"]
+  worker:
+    <<: *runtime
+    command: [celery, -A, app.infrastructure.celery_app:celery_app, worker, --loglevel=WARNING, --concurrency=2]
+  dispatcher:
+    <<: *runtime
+    command: [python, -m, app.infrastructure.dispatcher]
+volumes:
+  smoke_assets:

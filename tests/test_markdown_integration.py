@@ -26,10 +26,14 @@ def disable_automatic_external_ai(monkeypatch):
 
 
 async def upload(client, source=SOURCE, code=None, filename='paper.md', data=None):
-    response = await client.post('/api/v1/admin/import-batches', data=dict(year=2025,period='first_half',
+    response = await client.post('/api/v2/admin/import-batches', headers={'Idempotency-Key':uuid.uuid4().hex}, data=dict(year=2025,period='first_half',
         title='回忆版测试',batch_code=code or uuid.uuid4().hex), files={'file':(filename, data or source.encode(), 'application/octet-stream')})
-    assert response.status_code == 201, response.text
-    return response.json()['id']
+    assert response.status_code == 202, response.text
+    from tests.job_helpers import drain
+    storage=app.dependency_overrides[get_import_storage]()
+    job=await drain(client,response.json()['job_id'],client.island_session,storage)
+    assert job['status']=='succeeded',job
+    return response.json()['batch_id']
 
 
 async def review(client, session, batch):
@@ -139,9 +143,10 @@ async def test_images_exclusion_and_supplement(client,session,storage):
     assert result.status_code==200,result.text
     assert result.json()['question_count']==1 and result.json()['subquestion_count']==2
     assert (await client.get('/api/v1/question-assets/'+asset_id)).status_code==200
-    followup=await client.post(f'/api/v1/admin/markdown-batches/{batch}/supplement')
-    assert followup.status_code==200,followup.text
-    next_id=followup.json()['batch_id']
+    from tests.job_helpers import start
+    followup=await start(client,session,storage,batch,'supplement')
+    assert followup['status']=='succeeded',followup
+    next_id=followup['result']['batch_id']
     fixed=await client.post(f'/api/v1/admin/markdown-batches/{next_id}/images',data={'reference':'missing.png'},files={'file':('x.png',image.getvalue(),'image/png')})
     assert fixed.status_code==200,fixed.text
     await review(client,session,next_id)
@@ -150,14 +155,19 @@ async def test_images_exclusion_and_supplement(client,session,storage):
     assert result.json()['question_count']==2
 
 
-async def test_zip_traversal_and_retired_upload(client,storage):
+async def test_zip_traversal_and_retired_upload(client,session,storage):
     package=io.BytesIO()
     with zipfile.ZipFile(package,'w') as z:
         z.writestr('../escape.md',SOURCE)
-    result=await client.post('/api/v1/admin/import-batches',files={'file':('bad.zip',package.getvalue())})
-    assert result.status_code==422,result.text
+    from tests.job_helpers import drain
+    result=await client.post('/api/v2/admin/import-batches',headers={'Idempotency-Key':uuid.uuid4().hex},
+        data={'year':2025,'period':'first_half','title':'test'},files={'file':('bad.zip',package.getvalue())})
+    assert result.status_code==202,result.text
+    job=await drain(client,result.json()['job_id'],session,storage)
+    assert job['status']=='failed'
+    assert not (storage.root/'escape.md').exists()
     result=await client.post('/api/v1/admin/import-batches',files={'file':('old.pdf',b'%PDF-1.7')})
-    assert result.status_code==422
+    assert result.status_code==410
     result=await client.post('/api/v1/admin/import-batches/'+str(uuid.uuid4())+'/parse')
     assert result.status_code==410
 
@@ -170,7 +180,7 @@ async def test_preview_sanitizes_html_and_hides_external_images(client,storage):
     assert '<script' not in html and 'onerror' not in html and 'src="http' not in html
 
 
-async def test_text_assist_sanitizes_null_and_preserves_review_gate(client,storage,monkeypatch):
+async def test_text_assist_sanitizes_null_and_preserves_review_gate(client,session,storage,monkeypatch):
     from types import SimpleNamespace
     from app.imports import markdown_api
     batch=await upload(client,source='1. 问题\nA.a B.b C.c D.d\n答案：A\n解析：内容')
@@ -186,11 +196,14 @@ async def test_text_assist_sanitizes_null_and_preserves_review_gate(client,stora
             self.chat=SimpleNamespace(completions=SimpleNamespace(create=self.create))
         async def create(self,**kwargs):
             return SimpleNamespace(choices=[SimpleNamespace(message=SimpleNamespace(content=json.dumps(response_data,ensure_ascii=False)))])
-    monkeypatch.setattr('openai.AsyncOpenAI',FakeClient)
-    monkeypatch.setattr(markdown_api,'get_settings',lambda:SimpleNamespace(ai_api_key='fake',ai_text_model='fake',ai_classification_model=None,ai_base_url=None,ai_timeout_seconds=1))
-    result=await client.post(f'/api/v1/admin/markdown-batches/{batch}/blocks/{block["id"]}/assist')
-    assert result.status_code==200,result.text
-    assert any('控制字符' in issue for issue in result.json()['issues'])
+    monkeypatch.setattr('app.imports.text_assist.AsyncOpenAI',FakeClient)
+    from app.config import get_settings
+    monkeypatch.setattr(get_settings(),'ai_api_key','fake')
+    monkeypatch.setattr(get_settings(),'ai_text_model','fake')
+    from tests.job_helpers import start
+    result=await start(client,session,storage,batch,'assist',block_id=block['id'])
+    assert result['status']=='succeeded',result
+    assert any('控制字符' in issue for issue in result['result']['issues'])
     state=(await client.get('/api/v1/admin/markdown-batches/'+batch)).json()
     assert state['blocks'][0]['confirmed'] is False
 
@@ -380,12 +393,13 @@ async def test_targeted_classification_force_and_history(client, session, storag
     block = state['blocks'][0]
     url = '/api/v1/admin/markdown-batches/'+batch+'/classify'
     payload = {'block_id':block['id'],'question_no':17}
-    result = await client.post(url,json=payload)
-    assert result.status_code == 200, result.text
-    assert result.json()['processed']==1
+    from tests.job_helpers import start
+    result = await start(client,session,storage,batch,'classify',**payload)
+    assert result['status'] == 'succeeded', result
+    assert result['result']['processed']==1
     assert calls[0][0]['shared_material']=='共享材料'
-    assert (await client.post(url,json=payload)).json()['processed']==0
-    assert (await client.post(url,json=dict(payload,force=True))).json()['processed']==1
+    assert (await start(client,session,storage,batch,'classify',**payload))['result']['processed']==0
+    assert (await start(client,session,storage,batch,'classify',**dict(payload,force=True)))['result']['processed']==1
     assert len(calls)==2
     assert await session.scalar(select(func.count()).select_from(QuestionClassificationRun).where(QuestionClassificationRun.import_item_id==uuid.UUID(block['items'][0]['id'])))==2
     refreshed=(await client.get('/api/v1/admin/markdown-batches/'+batch)).json()['blocks'][0]
@@ -416,26 +430,28 @@ async def test_classification_failure_keeps_draft_and_exposes_reason(client, ses
         async def classify_questions(self,*args):
             raise RuntimeError('model unavailable')
     monkeypatch.setattr('app.imports.ai.OpenAICompatibleQuestionClient',lambda settings:BrokenAI())
-    response=await client.post(base+'/classify',json={'block_id':block['id']})
-    assert response.status_code==200, response.text
-    assert response.json()['failed_items']==2
-    assert response.json()['results'][0]['error']=='model unavailable'
+    from tests.job_helpers import start
+    response=await start(client,session,storage,batch,'classify',block_id=block['id'])
+    assert response['status']=='failed',response
+    assert response['error_code']=='RuntimeError'
+    assert 'model unavailable' not in response['error_detail']
     current=(await client.get(base)).json()['blocks'][0]
     assert current['parts']==block['parts'] and not current['confirmed']
-    assert current['items'][0]['classification_status']=='分类失败'
+    assert current['items'][0]['classification_status']=='尚未分类'
 
 
 async def test_automatic_recommendation_never_approves(client, session, storage, monkeypatch):
     from app.config import get_settings
     from app.imports.schemas import AIClassificationBatch
     topic=await session.scalar(select(KnowledgeNode).where(KnowledgeNode.node_type=='topic'))
+    topic_code=topic.code
     calls=[]
     class FakeAI:
         provider_name='fake'
         classification_model='fake'
         async def classify_questions(self,items,catalog):
             calls.extend(i['question_no'] for i in items)
-            return AIClassificationBatch.model_validate({'results':[{'question_no':i['question_no'],'primary_candidates':[{'code':topic.code,'confidence':0.8,'rationale':'分类依据'}]} for i in items]}), {}
+            return AIClassificationBatch.model_validate({'results':[{'question_no':i['question_no'],'primary_candidates':[{'code':topic_code,'confidence':0.8,'rationale':'分类依据'}]} for i in items]}), {}
     monkeypatch.setattr(get_settings(),'ai_api_key','fake')
     monkeypatch.setattr(get_settings(),'ai_classification_model','fake')
     monkeypatch.setattr('app.imports.ai.OpenAICompatibleQuestionClient',lambda settings:FakeAI())
@@ -453,7 +469,7 @@ async def test_parallel_classification_is_rejected_without_second_job(client, se
         transaction=await other.begin()
         await other.execute(text('SELECT pg_advisory_xact_lock(hashtextextended(:key,0))'),{'key':'classify:'+batch})
         response=await client.post('/api/v1/admin/markdown-batches/'+batch+'/classify',json={})
-        assert response.status_code==409
+        assert response.status_code==410
         await transaction.rollback()
 
 
@@ -466,9 +482,12 @@ async def test_pending_assist_only_proposes_never_replaces(client, session, stor
     before=(await client.get(base)).json()
     async def suggestion(*args):
         return Unit.model_validate({'source_label':'1-2','material_markdown':'不同的材料','parts':before['blocks'][0]['parts']})
-    monkeypatch.setattr(markdown_api,'assist',suggestion)
-    monkeypatch.setattr(markdown_api,'get_settings',lambda:SimpleNamespace(ai_api_key='fake',ai_text_model='fake'))
-    assert (await client.post(base+'/assist-pending')).status_code==200
+    async def result(raw):
+        return (await suggestion()).model_dump()
+    monkeypatch.setattr('app.imports.text_assist.suggest',result)
+    from tests.job_helpers import start
+    job=await start(client,session,storage,batch,'assist',block_id=before['blocks'][0]['id'])
+    assert job['status']=='succeeded',job
     after=(await client.get(base)).json()
     assert after['blocks'][0]['material_markdown']==before['blocks'][0]['material_markdown']
     assert not after['blocks'][0]['confirmed']

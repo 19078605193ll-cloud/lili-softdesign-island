@@ -79,17 +79,24 @@ async def download_image(url: str, max_bytes: int) -> bytes:
     async with httpx.AsyncClient(timeout=25, trust_env=False) as client:
         for _ in range(5):
             parsed = urlsplit(url)
-            if parsed.scheme not in {"http", "https"} or not parsed.hostname or parsed.username or parsed.password:
+            from app.config import get_settings
+            if parsed.scheme != "https" or parsed.hostname not in get_settings().allowed_image_hosts or parsed.username or parsed.password:
                 raise ImportStorageError("图片地址必须是公网 HTTP/HTTPS 地址")
             addresses = await asyncio.to_thread(socket.getaddrinfo, parsed.hostname, parsed.port or (443 if parsed.scheme == "https" else 80))
             # Some Windows proxy/TUN setups map public hosts to 198.18/15.
             # Permit that reserved proxy range only for the known source CDN.
-            proxy_cdn = parsed.hostname == "cdn-mineru.openxlab.org.cn"
+            proxy_cdn = get_settings().app_env == "development" and parsed.hostname == "cdn-mineru.openxlab.org.cn"
             proxy_range = ipaddress.ip_network("198.18.0.0/15")
             if not addresses or any(not (ipaddress.ip_address(a[4][0]).is_global or
                 (proxy_cdn and ipaddress.ip_address(a[4][0]) in proxy_range)) for a in addresses):
                 raise ImportStorageError("不能下载内网地址图片")
-            async with client.stream("GET", url) as response:
+            # Connect to the address that was checked, retaining the original TLS
+            # name and Host. This prevents a second DNS lookup from rebinding.
+            checked_ip = addresses[0][4][0]
+            connect_url = httpx.URL(url).copy_with(host=checked_ip)
+            host_header = parsed.hostname + (f":{parsed.port}" if parsed.port else "")
+            async with client.stream("GET", connect_url, headers={"Host": host_header},
+                                     extensions={"sni_hostname": parsed.hostname}) as response:
                 if response.is_redirect:
                     from urllib.parse import urljoin
                     url = urljoin(url, response.headers["location"])

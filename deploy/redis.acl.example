@@ -1,0 +1,3 @@
+user default off
+user island_sessions on >REPLACE_SESSION_PASSWORD ~session:* ~prelogin:* ~login:* +@connection +get +set +del +incr +expire +eval +ping +select
+user island_broker on >REPLACE_BROKER_PASSWORD ~* &* +@all

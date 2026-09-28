@@ -7,9 +7,10 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.config import get_settings
 from app.models import Base
+from app.core.runtime import run_async
 
 config = context.config
-config.set_main_option("sqlalchemy.url", get_settings().database_url)
+config.set_main_option("sqlalchemy.url", get_settings().database_url.replace("%", "%%"))
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
@@ -47,11 +48,10 @@ async def run_async_migrations() -> None:
 
 
 def run_migrations_online() -> None:
-    asyncio.run(run_async_migrations())
+    run_async(run_async_migrations())
 
 
 if context.is_offline_mode():
     run_migrations_offline()
 else:
     run_migrations_online()
-

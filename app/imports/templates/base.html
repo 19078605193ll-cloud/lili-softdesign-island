@@ -37,7 +37,7 @@
   {% block head %}{% endblock %}
 </head>
 <body>
-<header><a href="/admin/imports">真题导入审核</a><span class="muted">本地管理界面</span></header>
+<header><a href="/admin/imports">真题导入审核</a><span class="muted">管理后台</span></header>
 <main class="{% block main_class %}{% endblock %}">{% block content %}{% endblock %}</main>
 <script>
 function formatApiError(detail){
@@ -60,15 +60,97 @@ function formatApiError(detail){
   }
   return String(detail);
 }
-async function api(url,options={}){
+const batchRevisions=new Map();
+async function rawApi(url,options={}){
+  if(options.method && !['GET','HEAD'].includes(options.method.toUpperCase())){
+    const csrfResponse=await fetch('/api/v1/auth/csrf');
+    const csrfData=await csrfResponse.json();
+    if(!csrfResponse.ok)throw new Error(csrfData.detail||'登录服务不可用');
+    options.headers={...options.headers,'X-CSRF-Token':csrfData.csrf_token};
+  }
   let response;
   try{response=await fetch(url,options)}catch(error){throw new Error('网络请求失败，请检查服务连接后重试：'+error.message)}
   const text=await response.text();
   let data=null;
   if(text){try{data=JSON.parse(text)}catch(_error){data=text}}
+  if(response.status===401){location.href='/admin/login';throw new Error('登录已过期')}
   if(!response.ok)throw new Error(formatApiError(data?.detail??data));
+  if(data?.revision && data?.id)batchRevisions.set(data.id,data.revision);
   return data;
 }
+async function waitJob(job){
+  sessionStorage.setItem('island-active-job',job.job_id);
+  while(!['succeeded','failed','superseded','cancelled'].includes(job.status)){
+    const notice=document.getElementById('message');if(notice)notice.textContent='后台处理中，可刷新页面继续查看…';
+    await new Promise(r=>setTimeout(r,document.hidden?8000:2000));
+    job=await rawApi('/api/v2/admin/jobs/'+job.job_id);
+  }
+  if(sessionStorage.getItem('island-active-job')===job.job_id)sessionStorage.removeItem('island-active-job');
+  if(job.status!=='succeeded')throw Error(job.error_detail||'任务已过期，请刷新后重新操作');
+  const result=job.result||{};
+  for(const id of result.children||[]){const child=await waitJob(await rawApi('/api/v2/admin/jobs/'+id));result.processed=(result.processed||0)+(child.processed||0);result.failed_items=(result.failed_items||0)+(child.failed_items||0)}
+  return {...result,batch_id:result.batch_id||job.batch_id};
+}
+async function api(url,options={}){
+  const method=(options.method||'GET').toUpperCase();
+  if(url==='/api/v1/admin/import-batches'&&method==='POST'){
+    const file=options.body.get('file');
+    const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await file.arrayBuffer()))).map(x=>x.toString(16).padStart(2,'0')).join('');
+    const identity=JSON.stringify([...options.body.entries()].map(([k,v])=>[k,k==='file'?hash:v]));
+    let pending;try{pending=JSON.parse(sessionStorage.getItem('island-upload-key'))}catch(_){pending=null}
+    if(!pending||pending.identity!==identity)pending={identity,key:crypto.randomUUID()};
+    sessionStorage.setItem('island-upload-key',JSON.stringify(pending));
+    const job=await rawApi('/api/v2/admin/import-batches',{...options,headers:{...options.headers,'Idempotency-Key':pending.key}});
+    sessionStorage.removeItem('island-upload-key');
+    const result=await waitJob(job);return {id:result.batch_id};
+  }
+  const match=url.match(/^\/api\/v1\/admin\/markdown-batches\/([^/]+)(.*)$/);
+  if(match&&method!=='GET'){
+    const [,id,path]=match,base='/api/v1/admin/markdown-batches/'+id;
+    const asynchronous=['/classify','/assist-pending','/images/retry','/supplement'].includes(path)||/^\/blocks\/[^/]+\/assist$/.test(path);
+    if(asynchronous){
+      const state=await rawApi(base);let body=options.body?JSON.parse(options.body):{};
+      let kind={'/classify':'classify','/images/retry':'archive_images','/supplement':'supplement','/assist-pending':'assist'}[path]||'assist';
+      if(path==='/assist-pending'){
+        if(!state.ai_configured)return {configured:false,processed:0,remaining:0};
+        const blocks=state.blocks.filter(b=>b.issues.length&&!b.confirmed&&!b.excluded&&!b.ai_suggestion&&!b.ai_error);
+        if(!blocks.length)return {configured:true,processed:0,remaining:0};
+        body={block_id:blocks[0].id};
+      }else if(kind==='assist')body={block_id:path.split('/')[2]};
+      const job=await rawApi('/api/v2/admin/import-batches/'+id+'/jobs',{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':crypto.randomUUID()},body:JSON.stringify({...body,kind,revision:state.revision})});
+      const result=await waitJob(job);await rawApi(base);
+      if(path==='/assist-pending')return {configured:true,processed:1,remaining:0};
+      return result;
+    }
+    if(!batchRevisions.has(id))await rawApi(base);
+    options.headers={...options.headers,'If-Match':String(batchRevisions.get(id))};
+    const result=await rawApi(url,options);await rawApi(base);return result;
+  }
+  return rawApi(url,options);
+}
+document.addEventListener('DOMContentLoaded',async()=>{
+  const banner=document.querySelector('header');
+  if(banner){const logout=document.createElement('button');logout.textContent='退出登录';logout.onclick=async()=>{await rawApi('/api/v1/auth/logout',{method:'POST'});location.href='/admin/login'};banner.append(logout)}
+  const match=location.pathname.match(/^\/admin\/imports\/([0-9a-f-]+)/);
+  if(match){
+    const panel=document.createElement('section');panel.className='card';panel.setAttribute('aria-label','后台任务');
+    document.querySelector('main').prepend(panel);
+    async function refreshJobs(){
+      try{const data=await rawApi('/api/v2/admin/import-batches/'+match[1]+'/jobs');panel.replaceChildren();
+        const pending=data.items.filter(j=>!['succeeded','cancelled'].includes(j.status));
+        if(!pending.length){panel.hidden=true;return}panel.hidden=false;
+        const heading=document.createElement('h2');heading.textContent='后台处理';panel.append(heading);
+        for(const job of pending.slice(0,10)){const row=document.createElement('p');row.textContent=({parse:'解析原文',classify:'匹配知识点',assist:'辅助提取',archive_images:'归档图片',supplement:'创建补充批次'}[job.kind]||'处理')+'：'+({queued:'等待处理',running:'处理中',retry_wait:'等待重试',failed:'处理失败',superseded:'内容已更新，请重新发起'}[job.status]||job.status);panel.append(row);
+          if(job.status==='failed'){const retry=document.createElement('button');retry.textContent='重试';retry.onclick=async()=>{retry.disabled=true;try{await waitJob(await rawApi('/api/v2/admin/jobs/'+job.job_id+'/retry',{method:'POST'}));location.reload()}catch(e){row.textContent=e.message;retry.disabled=false}};panel.append(retry)}}
+      }catch(e){panel.textContent=e.message}
+    }
+    refreshJobs();setInterval(refreshJobs,8000);
+  }
+  const id=sessionStorage.getItem('island-active-job');
+  if(!id)return;
+  try{await waitJob(await rawApi('/api/v2/admin/jobs/'+id));if(location.pathname.startsWith('/admin/imports/'))location.reload()}
+  catch(e){const notice=document.getElementById('message');if(notice)notice.textContent=e.message}
+});
 </script>
 {% block scripts %}{% endblock %}
 </body>

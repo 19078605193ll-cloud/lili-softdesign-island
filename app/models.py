@@ -50,6 +50,7 @@ class ExamSubject(TimestampMixin, Base):
 
 class KnowledgeTaxonomyRelease(Base):
     __tablename__ = "knowledge_taxonomy_releases"
+    catalog_snapshot: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     __table_args__ = (UniqueConstraint("subject_id", "version", name="uq_taxonomy_release_version"),)
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
@@ -309,6 +310,7 @@ class KnowledgeExamAggregate(Base):
 
 class QuestionImportBatch(TimestampMixin, Base):
     __tablename__ = "question_import_batches"
+    revision: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
     __table_args__ = (
         CheckConstraint(
             "status IN ('uploaded', 'sectioned', 'parsed', 'in_review', "
@@ -534,6 +536,7 @@ class QuestionAsset(TimestampMixin, Base):
 class PracticeQuestion(TimestampMixin, Base):
     """One independently presented, reviewed and submitted practice unit."""
     __tablename__ = "practice_questions"
+    content_version: Mapped[int] = mapped_column(Integer, nullable=False, default=1, server_default="1")
     __table_args__ = (
         UniqueConstraint("paper_id", "source_label", name="uq_practice_paper_label"),
     )
@@ -546,6 +549,10 @@ class PracticeQuestion(TimestampMixin, Base):
 
 class PracticeQuestionPart(Base):
     __tablename__ = "practice_question_parts"
+    __table_args__ = (
+        UniqueConstraint("practice_question_id", "position", name="uq_practice_part_position"),
+        CheckConstraint("position > 0", name="ck_practice_part_position"),
+    )
     practice_question_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("practice_questions.id", ondelete="CASCADE"), primary_key=True)
     question_id: Mapped[uuid.UUID] = mapped_column(Uuid, ForeignKey("questions.id", ondelete="RESTRICT"), primary_key=True, unique=True)
     position: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -579,6 +586,7 @@ class QuestionAssetUsage(TimestampMixin, Base):
         Index("ix_asset_usage_import_group", "import_group_id"),
         Index("ix_asset_usage_question", "question_id"),
         Index("ix_asset_usage_question_group", "question_group_id"),
+        Index("ix_asset_usage_asset", "asset_id"),
     )
 
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
@@ -676,3 +684,6 @@ class QuestionImportKnowledgeSelection(TimestampMixin, Base):
     )
     role: Mapped[str] = mapped_column(String(20), nullable=False)
     source: Mapped[str] = mapped_column(String(20), nullable=False)
+
+# Register platform models in the single Alembic metadata registry.
+from app.core.models import User, Role, UserRole, AuditEvent, Job, Outbox, Attempt, AttemptPart, AttemptAsset  # noqa: E402,F401

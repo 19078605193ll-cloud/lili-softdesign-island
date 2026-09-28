@@ -14,7 +14,6 @@ from app.db import get_session
 from app.imports.service import (
     ImportNotFoundError,
     get_batch_read,
-    get_bulk_approval_previews,
     get_import_group,
     get_item_read,
 )
@@ -27,18 +26,8 @@ templates = Jinja2Templates(directory=str(Path(__file__).with_name("templates"))
 
 @router.get("/admin/imports", response_class=HTMLResponse)
 async def import_index(request: Request, session: SessionDependency) -> HTMLResponse:
-    ids = list(
-        (
-            await session.scalars(
-                select(QuestionImportBatch.id)
-                .order_by(QuestionImportBatch.created_at.desc())
-                .limit(50)
-            )
-        ).all()
-    )
-    batches = [
-        (await get_batch_read(session, value)).model_dump(mode="json") for value in ids
-    ]
+    from app.imports.queries import batch_list
+    batches = await batch_list(session)
     return templates.TemplateResponse(
         request=request,
         name="imports.html",
@@ -61,45 +50,11 @@ async def import_batch_page(
         .order_by(QuestionImportItem.question_no))).all())
     return templates.TemplateResponse(request=request, name="legacy.html",
         context={"batch": batch, "items": legacy_items})
-    items = list(
-        (
-            await session.scalars(
-                select(QuestionImportItem)
-                .where(QuestionImportItem.batch_id == batch_id)
-                .order_by(QuestionImportItem.question_no)
-            )
-        ).all()
-    )
-    batch_record = await session.get(QuestionImportBatch, batch_id)
-    assert batch_record is not None
-    approval_previews = await get_bulk_approval_previews(session, batch_record, items)
-    item_rows = [
-        {
-            "id": str(item.id),
-            "question_no": item.question_no,
-            "status": item.status,
-            "errors": sum(
-                issue.get("severity") == "error" for issue in item.validation_issues
-            ),
-            "warnings": sum(
-                issue.get("severity") == "warning" for issue in item.validation_issues
-            ),
-            "approval_eligible": approval_previews[item.id]["eligible"],
-            "approval_reason": approval_previews[item.id]["reason"],
-            "approval_suggestion": approval_previews[item.id]["suggestion"],
-        }
-        for item in items
-    ]
-    return templates.TemplateResponse(
-        request=request,
-        name="batch.html",
-        context={"batch": batch, "items": item_rows},
-    )
 
 
 @router.get("/admin/imports/{batch_id}/blocks/{block_id}", response_class=HTMLResponse)
 async def markdown_block_page(request: Request, batch_id: uuid.UUID, block_id: str, session: SessionDependency):
-    from app.imports.markdown_api import context, block_for
+    from app.imports.review_context import context, block_for
     batch_record, doc = await context(session, batch_id)
     if not batch_record.parser_version.startswith("markdown-"):
         raise HTTPException(404, "该批次不是 Markdown 导入")

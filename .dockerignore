@@ -1,0 +1,13 @@
+.git
+.env
+.env.*
+.venv
+var
+.test-runtime
+.local-runtime
+deploy/local.env
+tests
+*.pdf
+**/__pycache__
+.pytest_cache
+.playwright*

@@ -1,0 +1,49 @@
+# Local runtime: reuses the existing PostgreSQL container and real question assets.
+# Never use compose.test.yml for this deployment.
+x-app: &app
+  image: softdesign-island:local
+  build: .
+  restart: unless-stopped
+  env_file:
+    - .env
+    - deploy/local.env
+  environment:
+    APP_ENV: development
+    PUBLIC_ORIGIN: http://127.0.0.1:8000
+    IMPORT_STORAGE_ROOT: /srv/island/var/imports
+  volumes:
+    - ./app:/srv/island/app:ro
+    - ./alembic:/srv/island/alembic:ro
+    - ./var/imports:/srv/island/var/imports
+  networks: [existing]
+  depends_on:
+    - redis
+  logging:
+    driver: local
+    options: {max-size: "10m", max-file: "5"}
+
+services:
+  api:
+    <<: *app
+    ports:
+      - "127.0.0.1:8000:8000"
+  worker:
+    <<: *app
+    command: [celery, -A, app.infrastructure.celery_app:celery_app, worker, --loglevel=INFO, --concurrency=2]
+    stop_grace_period: 270s
+  dispatcher:
+    <<: *app
+    command: [python, -m, app.infrastructure.dispatcher]
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: [redis-server, --appendonly, "yes", --maxmemory-policy, noeviction]
+    volumes: ["redis:/data"]
+    networks: [existing]
+
+volumes:
+  redis:
+networks:
+  existing:
+    external: true
+    name: softdesign-island_default

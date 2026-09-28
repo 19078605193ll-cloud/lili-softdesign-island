@@ -436,6 +436,10 @@ async def delete_unpublished_batch(session: AsyncSession, batch_id: uuid.UUID) -
         raise ImportNotFoundError("import batch not found")
     if batch.status == "published" or batch.published_paper_id:
         raise ImportConflictError("已发布批次不能删除")
+    from app.models import Job
+    running = await session.scalar(select(Job.id).where(Job.batch_id == batch_id, Job.status == "running").limit(1))
+    if running:
+        raise ImportConflictError("批次仍有执行中的任务，请等待完成后删除")
     published_item = await session.scalar(
         select(QuestionImportItem.id)
         .where(
@@ -1600,6 +1604,8 @@ async def classify_batch(
         }
         for node in topics
     ]
+    if release.catalog_snapshot:
+        catalog = release.catalog_snapshot["topics"]
     all_items = list((await session.scalars(
         select(QuestionImportItem).where(QuestionImportItem.batch_id == batch.id)
         .order_by(QuestionImportItem.question_no)
@@ -1996,6 +2002,11 @@ async def _validate_approval_selection(
         raise ImportWorkflowError("; ".join(errors))
 
     codes = [selection.primary_code, *selection.related_codes]
+    from app.knowledge.versions import topic_codes
+    release = await session.get(KnowledgeTaxonomyRelease, batch.taxonomy_release_id)
+    allowed = topic_codes(release)
+    if allowed is not None and not set(codes) <= allowed:
+        raise ImportWorkflowError("知识点不属于此批次的目录版本")
     nodes = list(
         (
             await session.scalars(

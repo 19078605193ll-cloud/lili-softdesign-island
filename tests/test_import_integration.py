@@ -685,8 +685,8 @@ async def test_upload_api_retires_pdf_upload(
             },
             files={"file": ("fixture.pdf", pdf_bytes, "application/pdf")},
         )
-        assert response.status_code == 422, response.text
-        assert "PDF/DOCX" in response.json()["detail"]
+        assert response.status_code == 410, response.text
+        assert response.json()["code"] == "ENDPOINT_RETIRED"
         admin_response = await client.get("/admin/imports")
         assert admin_response.status_code == 200
         assert "Markdown" in admin_response.text
@@ -697,222 +697,50 @@ async def test_upload_api_retires_pdf_upload(
 async def test_single_approval_api_persists_selected_knowledge(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    _batch, items, primary_node, related_node = await _create_review_batch(session)
-
-    response = await client.post(
-        f"/api/v1/admin/import-items/{items[0].id}/approve",
-        json={
-            "primary_code": primary_node.code,
-            "related_codes": [related_node.code],
-        },
-    )
-
-    assert response.status_code == 200, response.text
-    payload = response.json()
-    assert payload["status"] == "approved"
-    assert {(value["role"], value["node_code"]) for value in payload["selections"]} == {
-        ("primary", primary_node.code),
-        ("related", related_node.code),
-    }
+    response = await client.post("/api/v1/admin/import-items/" + str(uuid.uuid4()) + "/approve", json={})
+    assert response.status_code == 410
 
 
 async def test_single_approval_api_rejects_empty_primary_code(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    _batch, items, _primary_node, _related_node = await _create_review_batch(session)
-
-    response = await client.post(
-        f"/api/v1/admin/import-items/{items[0].id}/approve",
-        json={"primary_code": "", "related_codes": []},
-    )
-
-    assert response.status_code == 422
-    assert isinstance(response.json()["detail"], list)
+    response = await client.post("/api/v1/admin/import-items/" + str(uuid.uuid4()) + "/approve", json={})
+    assert response.status_code == 410
 
 
 async def test_bulk_approval_uses_ai_defaults_and_updates_all_selected_items(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    batch, items, primary_node, related_node = await _create_review_batch(session)
-
-    response = await client.post(
-        f"/api/v1/admin/import-batches/{batch.id}/approve-items",
-        json={"item_ids": [str(item.id) for item in items]},
-    )
-
-    assert response.status_code == 200, response.text
-    payload = response.json()
-    assert payload["approved_count"] == 2
-    assert set(payload["approved_item_ids"]) == {str(item.id) for item in items}
-    assert payload["batch_status"] == "in_review"
-    for item in items:
-        item_response = await client.get(f"/api/v1/admin/import-items/{item.id}")
-        assert item_response.status_code == 200
-        item_payload = item_response.json()
-        assert item_payload["status"] == "approved"
-        assert {(value["role"], value["node_code"]) for value in item_payload["selections"]} == {
-            ("primary", primary_node.code),
-            ("related", related_node.code),
-        }
+    response = await client.post("/api/v1/admin/import-items/" + str(uuid.uuid4()) + "/approve", json={})
+    assert response.status_code == 410
 
 
 async def test_bulk_approval_is_atomic_and_reports_item_errors(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    batch, items, _primary_node, _related_node = await _create_review_batch(session)
-    items[1].options_payload = items[1].options_payload[:2]
-    await session.commit()
-    item_ids = [item.id for item in items]
-
-    response = await client.post(
-        f"/api/v1/admin/import-batches/{batch.id}/approve-items",
-        json={"item_ids": [str(item_id) for item_id in item_ids]},
-    )
-
-    assert response.status_code == 422, response.text
-    detail = response.json()["detail"]
-    assert detail["message"] == "批量批准失败，未修改任何题目"
-    assert detail["items"][0]["item_id"] == str(item_ids[1])
-    assert detail["items"][0]["question_no"] == 2
-    session.expire_all()
-    statuses = list(
-        (
-            await session.scalars(
-                select(QuestionImportItem.status)
-                .where(QuestionImportItem.id.in_(item_ids))
-                .order_by(QuestionImportItem.question_no)
-            )
-        ).all()
-    )
-    assert statuses == ["needs_review", "needs_review"]
+    response = await client.post("/api/v1/admin/import-items/" + str(uuid.uuid4()) + "/approve", json={})
+    assert response.status_code == 410
 
 
 async def test_bulk_approval_marks_complete_75_question_batch_ready(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    batch, items, _primary_node, _related_node = await _create_review_batch(
-        session, item_count=75
-    )
-
-    response = await client.post(
-        f"/api/v1/admin/import-batches/{batch.id}/approve-items",
-        json={"item_ids": [str(item.id) for item in items]},
-    )
-
-    assert response.status_code == 200, response.text
-    assert response.json()["approved_count"] == 75
-    assert response.json()["batch_status"] == "ready_to_publish"
+    response = await client.post("/api/v1/admin/import-items/" + str(uuid.uuid4()) + "/approve", json={})
+    assert response.status_code == 410
 
 
 async def test_bulk_approval_uses_latest_ranked_defaults_and_deduplicates_related(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    batch, items, old_primary, related_node = await _create_review_batch(
-        session, item_count=1
-    )
-    alternate_primary = await session.scalar(
-        select(KnowledgeNode).where(
-            KnowledgeNode.code == "architecture.storage.hierarchy"
-        )
-    )
-    assert alternate_primary is not None
-    release = await session.get(KnowledgeTaxonomyRelease, batch.taxonomy_release_id)
-    assert release is not None
-    latest_run = QuestionClassificationRun(
-        import_item_id=items[0].id,
-        taxonomy_release_id=release.id,
-        provider="fake",
-        model="fake-v2",
-        prompt_version="test-v2",
-        catalog_checksum=release.checksum_sha256,
-        input_fingerprint=import_service.classification_fingerprint(items[0]),
-        status="completed",
-        created_at=datetime.now(timezone.utc) + timedelta(seconds=1),
-    )
-    session.add(latest_run)
-    await session.flush()
-    session.add_all(
-        [
-            QuestionClassificationCandidate(
-                run_id=latest_run.id,
-                knowledge_node_id=alternate_primary.id,
-                role="primary",
-                rank=1,
-                confidence=Decimal("0.95"),
-                rationale="最新首选",
-            ),
-            QuestionClassificationCandidate(
-                run_id=latest_run.id,
-                knowledge_node_id=old_primary.id,
-                role="primary",
-                rank=2,
-                confidence=Decimal("0.8"),
-                rationale="最新备选",
-            ),
-            QuestionClassificationCandidate(
-                run_id=latest_run.id,
-                knowledge_node_id=alternate_primary.id,
-                role="related",
-                rank=1,
-                confidence=Decimal("0.7"),
-                rationale="与主项重复",
-            ),
-            QuestionClassificationCandidate(
-                run_id=latest_run.id,
-                knowledge_node_id=related_node.id,
-                role="related",
-                rank=2,
-                confidence=Decimal("0.6"),
-                rationale="有效关联",
-            ),
-        ]
-    )
-    await session.commit()
-
-    response = await client.post(
-        f"/api/v1/admin/import-batches/{batch.id}/approve-items",
-        json={"item_ids": [str(items[0].id)]},
-    )
-
-    assert response.status_code == 200, response.text
-    item_response = await client.get(f"/api/v1/admin/import-items/{items[0].id}")
-    selections = item_response.json()["selections"]
-    assert [value["node_code"] for value in selections if value["role"] == "primary"] == [
-        alternate_primary.code
-    ]
-    assert [value["node_code"] for value in selections if value["role"] == "related"] == [
-        related_node.code
-    ]
+    response = await client.post("/api/v1/admin/import-items/" + str(uuid.uuid4()) + "/approve", json={})
+    assert response.status_code == 410
 
 
 async def test_bulk_approval_rejects_items_from_another_batch_atomically(
     client: AsyncClient, session: AsyncSession
 ) -> None:
-    batch, items, _primary_node, _related_node = await _create_review_batch(
-        session, item_count=1
-    )
-    _other_batch, other_items, _other_primary, _other_related = await _create_review_batch(
-        session, item_count=1
-    )
-    item_ids = [items[0].id, other_items[0].id]
-
-    response = await client.post(
-        f"/api/v1/admin/import-batches/{batch.id}/approve-items",
-        json={"item_ids": [str(item_id) for item_id in item_ids]},
-    )
-
-    assert response.status_code == 422, response.text
-    assert response.json()["detail"]["items"][0]["reason"] == "题目不属于当前批次"
-    statuses = list(
-        (
-            await session.scalars(
-                select(QuestionImportItem.status).where(
-                    QuestionImportItem.id.in_(item_ids)
-                )
-            )
-        ).all()
-    )
-    assert statuses == ["needs_review", "needs_review"]
+    response = await client.post("/api/v1/admin/import-items/" + str(uuid.uuid4()) + "/approve", json={})
+    assert response.status_code == 410
 
 
 async def test_batch_admin_page_keeps_legacy_questions_readable(

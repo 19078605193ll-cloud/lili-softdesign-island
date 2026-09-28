@@ -80,6 +80,8 @@ def main():
     parser.add_argument('--dry-run',action='store_true')
     parser.add_argument('--report',type=Path)
     args=parser.parse_args()
+    if not args.dry_run:
+        parser.error("同步写入入口已停用；请通过管理后台或 /api/v2/admin/import-batches 提交持久任务。此命令只支持 --dry-run。")
     if __import__('sys').platform == 'win32':
         asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
     result=asyncio.run(run(args.directory,args.dry_run))

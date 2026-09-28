@@ -10,3 +10,13 @@ build/
 *.egg-info/
 .coverage
 htmlcov/
+.test-runtime/
+.playwright-cli/
+.playwright-mcp/
+var/backups/
+var/*.log
+deploy/production.env
+deploy/redis.acl
+.mypy_cache/
+.local-runtime/
+deploy/local.env

@@ -24,7 +24,7 @@
   {% for batch in batches %}
     <tr data-batch-id="{{ batch.id }}">
       <td>{{ batch.title }}</td><td>{{ batch.year }} / {{ batch.period }} / {{ batch.batch_code }}</td><td>{{ batch.taxonomy_version }}</td>
-      <td><span class="badge {{ batch.status }}">{% if batch.status == 'uploaded' %}已上传，待确认页码{% elif batch.status == 'sectioned' %}页码已确认，待解析{% elif batch.status == 'in_review' %}待人工审核{% elif batch.status == 'ready_to_publish' %}可发布{% elif batch.status == 'published' %}已发布{% elif batch.status == 'failed' %}处理失败{% else %}{{ batch.status }}{% endif %}</span></td>
+      <td><span class="badge {{ batch.status }}">{% if batch.status == 'uploaded' %}已上传，后台处理中{% elif batch.status == 'sectioned' %}页码已确认，待解析{% elif batch.status == 'in_review' %}待人工审核{% elif batch.status == 'ready_to_publish' %}可发布{% elif batch.status == 'published' %}已发布{% elif batch.status == 'failed' %}处理失败{% else %}{{ batch.status }}{% endif %}</span></td>
       <td>{% set labels = {'needs_review':'待审核','approved':'已批准','published':'已发布','blocked':'需处理','rejected':'已排除','pending':'待解析','parsed':'已解析'} %}{% for status, count in batch.item_counts.items() %}<span class="badge">{{ labels.get(status, status) }} {{ count }}</span> {% else %}暂无题目{% endfor %}</td>
       <td class="error">{{ batch.error_summary or '' }}{% if batch.failures %}{% for failure in batch.failures[:3] %}<div>{{ failure.stage }}{% if failure.page_no %}第 {{ failure.page_no }} 页{% endif %}{% if failure.question_numbers %}第 {{ failure.question_numbers|join('、') }} 题{% endif %}：{{ failure.reason }}</div>{% endfor %}{% endif %}</td>
       <td><div class="actions"><a class="button secondary" href="/admin/imports/{{ batch.id }}">打开</a>{% if batch.status != 'published' and not batch.published_paper_id %}<button class="danger delete-batch" type="button" data-batch-id="{{ batch.id }}" data-batch-title="{{ batch.title }}">删除</button>{% endif %}</div></td>
@@ -49,8 +49,23 @@ function updateFilenameWarning(){
   document.getElementById('filename-warning').textContent=filenameWarnings(name,document.getElementById('upload-year').value,document.getElementById('upload-period').value).join('；');
 }
 ['upload-file','upload-year','upload-period'].forEach(id=>document.getElementById(id).addEventListener('change',updateFilenameWarning));
-document.getElementById('upload-form').addEventListener('submit',async event=>{
-  event.preventDefault();const message=document.getElementById('message'),button=document.getElementById('upload-button');
+const uploadForm=document.getElementById('upload-form'),uploadFile=document.getElementById('upload-file'),uploadMessage=document.getElementById('message');
+const missingFileMessage='\u8bf7\u5148\u9009\u62e9\u4e00\u4e2a Markdown \u6216 ZIP \u6587\u4ef6';
+uploadForm.addEventListener('invalid',event=>{
+  if(event.target!==uploadFile)return;
+  event.preventDefault();
+  uploadFile.setAttribute('aria-invalid','true');
+  uploadMessage.className='message error';
+  uploadMessage.textContent=missingFileMessage;
+  uploadFile.focus();
+},true);
+uploadFile.addEventListener('change',()=>{
+  if(!uploadFile.files.length)return;
+  uploadFile.removeAttribute('aria-invalid');
+  if(uploadMessage.textContent===missingFileMessage)uploadMessage.textContent='';
+});
+uploadForm.addEventListener('submit',async event=>{
+  event.preventDefault();const message=uploadMessage,button=document.getElementById('upload-button');
   const form=new FormData(event.target);if(!form.get('taxonomy_version'))form.delete('taxonomy_version');
   try{button.disabled=true;message.className='message';message.textContent='正在解析题目并归档图片，请稍候…';
     const data=await api('/api/v1/admin/import-batches',{method:'POST',body:form});

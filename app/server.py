@@ -4,6 +4,7 @@ import argparse
 import asyncio
 
 import uvicorn
+from app.config import get_settings
 
 
 def selector_loop_factory() -> asyncio.AbstractEventLoop:
@@ -21,6 +22,9 @@ def main() -> None:
         host=args.host,
         port=args.port,
         loop=selector_loop_factory,
+        proxy_headers=True,
+        # Production API has no published port; Caddy is the trusted ingress.
+        forwarded_allow_ips="*" if get_settings().app_env == "production" else "127.0.0.1",
     )
 
 

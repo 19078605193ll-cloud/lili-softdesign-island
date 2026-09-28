@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.models import (ExamPaper, Question, QuestionGroup, QuestionOption, QuestionCorrectOption,
     QuestionKnowledgeAssignment, QuestionImportBatch, QuestionSourceDocument, QuestionImportGroup,
     QuestionImportItem, QuestionImportKnowledgeSelection, QuestionClassificationRun, QuestionAsset, QuestionAssetUsage,
-    PracticeQuestion, PracticeQuestionPart, PracticeQuestionRevision)
+    PracticeQuestion, PracticeQuestionPart, PracticeQuestionRevision, KnowledgeNode, KnowledgeTaxonomyRelease)
 from app.imports.markdown_parser import VERSION, IMAGE, Unit, parse_markdown, parse_block
 from app.imports.markdown_storage import local_image, download_image, store_image
 from app.imports.storage import LocalImportStorage
@@ -259,7 +259,11 @@ async def publish(session: AsyncSession, batch_id, storage=None):
         paper = ExamPaper(subject_id=batch.subject_id, year=batch.year, period=batch.period, batch_code=batch.batch_code,
             title=batch.title, exam_date=batch.exam_date, source_reference=batch.source_reference, status="verified")
         session.add(paper); await session.flush()
-    hashes = {str(a.id): a.sha256 for a in await session.scalars(select(QuestionAsset))}
+    referenced = set(re.findall(r'asset://([0-9a-fA-F-]{36})', json.dumps(doc.extracted_content)))
+    existing_assets = select(QuestionAssetUsage.asset_id).outerjoin(Question, Question.id == QuestionAssetUsage.question_id).outerjoin(QuestionGroup, QuestionGroup.id == QuestionAssetUsage.question_group_id).where(
+        (Question.paper_id == paper.id) | (QuestionGroup.paper_id == paper.id))
+    hashes = {str(a.id): a.sha256 for a in await session.scalars(select(QuestionAsset).where(
+        QuestionAsset.id.in_([uuid.UUID(v) for v in referenced]) | QuestionAsset.id.in_(existing_assets)))}
     counts = dict(added=0, replaced=0, skipped=0, excluded=0)
     for block in doc.extracted_content["blocks"]:
         if block.get("excluded"):
@@ -287,7 +291,7 @@ async def publish(session: AsyncSession, batch_id, storage=None):
             ids = set(await session.scalars(select(PracticeQuestionPart.practice_question_id).where(PracticeQuestionPart.question_id.in_([q.id for q in existing_questions]))))
             if len(ids) != 1:
                 raise ImportConflictError(f"第 {label} 题与已有题目组合边界冲突，不能自动合并")
-            unit = await session.get(PracticeQuestion, next(iter(ids)))
+            unit = await session.scalar(select(PracticeQuestion).where(PracticeQuestion.id == next(iter(ids))).with_for_update())
             old_questions, old_payload = await formal_payload(session, unit)
             if sorted(q.question_no for q in old_questions) != numbers:
                 raise ImportConflictError(f"第 {label} 题与已有组合题小问范围不同")
@@ -306,6 +310,7 @@ async def publish(session: AsyncSession, batch_id, storage=None):
             old_payload["assignments"] = [{"question_id": str(a.question_id), "node_id": str(a.knowledge_node_id), "role": a.role, "status": a.status, "source": a.source} for a in assignments]
             old_payload["question_ids"] = [str(q.id) for q in old_questions]
             session.add(PracticeQuestionRevision(practice_question_id=unit.id, batch_id=batch.id, snapshot=old_payload))
+            unit.content_version += 1
             counts["replaced"] += 1
         else:
             unit = PracticeQuestion(paper_id=paper.id, source_label=label, content_hash=digest)
@@ -326,6 +331,14 @@ async def publish(session: AsyncSession, batch_id, storage=None):
             selections = list(await session.scalars(select(QuestionImportKnowledgeSelection).where(QuestionImportKnowledgeSelection.import_item_id == item.id)))
             if sum(s.role == "primary" for s in selections) != 1:
                 raise ImportWorkflowError(f"第 {item.question_no} 小问需要一个主知识点")
+            release = await session.get(KnowledgeTaxonomyRelease, batch.taxonomy_release_id)
+            from app.knowledge.versions import topic_codes
+            allowed = topic_codes(release)
+            for selection in selections:
+                node = await session.get(KnowledgeNode, selection.knowledge_node_id)
+                if (node is None or node.subject_id != batch.subject_id or node.node_type != "topic"
+                    or node.status != "active" or (allowed is not None and node.code not in allowed)):
+                    raise ImportWorkflowError("知识点已失效，请重新审核")
             q = old_questions[index] if old_questions else Question(subject_id=batch.subject_id, paper_id=paper.id, question_no=item.question_no)
             q.group_id = formal_group.id if formal_group else None; q.group_order = index + 1 if formal_group else None
             q.question_type = "single_choice"; q.stem_markdown = item.stem_markdown

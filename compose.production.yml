@@ -1,0 +1,76 @@
+x-app: &app
+  image: ${ISLAND_IMAGE:?required}
+  build: .
+  restart: unless-stopped
+  env_file: ${ISLAND_ENV_FILE:-deploy/production.env}
+  environment:
+    APP_ENV: production
+    IMPORT_STORAGE_ROOT: /srv/island/var/imports
+  volumes:
+    - assets:/srv/island/var/imports
+  networks: [backend, outbound]
+  depends_on:
+    db: {condition: service_healthy}
+    redis: {condition: service_started}
+  logging:
+    driver: local
+    options: {max-size: "10m", max-file: "10"}
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+
+services:
+  api:
+    <<: *app
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready',timeout=5)"]
+      interval: 15s
+      timeout: 6s
+      retries: 3
+  worker:
+    <<: *app
+    command: [celery, -A, app.infrastructure.celery_app:celery_app, worker, --loglevel=INFO, --concurrency=2]
+    stop_grace_period: 270s
+  dispatcher:
+    <<: *app
+    command: [python, -m, app.infrastructure.dispatcher]
+  caddy:
+    image: caddy:2.10-alpine
+    restart: unless-stopped
+    environment:
+      ISLAND_DOMAIN: ${ISLAND_DOMAIN:?required}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    networks: [backend, outbound]
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: island
+      POSTGRES_USER: island_migrator
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+    volumes: ["postgres:/var/lib/postgresql/data"]
+    networks: [backend]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U island_migrator -d island"]
+      interval: 5s
+      retries: 20
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: [redis-server, /usr/local/etc/redis/redis.conf]
+    volumes:
+      - redis:/data
+      - ./deploy/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - ./deploy/redis.acl:/usr/local/etc/redis/users.acl:ro
+    networks: [backend]
+volumes:
+  postgres:
+  assets:
+  redis:
+  caddy_data:
+networks:
+  backend:
+    internal: true
+  outbound:

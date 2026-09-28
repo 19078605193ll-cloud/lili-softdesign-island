@@ -1,5 +1,18 @@
 # 软件设计师真题题库
 
+## 0.3 架构升级
+
+后台现在要求登录，使用同源 Cookie、CSRF 和角色权限；不再允许匿名管理。
+Markdown 上传及 AI 处理改为持久任务，需要 API、Redis、Celery worker 和 dispatcher。
+旧同步耗时接口返回 410。原审核页面、组合题与发布规则保留。
+
+开发依赖使用 `uv sync --frozen --extra dev`；安全测试入口为
+`uv run python scripts/test_isolated.py -q --tb=short`，自动创建并销毁独立测试环境。
+不要直接使用下文历史测试命令重建已有数据库。
+
+详见 [运行与升级说明](docs/operations.md) 和 [实施验证记录](docs/implementation-progress.md)。
+以下原有导入说明保留作为业务使用参考；启动和认证以运行说明为准。
+
 本服务面向“软件设计师基础知识”单选题。管理员上传已整理的 UTF-8 Markdown，系统保存原文并提取题干、选项、答案、解析和图片，然后逐小问分类、整题审核。共用题干的 2～5 个小问作为一道组合题展示与提交。来源标记为考生回忆版；允许缺题和题号不连续。
 
 ## 启动
@@ -14,7 +27,7 @@ python -m app.knowledge.sync
 python -m app.server
 ```
 
-打开 <http://127.0.0.1:8000/admin/imports> 或 <http://127.0.0.1:8000/docs>。管理界面目前未接入身份认证，仅在本机或可信内网使用。
+打开 <http://127.0.0.1:8000/admin/imports>，未登录时进入登录页。账号由 `python -m app.core.accounts` 管理。
 
 ## 导入和审核
 
@@ -63,9 +76,8 @@ AI_CLASSIFICATION_MODEL=知识点分类模型
 
 ## 测试
 
-集成测试只接受数据库名以 `_test` 结尾的 PostgreSQL 数据库，会重建其 `public` schema：
+集成测试只接受独立容器、专用账号及本次运行标记，禁止直接指定业务数据库：
 
 ```powershell
-$env:TEST_DATABASE_URL = "postgresql+psycopg://postgres:postgres@localhost:5432/software_designer_test"
-python -X utf8 -m pytest -q
+uv run python scripts/test_isolated.py -q --tb=short
 ```

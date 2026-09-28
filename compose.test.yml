@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: island_isolated_test
+      POSTGRES_USER: island_test
+      POSTGRES_PASSWORD: ${ISLAND_TEST_PASSWORD:?required}
+    ports:
+      - "127.0.0.1:${ISLAND_TEST_DB_PORT:?required}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U island_test -d island_isolated_test"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+    networks: [isolated]
+  redis:
+    image: redis:7-alpine
+    command: [redis-server, --appendonly, "yes", --maxmemory-policy, noeviction]
+    ports:
+      - "127.0.0.1:${ISLAND_TEST_REDIS_PORT:?required}:6379"
+    networks: [isolated]
+networks:
+  isolated:
+    driver: bridge
