@@ -8,7 +8,7 @@ from markdown_it import MarkdownIt
 from mdit_py_plugins.dollarmath import dollarmath_plugin
 
 
-def render_markdown(value: str) -> str:
+def render_markdown(value: str, *, audience: str = 'admin') -> str:
     def math(value, options):
         try:
             return convert(value, display='block' if options.get('display_mode') else 'inline')
@@ -26,6 +26,8 @@ def render_markdown(value: str) -> str:
 
     def attributes(tag, name, value):
         if tag == 'img' and name == 'src':
+            if audience == 'learner':
+                return bool(re.fullmatch(r'/api/v1/question-assets/[0-9a-fA-F-]{36}|/api/v2/learning/attempts/[0-9a-fA-F-]{36}/assets/[0-9a-fA-F-]{36}', value))
             return bool(re.fullmatch(r'/api/v1/admin/question-assets/[0-9a-fA-F-]{36}', value))
         if tag in math_tags:
             return name in {'display', 'mathvariant', 'stretchy', 'fence', 'separator',

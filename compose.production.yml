@@ -29,7 +29,7 @@ services:
   worker:
     <<: *app
     command: [celery, -A, app.infrastructure.celery_app:celery_app, worker, --loglevel=INFO, --concurrency=2]
-    stop_grace_period: 270s
+    stop_grace_period: 630s
   dispatcher:
     <<: *app
     command: [python, -m, app.infrastructure.dispatcher]

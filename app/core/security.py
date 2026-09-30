@@ -141,7 +141,7 @@ async def protect(request: Request):
                 ("/review", "/approve-ready", "/approve", "/approve-items", "/reject")
             ):
                 permission = "imports:review"
-            elif request.method == "DELETE":
+            elif request.method == "DELETE" or path.endswith("/restore"):
                 permission = "imports:delete"
             elif path.endswith(("/preview", "/repair-preview")):
                 permission = "imports:read"
@@ -294,11 +294,10 @@ async def logout(request: Request):
 @router.get("/api/v1/auth/me")
 async def me(request: Request):
     user = await current_user(request)
-    return {
-        "id": str(user.id),
-        "username": user.username,
-        "permissions": sorted(user.permissions),
-    }
+    from app.core.profile import profile_read
+    async with SessionFactory() as session:
+        record = await session.get(User, user.id)
+        return profile_read(record, user)
 
 
 @router.get("/admin/login", response_class=HTMLResponse)

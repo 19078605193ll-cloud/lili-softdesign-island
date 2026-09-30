@@ -1,0 +1,26 @@
+[
+  {
+    "browser": "chromium",
+    "realLogin": true,
+    "realQuestion": true,
+    "diagramRendered": 1,
+    "widths": [
+      375,
+      390,
+      430
+    ],
+    "errors": []
+  },
+  {
+    "browser": "webkit",
+    "realLogin": true,
+    "realQuestion": true,
+    "diagramRendered": 1,
+    "widths": [
+      375,
+      390,
+      430
+    ],
+    "errors": []
+  }
+]

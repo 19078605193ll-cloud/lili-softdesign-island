@@ -1,0 +1,33 @@
+/* Reference palette: sucai/, ink, jade, mist and warm paper. */
+:root {
+  --color-backdrop: rgba(16, 43, 53, 0.35);
+  --color-ink: #102b35;
+  --color-muted: #566f78;
+  --color-accent: #267b6c;
+  --color-accent-dark: #195b50;
+  --color-paper: #faf9f5;
+  --color-white: #fff;
+  --color-card: rgba(255, 255, 255, 0.86);
+  --color-mist: #e8f0ef;
+  --color-line: #dce7e5;
+  --color-jade: #e6f3ec;
+  --color-danger: #b43b4b;
+  --color-danger-bg: #faebed;
+  --color-warning: #ae650a;
+  --color-warning-bg: #fff1d8;
+  --color-sky: #bed6e7;
+  --color-sand: #fff4d5;
+  --color-shadow: rgba(41, 66, 69, 0.07);
+  --font-body: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --font-display: var(--font-body);
+  --font-verse: "STKaiti", "KaiTi", serif;
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --radius-card: 22px;
+  --radius-pill: 999px;
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --text-small: 12px;
+}

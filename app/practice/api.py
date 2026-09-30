@@ -77,8 +77,9 @@ async def solution(unit_id: uuid.UUID, session: SessionDependency):
         "id": q["id"],
         "content_version": q["content_version"],
         "explanation_markdown": q["explanation_markdown"],
+        "explanation_html": q["explanation_html"],
         "parts": [
-            {k: p[k] for k in ("id", "correct_option_keys", "explanation_markdown")}
+            {k: p[k] for k in ("id", "correct_option_keys", "explanation_markdown", "explanation_html")}
             for p in q["parts"]
         ],
     }

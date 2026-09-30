@@ -1,5 +1,15 @@
 {% extends "base.html" %}
 {% block title %}导入批次{% endblock %}
+{% block head %}<style>
+#title-dialog { width:min(540px,calc(100% - 32px)); border:1px solid; border-radius:10px; padding:24px; }
+#title-dialog button { min-height:44px; }
+nav[aria-label="批次列表筛选"] { margin-bottom:16px; }
+nav[aria-label="批次列表筛选"] [aria-current] { font-weight:bold; text-decoration:underline; }
+td:first-child { overflow-wrap:anywhere; max-width:480px; }
+.batch-table-scroll { overflow-x:auto; }
+.batch-table-scroll table { min-width:940px; }
+.batch-table-scroll button,.batch-table-scroll .button { white-space:nowrap; }
+</style>{% endblock %}
 {% block content %}
 <div class="card">
   <h1>新建真题导入</h1>
@@ -20,19 +30,29 @@
 </div>
 <div class="card">
   <h2>导入批次</h2>
-  <table><thead><tr><th>标题</th><th>场次</th><th>知识树</th><th>状态</th><th>题目进度</th><th>失败原因</th><th>操作</th></tr></thead><tbody>
+  <nav class="actions" aria-label="批次列表筛选"><a href="/admin/imports" {% if view != 'deleted' %}aria-current="page"{% endif %}>正常列表</a><a href="/admin/imports?view=deleted" {% if view == 'deleted' %}aria-current="page"{% endif %}>已删除</a></nav>
+  <div class="batch-table-scroll"><table><thead><tr><th>标题</th><th>场次</th><th>知识树</th><th>状态</th><th>题目进度</th><th>失败原因</th><th>操作</th></tr></thead><tbody>
   {% for batch in batches %}
-    <tr data-batch-id="{{ batch.id }}">
+    <tr data-batch-id="{{ batch.id }}" data-revision="{{ batch.revision }}" data-title="{{ batch.title }}" data-published="{{ 'true' if batch.published_paper_id else 'false' }}" data-linked-count="{{ batch.linked_count }}">
       <td>{{ batch.title }}</td><td>{{ batch.year }} / {{ batch.period }} / {{ batch.batch_code }}</td><td>{{ batch.taxonomy_version }}</td>
-      <td><span class="badge {{ batch.status }}">{% if batch.status == 'uploaded' %}已上传，后台处理中{% elif batch.status == 'sectioned' %}页码已确认，待解析{% elif batch.status == 'in_review' %}待人工审核{% elif batch.status == 'ready_to_publish' %}可发布{% elif batch.status == 'published' %}已发布{% elif batch.status == 'failed' %}处理失败{% else %}{{ batch.status }}{% endif %}</span></td>
+      <td><span class="badge {{ batch.status }}">{% if batch.deleted %}&#24050;&#21024;&#38500;{% elif batch.status == 'uploaded' %}已上传，后台处理中{% elif batch.status == 'sectioned' %}页码已确认，待解析{% elif batch.status == 'in_review' %}待人工审核{% elif batch.status == 'ready_to_publish' %}可发布{% elif batch.status == 'published' %}已发布{% elif batch.status == 'failed' %}处理失败{% else %}{{ batch.status }}{% endif %}</span></td>
       <td>{% set labels = {'needs_review':'待审核','approved':'已批准','published':'已发布','blocked':'需处理','rejected':'已排除','pending':'待解析','parsed':'已解析'} %}{% for status, count in batch.item_counts.items() %}<span class="badge">{{ labels.get(status, status) }} {{ count }}</span> {% else %}暂无题目{% endfor %}</td>
       <td class="error">{{ batch.error_summary or '' }}{% if batch.failures %}{% for failure in batch.failures[:3] %}<div>{{ failure.stage }}{% if failure.page_no %}第 {{ failure.page_no }} 页{% endif %}{% if failure.question_numbers %}第 {{ failure.question_numbers|join('、') }} 题{% endif %}：{{ failure.reason }}</div>{% endfor %}{% endif %}</td>
-      <td><div class="actions"><a class="button secondary" href="/admin/imports/{{ batch.id }}">打开</a>{% if batch.status != 'published' and not batch.published_paper_id %}<button class="danger delete-batch" type="button" data-batch-id="{{ batch.id }}" data-batch-title="{{ batch.title }}">删除</button>{% endif %}</div></td>
+      <td><div class="actions"><a class="button secondary" href="/admin/imports/{{ batch.id }}">{{ '查看' if batch.deleted else '打开' }}</a><button class="secondary edit-title" type="button">编辑标题</button>{% if batch.deleted %}<button class="restore-batch" type="button">恢复</button>{% else %}<button class="danger delete-batch" type="button">删除</button>{% endif %}</div></td>
     </tr>
   {% else %}<tr><td colspan="7" class="muted">暂无导入批次</td></tr>{% endfor %}
-  </tbody></table>
+  </tbody></table></div>
   <p id="list-message" class="message"></p>
 </div>
+<dialog id="title-dialog" aria-labelledby="title-dialog-heading">
+  <form id="title-form">
+    <h2 id="title-dialog-heading">编辑真题标题</h2>
+    <label for="edited-title">标题</label><input id="edited-title" name="title" maxlength="300" required style="width:100%;min-width:260px">
+    <p class="muted">已发布试卷的标题会同步到用户端及关联的已发布批次。</p>
+    <p id="title-error" class="message error" role="alert"></p>
+    <div class="actions"><button type="submit">保存标题</button><button type="button" class="secondary" id="cancel-title">取消</button></div>
+  </form>
+</dialog>
 {% endblock %}
 {% block scripts %}
 <script>
@@ -73,17 +93,6 @@ uploadForm.addEventListener('submit',async event=>{
     location.href='/admin/imports/'+data.id;
   }catch(error){message.className='message error';message.textContent='上传阶段：'+error.message;button.disabled=false}
 });
-async function deleteBatch(id,title){
-  if(!confirm(`确认删除未发布批次“${title}”吗？导入记录、源文件和预览图将被永久删除。`))return;
-  const message=document.getElementById('list-message');
-  try{message.className='message';message.textContent='正在删除…';const result=await api(`/api/v1/admin/import-batches/${id}`,{method:'DELETE'});
-    document.querySelector(`tr[data-batch-id="${id}"]`)?.remove();
-    message.className=result.warning?'message error':'message';message.textContent=result.warning||'批次已删除';
-  }catch(error){message.className='message error';message.textContent='删除失败：'+error.message}
-}
-document.addEventListener('click',event=>{
-  const button=event.target.closest('.delete-batch');
-  if(button)deleteBatch(button.dataset.batchId,button.dataset.batchTitle);
-});
 </script>
+{% include "paper_actions.html" %}
 {% endblock %}

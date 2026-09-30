@@ -137,6 +137,10 @@ async def create_job(
 ):
     enabled()
     user = await require(request, "imports:edit")
+    from app.imports.paper_management import lock_paper_identity
+    _, paper = await lock_paper_identity(session, batch_id)
+    if paper and paper.status == "retired":
+        raise fail(409, "PAPER_DELETED", "该试卷已删除，请先恢复")
     batch = await session.scalar(
         select(QuestionImportBatch)
         .where(QuestionImportBatch.id == batch_id)
@@ -204,7 +208,7 @@ async def create_job(
 async def get_job(job_id: uuid.UUID, request: Request, session: SessionDependency):
     await require(request, "imports:read")
     job = await session.get(Job, job_id)
-    if not job:
+    if not job or job.batch_id is None:
         raise fail(404, "JOB_NOT_FOUND", "任务不存在")
     return read_job(job)
 
@@ -225,9 +229,14 @@ async def batch_jobs(batch_id: uuid.UUID, request: Request, session: SessionDepe
 async def retry(job_id: uuid.UUID, request: Request, session: SessionDependency):
     enabled()
     await require(request, "imports:edit")
-    job = await session.scalar(select(Job).where(Job.id == job_id).with_for_update())
-    if not job:
+    job = await session.get(Job, job_id)
+    if not job or job.batch_id is None:
         raise fail(404, "JOB_NOT_FOUND", "任务不存在")
+    from app.imports.paper_management import lock_paper_identity
+    _, paper = await lock_paper_identity(session, job.batch_id)
+    if paper and paper.status == "retired":
+        raise fail(409, "PAPER_DELETED", "该试卷已删除，请先恢复")
+    job = await session.scalar(select(Job).where(Job.id == job_id).with_for_update().execution_options(populate_existing=True))
     batch = await session.get(QuestionImportBatch, job.batch_id)
     if job.status != "failed" or (
         "revision" in job.payload and batch.revision != job.payload["revision"]

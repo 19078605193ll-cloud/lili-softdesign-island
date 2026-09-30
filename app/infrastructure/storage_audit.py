@@ -8,7 +8,7 @@ from sqlalchemy import select
 from app.config import get_settings
 from app.core.runtime import run_async
 from app.db import SessionFactory, engine
-from app.models import QuestionImportBatch, Job, QuestionAsset, QuestionSourceDocument
+from app.models import QuestionImportBatch, Job, QuestionAsset, QuestionSourceDocument, User
 
 
 async def main():
@@ -28,7 +28,10 @@ async def main():
         paths = list(await session.scalars(select(QuestionAsset.storage_path))) + list(
             await session.scalars(select(QuestionSourceDocument.storage_path))
         )
+        avatar_keys = set(await session.scalars(select(User.avatar_key).where(User.avatar_key.is_not(None))))
+        paths += [f"avatars/{key}.webp" for key in avatar_keys]
     missing = [p for p in paths if not (root / p).is_file()]
+    orphan_avatars = [p.name for p in (root / 'avatars').glob('*.webp') if p.stem not in avatar_keys and time.time()-p.stat().st_mtime > 86400]
     orphan = []
     if root.exists():
         for path in root.iterdir():
@@ -47,6 +50,7 @@ async def main():
             {
                 "dry_run": True,
                 "missing_references": missing,
+                "orphan_avatars_older_than_24h": orphan_avatars,
                 "orphan_batch_directories_older_than_24h": orphan,
             },
             ensure_ascii=False,

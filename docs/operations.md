@@ -1,4 +1,4 @@
-# 软设岛 0.3 运行与发布
+# 软设岛 H5 运行与发布
 
 当前电脑已启动的本地环境与登录方式见 [本机启动说明](local-startup.md)。本地使用 `compose.local.yml`，不要用测试 Compose 启动业务数据。
 
@@ -25,7 +25,7 @@ Windows 使用 SelectorEventLoop；生产 worker 必须运行在 Linux 容器。
 7. `python -m app.core.accounts create 管理员账号 --roles administrator`，交互输入密码；考生不带 roles。命令均在安全运维会话执行。
 8. 确認 PUBLIC_ORIGIN、HTTPS、备份存储和出网规则，启动 API/worker/dispatcher/Caddy。
 
-现有业务 PostgreSQL 17、UUID、素材路径和 0001–0009 保持；新迁移 0010–0013 为新增模型/字段和约束。
+ 现有业务 PostgreSQL 17、UUID、素材路径和 0001–0009 保持；0010–0013 为平台模型，0014 为H5学习状态与教学变式题，0015新增续练来源和统一类似题请求。readiness要求0015。
 应用启动不自动迁移。0008/0009 及平台迁移均不支持有损 downgrade。
 
 ## 出网和文件边界
@@ -50,6 +50,7 @@ CSRF：先 GET `/api/v1/auth/csrf`，写请求携带 X-CSRF-Token 和同源 Orig
 
 job 状态为 queued/running/retry_wait/succeeded/failed/superseded/cancelled。数据库租约和 generation 防止重复生效。
 dispatcher 每 2 秒检查，未领取任务超过 60 秒可补投；租约 360 秒，Celery 硬超时 240 秒。
+学习AI任务使用660秒租约、600秒硬超时，容器worker停机等待630秒；单次模型调用最多120秒，暂时性网络/限流/5xx最多重试一次。其他导入任务保持原有超时与重试策略。调度器使用数据库时钟判定租约和可执行时间。
 暂时性网络/429/5xx 重试 3 次；其他失败保留源文档及 job，人工重试按业务权限检查。
 `WRITES_ENABLED=false` 阻止 API 写入、worker 领取和 dispatcher 投递；`TASKS_ENABLED=false` 暂停新任务，`LEARNING_ENABLED=false` 暂停新增作答。
 环境开关需要重建相应进程；停写维护时直接停止 API、dispatcher 和 worker，并等待在途写入结束。
@@ -74,3 +75,27 @@ dispatcher 每 2 秒检查，未领取任务超过 60 秒可补投；租约 360 
 
 参考 FBA 后端 `123a44aed02daf5ea60d2a7469625c933d3bb759` 及文档 `ad443174ef8ecea9c2ad0879198e481db4f8a346` 的分层、权限依赖、会话撤销、事务与 Celery 思路。
 本实现没有整体嵌入 FBA，也未采用其 JWT、菜单/部门模型、Celery 内部 monkey patch 或响应包装。
+
+## H5 启动与模型配置
+
+H5源码位于 `web/h5/`。本地运行 `npm ci`、`npm run dev`，访问Vite输出的 `/h5/` 地址；默认代理到127.0.0.1:8000。若后端地址改变，设置 `H5_API_TARGET`；`H5_PUBLIC_ORIGIN` 必须与后端PUBLIC_ORIGIN一致。开发服务仅绑定127.0.0.1。
+
+同源运行：在 `web/h5/` 执行 `npm run build`，后端直接提供 `/h5/`。Docker多阶段构建自动运行npm ci和构建，复制dist以及两份Prompt进入镜像。`/h5/assets/`不存在的资源返回404，不回退为HTML；其他H5深链回退index.html。API和管理后台不受回退影响。
+
+服务端配置：
+
+```dotenv
+AI_BASE_URL=https://www.dmxapi.cn/v1
+AI_API_KEY=由部署环境提供
+AI_TUTOR_MODEL=平台实际支持的模型名称
+H5_ENABLED=true
+LEARNING_AI_ENABLED=true
+```
+
+AI_TUTOR_MODEL未设置时仅回退AI_TEXT_MODEL，不会擅自使用导入分类模型。模型应支持OpenAI兼容chat/completions及JSON对象响应。密钥不进入Vite环境、浏览器或日志。提示词加载 `Prompt/AI引导思考Prompt` 和 `Prompt/AI画图讲解Prompt`；修改提示词影响新会话，旧会话保留提示词快照。
+
+发布顺序：备份→在副本升级0014并回归→业务停写执行兼容迁移→部署API/worker/dispatcher→启用H5。开关变更需重建进程。H5_ENABLED关闭学习页面，LEARNING_AI_ENABLED关闭学习模型请求，既有管理后台保持可用。回退优先关闭开关、切换兼容镜像，不有损删除新表。
+
+账号仍由 `python -m app.core.accounts create 用户名` 创建，考生不带管理角色。真实模型验收需完成一次引导、一轮追问、一题自动校验变式题及复用命中；隔离测试的模型夹具不算真实模型验收。
+
+H5接口、数据和统计约定分别见 [接口映射](h5-api-mapping.md)、[数据字典](h5-data-dictionary.md)、[统计规则](h5-metrics.md)，验证方式与未完成的环境验收见 [验证记录](h5-verification.md)。

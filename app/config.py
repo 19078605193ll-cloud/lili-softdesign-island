@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     ai_vision_model: str | None = None
     ai_classification_model: str | None = None
     ai_text_model: str | None = None
+    ai_tutor_model: str | None = None
+    h5_enabled: bool = True
+    learning_ai_enabled: bool = True
     ai_provider_name: str = "openai-compatible"
     ai_timeout_seconds: float = 120.0
     redis_url: str = "redis://127.0.0.1:6379/0"

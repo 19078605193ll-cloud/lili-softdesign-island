@@ -78,6 +78,7 @@ def install(app):
                 "/api/v1/admin",
                 "/api/v2/admin",
                 "/api/v2/learning",
+                "/api/v2/practice/papers",
             )
         ):
             response.headers["Cache-Control"] = "no-store"

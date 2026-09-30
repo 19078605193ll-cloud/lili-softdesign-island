@@ -20,3 +20,7 @@ deploy/redis.acl
 .mypy_cache/
 .local-runtime/
 deploy/local.env
+node_modules/
+web/h5/test-results/
+web/h5/playwright-report/
+var/h5-acceptance/

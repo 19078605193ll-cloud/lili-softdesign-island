@@ -27,6 +27,7 @@ class User(TimestampMixin, Base):
     __tablename__ = "users"
     id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4)
     username: Mapped[str] = mapped_column(String(100), unique=True)
+    avatar_key: Mapped[str | None] = mapped_column(String(100))
     password_hash: Mapped[str] = mapped_column(Text)
     active: Mapped[bool] = mapped_column(default=True, server_default="true")
     auth_version: Mapped[int] = mapped_column(default=1, server_default="1")
@@ -80,7 +81,7 @@ class Job(TimestampMixin, Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         ForeignKey("users.id", ondelete="RESTRICT")
     )
-    batch_id: Mapped[uuid.UUID] = mapped_column(
+    batch_id: Mapped[uuid.UUID | None] = mapped_column(
         ForeignKey("question_import_batches.id", ondelete="CASCADE")
     )
     kind: Mapped[str] = mapped_column(String(40))

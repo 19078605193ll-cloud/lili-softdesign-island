@@ -243,6 +243,10 @@ async def formal_payload(session, unit):
 
 
 async def publish(session: AsyncSession, batch_id, storage=None):
+    from app.imports.paper_management import lock_paper_identity
+    _, existing_paper = await lock_paper_identity(session, batch_id)
+    if existing_paper and existing_paper.status == "retired":
+        raise ImportConflictError("该试卷已删除，请先在已删除列表恢复")
     batch = await session.scalar(select(QuestionImportBatch).where(QuestionImportBatch.id == batch_id).with_for_update())
     if batch.status == "published":
         return dict(batch.validation_summary["publication"], already_published=True)
@@ -259,6 +263,7 @@ async def publish(session: AsyncSession, batch_id, storage=None):
         paper = ExamPaper(subject_id=batch.subject_id, year=batch.year, period=batch.period, batch_code=batch.batch_code,
             title=batch.title, exam_date=batch.exam_date, source_reference=batch.source_reference, status="verified")
         session.add(paper); await session.flush()
+    batch.title = paper.title
     referenced = set(re.findall(r'asset://([0-9a-fA-F-]{36})', json.dumps(doc.extracted_content)))
     existing_assets = select(QuestionAssetUsage.asset_id).outerjoin(Question, Question.id == QuestionAssetUsage.question_id).outerjoin(QuestionGroup, QuestionGroup.id == QuestionAssetUsage.question_group_id).where(
         (Question.paper_id == paper.id) | (QuestionGroup.paper_id == paper.id))

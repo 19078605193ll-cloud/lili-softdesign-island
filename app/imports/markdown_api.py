@@ -536,6 +536,11 @@ async def decide_conflict(batch_id: uuid.UUID, block_id: str, payload: ConflictD
 
 @router.post("/{batch_id}/publish")
 async def publish(batch_id: uuid.UUID, session: SessionDependency, storage: StorageDependency):
+    from app.imports.paper_management import lock_paper_identity
+    batch, _ = await lock_paper_identity(session, batch_id)
+    from app.core.revisions import check_revision
+    await session.refresh(batch, with_for_update=True)
+    await check_revision(session, batch)
     await context(session, batch_id)
     try:
         result = await workflow.publish(session, batch_id, storage)

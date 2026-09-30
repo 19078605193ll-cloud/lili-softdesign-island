@@ -52,7 +52,7 @@ def audit_write(session, flush_context, instances):
             and (hasattr(obj, "revision") or hasattr(obj, "content_version"))
         }
         session.add(
-            AuditEvent(**data, summary={"result": "committed", "versions": versions})
+            AuditEvent(**data, summary={"result": "committed", "versions": versions, **session.info.get("audit_summary", {})})
         )
         session.info["audit_added"] = True
 
@@ -64,7 +64,7 @@ def audit_bulk_write(session):
 
     data = session.info.get("audit")
     if data and not session.info.get("audit_added"):
-        session.add(AuditEvent(**data, summary={"result": "committed"}))
+        session.add(AuditEvent(**data, summary={"result": "committed", **session.info.get("audit_summary", {})}))
         session.info["audit_added"] = True
 
 
@@ -73,6 +73,7 @@ def reset_audit(session, transaction):
     if transaction.parent is None:
         session.info.pop("audit_added", None)
         session.info.pop("revision_bumped", None)
+        session.info.pop("audit_summary", None)
 
 
 async def get_session(request: Request) -> AsyncIterator[AsyncSession]:

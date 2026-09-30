@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.config import get_settings
 from app.models import Base
+import app.h5.models  # register additive learner tables
 from app.core.runtime import run_async
 
 config = context.config

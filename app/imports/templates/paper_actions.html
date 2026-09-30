@@ -1,0 +1,29 @@
+<script>
+async function changeBatch(row,restore=false){
+  const {batchId:id,title,published,linkedCount}=row.dataset;
+  const prompt=restore?`恢复整套试卷“${title}”及其${linkedCount}个关联批次？`:
+    published==='true'?`确认删除整套试卷“${title}”吗？影响${linkedCount}个关联已发布批次。删除后用户无法继续练习，已有答题记录保留，可在已删除列表恢复。`:
+    `确认永久删除未发布批次“${title}”吗？导入记录、源文件和预览图将被永久删除，不进入已删除列表。`;
+  if(!confirm(prompt))return;
+  const message=document.getElementById('list-message');
+  const buttons=row.querySelectorAll('button');buttons.forEach(b=>b.disabled=true);
+  try{message.className='message';message.textContent='正在保存…';const result=await rawApi(`/api/v1/admin/import-batches/${id}${restore?'/restore':''}`,{method:restore?'POST':'DELETE',headers:{'If-Match':row.dataset.revision}});
+    if(result.warning){row.remove();message.className='message error';message.textContent=result.warning}else location.reload();
+  }catch(error){message.className='message error';message.textContent=error.message;buttons.forEach(b=>b.disabled=false)}
+}
+const titleDialog=document.getElementById('title-dialog'),titleInput=document.getElementById('edited-title');let titleRow;
+document.getElementById('cancel-title').onclick=()=>titleDialog.close();
+document.getElementById('title-form').onsubmit=async event=>{
+  event.preventDefault();const title=titleInput.value.trim(),message=document.getElementById('title-error'),button=event.submitter;
+  if(!title){message.textContent='标题不能为空';return}
+  button.disabled=true;message.textContent='';
+  try{await rawApi(`/api/v1/admin/import-batches/${titleRow.dataset.batchId}/title`,{method:'PATCH',headers:{'Content-Type':'application/json','If-Match':titleRow.dataset.revision},body:JSON.stringify({title})});location.reload()}
+  catch(error){message.textContent=error.message;button.disabled=false}
+};
+document.addEventListener('click',event=>{
+  const button=event.target.closest('.delete-batch,.restore-batch,.edit-title');if(!button)return;
+  const row=button.closest('tr');
+  if(button.classList.contains('edit-title')){titleRow=row;titleInput.value=row.dataset.title;document.getElementById('title-error').textContent='';titleDialog.showModal();titleInput.focus()}
+  else changeBatch(row,button.classList.contains('restore-batch'));
+});
+</script>

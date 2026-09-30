@@ -31,6 +31,7 @@ class Submission(BaseModel):
     practice_question_id: uuid.UUID
     content_version: int = Field(ge=1)
     answers: dict[uuid.UUID, str]
+    session_id: uuid.UUID | None = None
 
 
 async def result(session, attempt):
@@ -69,6 +70,8 @@ async def submit(
         raise fail(503, "LEARNING_DISABLED", "作答服务暂不可用")
     user = await current_user(request)
     raw = payload.model_dump(mode="json")
+    if raw.get('session_id') is None:
+        raw.pop('session_id', None)
     raw["answers"] = {k: v.upper() for k, v in raw["answers"].items()}
     request_hash = hashlib.sha256(json.dumps(raw, sort_keys=True).encode()).hexdigest()
     await session.execute(
@@ -85,6 +88,8 @@ async def submit(
             raise fail(409, "IDEMPOTENCY_CONFLICT", "此提交标识已用于其他答案")
         response.status_code = 200
         return await result(session, old)
+    from app.h5.paper_state import require_available
+    await require_available(session, payload.practice_question_id)
     unit = await session.scalar(
         select(PracticeQuestion)
         .where(PracticeQuestion.id == payload.practice_question_id)
@@ -143,6 +148,8 @@ async def submit(
         re.findall(r"/api/v1/question-assets/([0-9a-fA-F-]{36})", json.dumps(data))
     ):
         session.add(AttemptAsset(attempt_id=attempt.id, asset_id=uuid.UUID(asset)))
+    from app.h5.service import apply_attempt
+    await apply_attempt(session, user.id, attempt, parts, payload.session_id)
     await session.flush()
     output = await result(session, attempt)
     await session.commit()
@@ -193,7 +200,8 @@ async def detail(attempt_id: uuid.UUID, request: Request, session: SessionDepend
             json.dumps(attempt.snapshot),
         )
     )
-    return dict(await result(session, attempt), snapshot=snapshot)
+    from app.h5.render import rich
+    return dict(await result(session, attempt), snapshot=rich(snapshot))
 
 
 @router.get("/attempts/{attempt_id}/assets/{asset_id}")

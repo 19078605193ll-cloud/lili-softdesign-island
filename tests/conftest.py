@@ -121,7 +121,7 @@ async def client(session: AsyncSession) -> AsyncIterator[AsyncClient]:
         # explicitly to exercise stale-write rejection.
         async def revision_header(request):
             import re
-            match = re.match(r'/api/v1/admin/markdown-batches/([0-9a-f-]+)', request.url.path)
+            match = re.match(r'/api/v1/admin/(?:markdown|import)-batches/([0-9a-f-]+)', request.url.path)
             if match and request.method not in {'GET', 'HEAD'} and 'if-match' not in request.headers:
                 from app.models import QuestionImportBatch
                 import uuid

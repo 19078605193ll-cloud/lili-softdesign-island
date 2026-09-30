@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 from pathlib import Path
-from typing import Annotated
+from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -25,13 +25,13 @@ templates = Jinja2Templates(directory=str(Path(__file__).with_name("templates"))
 
 
 @router.get("/admin/imports", response_class=HTMLResponse)
-async def import_index(request: Request, session: SessionDependency) -> HTMLResponse:
+async def import_index(request: Request, session: SessionDependency, view: Literal["active", "deleted"] = "active") -> HTMLResponse:
     from app.imports.queries import batch_list
-    batches = await batch_list(session)
+    batches = await batch_list(session, view)
     return templates.TemplateResponse(
         request=request,
         name="imports.html",
-        context={"batches": batches},
+        context={"batches": batches, "view": view},
     )
 
 

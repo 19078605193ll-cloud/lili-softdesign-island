@@ -71,7 +71,7 @@ async def prepare(factory, job_id):
             return None
         job.status = "running"
         job.generation += 1
-        job.lease_until = now + timedelta(seconds=360)
+        job.lease_until = now + timedelta(seconds=660 if job.kind in {'tutor','variant','variant_review'} else 360)
         return dict(
             id=job.id,
             batch_id=job.batch_id,
@@ -686,7 +686,7 @@ async def failed(factory, task, exc):
         )
         if not job or job.status != "running" or job.generation != task["generation"]:
             return
-        if transient and job.retries < 3:
+        if transient and job.retries < (1 if job.kind in {'tutor','variant','variant_review','variant_wait'} else 3):
             delay = [10, 30, 90][job.retries] + random.uniform(0, 5)
             if isinstance(exc, APIStatusError):
                 try:
@@ -725,6 +725,10 @@ async def execute(job_id, factory=None):
     try:
         task = await prepare(factory, uuid.UUID(str(job_id)))
         if task is None:
+            return
+        if task['kind'] in {'tutor', 'variant', 'variant_review', 'variant_wait'}:
+            from app.h5.ai_worker import execute_learning
+            await execute_learning(factory, task)
             return
         data = await inputs(factory, task)
         output = await perform(task, data) if data is not None else {}

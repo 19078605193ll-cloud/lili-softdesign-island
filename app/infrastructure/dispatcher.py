@@ -3,7 +3,7 @@
 import asyncio
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, func
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from app.config import get_settings
 from app.core.runtime import run_async
@@ -12,13 +12,11 @@ from app.models import Job, Outbox
 
 
 async def dispatch_once(factory, send=None):
-    send = send or (
-        lambda job_id: celery_app.send_task("island.execute", args=[job_id])
-    )
-    now = datetime.now(timezone.utc)
     if not get_settings().tasks_enabled or not get_settings().writes_enabled:
         return 0
     async with factory.begin() as session:
+        # Leases and availability are database timestamps: use the same clock.
+        now = await session.scalar(select(func.clock_timestamp()))
         expired = await session.scalars(
             select(Job)
             .where(Job.status == "running", Job.lease_until < now)
@@ -27,7 +25,8 @@ async def dispatch_once(factory, send=None):
         for job in expired:
             job.generation += 1
             job.retries += 1
-            job.status = "queued" if job.retries <= 3 else "failed"
+            maximum = 1 if job.kind in {'tutor','variant','variant_review','variant_wait'} else 3
+            job.status = "queued" if job.retries <= maximum else "failed"
             job.error_code = "WORKER_LOST"
             job.error_detail = (
                 "任务进程中断，请重试" if job.status == "failed" else None
@@ -52,7 +51,11 @@ async def dispatch_once(factory, send=None):
         sent = 0
         for job, outbox in rows:
             # Publication is not a business transaction; rollback simply permits re-dispatch.
-            await asyncio.to_thread(send, str(job.id))
+            if send:
+                await asyncio.to_thread(send, str(job.id))
+            else:
+                await asyncio.to_thread(celery_app.send_task, 'island.execute', args=[str(job.id)],
+                    time_limit=600 if job.kind in {'tutor','variant','variant_review'} else 240)
             outbox.sent_at = now
             sent += 1
         return sent

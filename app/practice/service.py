@@ -135,7 +135,8 @@ async def load(session, ids: list[uuid.UUID], *, answers=False):
             result[uid]["explanation_markdown"] = urls(
                 group.explanation_markdown if group else None
             )
-    return result
+    from app.h5.render import rich
+    return {k: rich(v) for k, v in result.items()}
 
 
 def grade(question: dict, answers: dict[str, str]) -> tuple[list[dict], Decimal]:

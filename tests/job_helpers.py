@@ -1,6 +1,7 @@
 """Deterministic worker execution for API tests; no Celery eager-mode shortcuts in production."""
 
 import uuid
+import asyncio
 from sqlalchemy.ext.asyncio import async_sessionmaker
 from app.infrastructure.worker import execute
 
@@ -13,9 +14,16 @@ async def drain(client, job_id, session, storage):
     try:
         # Release fixture's read transaction before a separate worker writes.
         await session.commit()
-        await execute(job_id, async_sessionmaker(session.bind, expire_on_commit=False))
-        session.expire_all()
-        job = (await client.get("/api/v2/admin/jobs/" + str(job_id))).json()
+        # A committed queued job may not yet be due when the host/VM clock adjusts.
+        # Match dispatcher behavior instead of assuming one immediate delivery claims it.
+        for _ in range(40):
+            await execute(job_id, async_sessionmaker(session.bind, expire_on_commit=False))
+            session.expire_all()
+            job = (await client.get("/api/v2/admin/jobs/" + str(job_id))).json()
+            if job['status'] != 'queued':
+                break
+            await session.commit()
+            await asyncio.sleep(.05)
         if job["status"] == "succeeded":
             for child in job.get("result", {}).get("children", []):
                 await drain(client, child, session, storage)

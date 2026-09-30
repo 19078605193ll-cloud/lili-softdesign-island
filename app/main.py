@@ -34,6 +34,8 @@ app = FastAPI(
 )
 install(app)
 app.include_router(auth_router)
+from app.core.profile import router as profile_router
+app.include_router(profile_router)
 app.include_router(router)
 app.include_router(import_router)
 app.include_router(admin_router)
@@ -55,3 +57,11 @@ app.include_router(task_router)
 from app.core.health import router as health_router
 
 app.include_router(health_router)
+from app.h5.api import router as h5_router
+from app.h5.tutor import router as tutor_router
+from app.h5.related import router as related_router
+from app.h5.static import router as h5_static_router
+app.include_router(h5_router)
+app.include_router(tutor_router)
+app.include_router(related_router)
+app.include_router(h5_static_router)

@@ -10,6 +10,7 @@ from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, Upload
 from fastapi.responses import FileResponse
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from pydantic import BaseModel, Field, field_validator
 
 from app.config import Settings, get_settings
 from app.db import get_session
@@ -154,6 +155,31 @@ async def patch_import_batch(
         raise _http_error(exc) from exc
 
 
+class BatchTitleIn(BaseModel):
+    title: str = Field(min_length=1, max_length=300)
+
+    @field_validator("title", mode="before")
+    @classmethod
+    def strip_title(cls, value):
+        return value.strip() if isinstance(value, str) else value
+
+
+@router.patch("/import-batches/{batch_id}/title", response_model=ImportBatchRead)
+async def rename_batch(batch_id: uuid.UUID, payload: BatchTitleIn, session: SessionDependency):
+    from app.imports.paper_management import manage
+    await manage(session, batch_id, action="title", title=payload.title)
+    await session.commit()
+    return await get_batch_read(session, batch_id)
+
+
+@router.post("/import-batches/{batch_id}/restore")
+async def restore_batch(batch_id: uuid.UUID, session: SessionDependency):
+    from app.imports.paper_management import manage
+    await manage(session, batch_id, action="restore")
+    await session.commit()
+    return {"batch_id": str(batch_id), "restored": True}
+
+
 @router.post("/import-batches/{batch_id}/suggest-sections", response_model=ImportBatchRead)
 async def suggest_sections(
     batch_id: uuid.UUID,
@@ -176,6 +202,10 @@ async def delete_import_batch(
     batch_id: uuid.UUID, session: SessionDependency, storage: StorageDependency
 ) -> dict:
     try:
+        from app.imports.paper_management import manage
+        if await manage(session, batch_id, action="delete"):
+            await session.commit()
+            return {"batch_id": batch_id, "deleted": True, "soft_deleted": True, "warning": None}
         await delete_unpublished_batch(session, batch_id)
         await session.commit()
     except Exception as exc:
