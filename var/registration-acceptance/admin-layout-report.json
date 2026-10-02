@@ -1,0 +1,24 @@
+[
+  {
+    "browser": "chromium",
+    "users": 5,
+    "testUsersDisabled": 2,
+    "layoutWidths": [
+      768,
+      1440,
+      1920
+    ],
+    "errors": []
+  },
+  {
+    "browser": "webkit",
+    "users": 5,
+    "testUsersDisabled": 2,
+    "layoutWidths": [
+      768,
+      1440,
+      1920
+    ],
+    "errors": []
+  }
+]

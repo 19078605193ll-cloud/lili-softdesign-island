@@ -10,6 +10,7 @@ const router = createRouter({
   routes: [
     { path: "/", component: () => import("./pages/Home.vue") },
     { path: "/login", component: () => import("./pages/Login.vue") },
+    { path: "/register", component: () => import("./pages/Register.vue") },
     { path: "/practice", component: () => import("./pages/Practice.vue") },
     { path: "/session/:id", component: () => import("./pages/Session.vue") },
     { path: "/related/:id", component: () => import("./pages/Related.vue") },
@@ -31,8 +32,18 @@ const app = createApp(App);
 app.use(createPinia());
 app.use(router);
 router.beforeEach(async (to) => {
-  if (to.path === "/login") return;
   const store = useLearner();
+  if (["/login", "/register"].includes(to.path)) {
+    if (store.ready) return "/";
+    try {
+      const response = await fetch("/api/v1/auth/me", { credentials: "same-origin" });
+      if (response.ok) {
+        await store.boot();
+        return "/";
+      }
+    } catch { /* The auth forms can display service errors on submission. */ }
+    return;
+  }
   if (!store.ready) {
     try {
       await store.boot();

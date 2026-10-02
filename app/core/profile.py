@@ -3,7 +3,6 @@
 import io
 import logging
 import math
-import unicodedata
 import uuid
 from pathlib import Path
 from typing import Annotated
@@ -17,6 +16,7 @@ from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
 from app.config import get_settings
 from app.core.errors import fail
+from app.core.identifiers import identifiers_available, normalize_username
 from app.core.security import current_user
 from app.imports.dependencies import SessionDependency
 from app.models import User
@@ -28,6 +28,7 @@ def profile_read(row, principal):
     return {
         "id": str(row.id),
         "username": row.username,
+        "email": row.email,
         "permissions": sorted(principal.permissions),
         "avatar_url": f"/api/v1/auth/me/avatar/{row.avatar_key}"
         if row.avatar_key
@@ -42,12 +43,7 @@ class Rename(BaseModel):
     @field_validator("username")
     @classmethod
     def normalize(cls, value):
-        value = value.strip().casefold()
-        if not 1 <= len(value) <= 100 or any(
-            unicodedata.category(c).startswith("C") for c in value
-        ):
-            raise ValueError("用户名需为1—100字，不能包含控制字符")
-        return value
+        return normalize_username(value)
 
 
 async def own_row(session, principal):
@@ -59,6 +55,7 @@ async def own_row(session, principal):
 @router.patch("")
 async def rename(payload: Rename, request: Request, session: SessionDependency):
     principal = await current_user(request)
+    await identifiers_available(session, payload.username, user_id=principal.id)
     row = await own_row(session, principal)
     session.info["audit_summary"] = {
         "old_username": row.username,

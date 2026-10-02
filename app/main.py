@@ -34,6 +34,10 @@ app = FastAPI(
 )
 install(app)
 app.include_router(auth_router)
+from app.core.registration import router as registration_router
+app.include_router(registration_router)
+from app.core.user_management import router as user_management_router
+app.include_router(user_management_router)
 from app.core.profile import router as profile_router
 app.include_router(profile_router)
 app.include_router(router)

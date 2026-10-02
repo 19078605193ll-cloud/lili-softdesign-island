@@ -1,0 +1,30 @@
+[
+  {
+    "browser": "chromium",
+    "errors": [],
+    "serverErrors": [],
+    "userId": "0ea8156d-3817-49cb-b42a-a079b5d9a563",
+    "username": "registration-qa-chromium-1790916204660",
+    "email": "registration-qa-chromium-1790916204660@example.com",
+    "registeredAndAutoLoggedIn": true,
+    "emailAndUsernameLogin": true,
+    "disabledSessionRevoked": true,
+    "reenabledLogin": true,
+    "refreshRestoration": true,
+    "testAccountDisabled": true
+  },
+  {
+    "browser": "webkit",
+    "errors": [],
+    "serverErrors": [],
+    "userId": "00de5e0b-6e11-42eb-94da-de437ca9d594",
+    "username": "registration-qa-webkit-1790916209177",
+    "email": "registration-qa-webkit-1790916209177@example.com",
+    "registeredAndAutoLoggedIn": true,
+    "emailAndUsernameLogin": true,
+    "disabledSessionRevoked": true,
+    "reenabledLogin": true,
+    "refreshRestoration": true,
+    "testAccountDisabled": true
+  }
+]

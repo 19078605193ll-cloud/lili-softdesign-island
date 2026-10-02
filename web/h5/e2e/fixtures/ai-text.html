@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI 回答渲染测试</title>
+  </head>
+  <body>
+    <main id="fixture" class="card" style="margin: 12px; padding: 12px"></main>
+    <script type="module">
+      import { createApp, h, ref } from "vue";
+      import AiText from "../../src/components/AiText.vue";
+      import "../../src/styles/tokens.css";
+      import "../../src/styles/main.css";
+
+      const text = ref("");
+      window.addEventListener("ai-text-update", (event) => {
+        text.value = event.detail;
+      });
+      createApp({
+        setup: () => () =>
+          h("article", { class: "message assistant" }, [
+            h(AiText, { text: text.value }),
+          ]),
+      }).mount("#fixture");
+    </script>
+  </body>
+</html>

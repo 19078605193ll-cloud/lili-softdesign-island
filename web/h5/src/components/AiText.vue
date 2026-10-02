@@ -1,18 +1,19 @@
 <script setup lang="ts">
+import { randomUUID } from "../uuid";
 import { watch, ref, nextTick } from "vue";
-import MarkdownIt from "markdown-it";
 import DOMPurify from "dompurify";
+import "katex/dist/katex.min.css";
+import { renderAiMarkdown } from "../aiMarkdown";
 import { diagramSource } from "../diagram";
 const props = defineProps<{ text: string }>();
 const root = ref<HTMLElement>();
 const error = ref(false);
 let revision = 0;
-const markdown = new MarkdownIt({ html: false, linkify: false });
 const html = ref("");
 async function render() {
   const current = ++revision;
   error.value = false;
-  html.value = DOMPurify.sanitize(markdown.render(props.text), {
+  html.value = DOMPurify.sanitize(renderAiMarkdown(props.text), {
     FORBID_TAGS: ["img", "iframe", "script", "style"],
   });
   await nextTick();
@@ -33,7 +34,7 @@ async function render() {
     for (const block of blocks) {
       const source = diagramSource(block.textContent || "");
       const { svg } = await mermaid.render(
-        "diagram-" + crypto.randomUUID().replaceAll("-", ""),
+        "diagram-" + randomUUID().replaceAll("-", ""),
         source,
       );
       if (current !== revision) return;

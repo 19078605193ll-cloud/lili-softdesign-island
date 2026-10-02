@@ -20,7 +20,7 @@ async def ready():
             revision = await session.scalar(
                 text("SELECT version_num FROM alembic_version")
             )
-            if revision != "20260930_0016":
+            if revision != "20261002_0017":
                 raise ValueError("schema version")
         async with redis_client() as redis:
             await redis.ping()

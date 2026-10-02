@@ -1016,6 +1016,15 @@ progress::-moz-progress-bar {
   max-width: 100%;
   padding: 8px 0;
 }
+.ai-text .katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  max-width: 100%;
+  padding: 4px 0;
+}
+.ai-text .katex {
+  font-size: 1.1em;
+}
 .rich-text ul,
 .rich-text ol {
   padding-left: 22px;

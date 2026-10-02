@@ -27,7 +27,7 @@ python -m app.knowledge.sync
 python -m app.server
 ```
 
-打开 <http://127.0.0.1:8000/admin/imports>，未登录时进入登录页。账号由 `python -m app.core.accounts` 管理。
+打开 <http://127.0.0.1:8000/admin/imports>，未登录时进入登录页。管理员账号由 `python -m app.core.accounts` 创建。学习用户可在 <http://127.0.0.1:8000/h5/> 自助注册，管理员通过“用户管理”查看和启停账号，详见 [注册说明](docs/user-registration.md)。
 
 ## 导入和审核
 

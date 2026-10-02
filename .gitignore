@@ -16,6 +16,7 @@ htmlcov/
 var/backups/
 var/*.log
 deploy/production.env
+deploy/compose.env
 deploy/redis.acl
 .mypy_cache/
 .local-runtime/

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { randomUUID } from "../uuid";
 import { computed, nextTick, onUnmounted, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import { api, ApiError } from "../api";
@@ -124,7 +125,7 @@ async function load() {
     restorePending = true;
     submissionKey =
       sessionStorage.getItem("submit:" + s.id + ":" + qid) ||
-      crypto.randomUUID();
+      randomUUID();
     sessionStorage.setItem("submit:" + s.id + ":" + qid, submissionKey);
   } catch (e: any) {
     if (token === epoch) error.value = e.message;

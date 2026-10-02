@@ -15,4 +15,9 @@ export default defineConfig({
     { name: "webkit", use: { browserName: "webkit" } },
   ],
   reporter: "list",
+  webServer: {
+    command: "npm run dev -- --port 5179 --strictPort",
+    url: "http://127.0.0.1:5179/h5/e2e/fixtures/ai-text.html",
+    reuseExistingServer: false,
+  },
 });

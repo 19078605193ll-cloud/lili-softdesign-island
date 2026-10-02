@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}用户管理 · 软设岛{% endblock %}
+{% block head %}
+<style>
+  main { max-width:1920px; }
+  .user-table { min-width:1520px; }
+  .user-table th, #users td:nth-child(n+3), #users button { white-space:nowrap; }
+  #users td:nth-child(1) { min-width:180px; max-width:240px; overflow-wrap:anywhere; }
+  #users td:nth-child(2) { min-width:220px; max-width:300px; overflow-wrap:anywhere; }
+</style>
+{% endblock %}
+{% block content %}
+<h1>用户管理</h1>
+<p class="muted">查看注册账号与学习概况。停用后，用户需在重新启用后再次登录。</p>
+<section class="card">
+  <form id="search" class="actions">
+    <label style="flex:1;min-width:220px">用户名或邮箱<input id="query" maxlength="254" placeholder="搜索用户"></label>
+    <label>账号状态<select id="active"><option value="">全部</option><option value="true">启用</option><option value="false">停用</option></select></label>
+    <button type="submit">搜索</button>
+  </form>
+  <p id="message" class="message" role="status"></p>
+  <p class="muted">可左右滚动查看完整信息。</p>
+  <div style="overflow-x:auto">
+    <table class="user-table" aria-label="用户列表"><thead><tr><th>用户名</th><th>邮箱</th><th>角色</th><th>状态</th><th>注册时间</th><th>最近登录</th><th>最近作答</th><th>作答次数</th><th>正确率</th><th>操作</th></tr></thead><tbody id="users"></tbody></table>
+  </div>
+  <p id="empty" class="muted" hidden>暂无匹配用户</p>
+  <div class="actions" style="margin-top:18px"><button id="previous" class="secondary">上一页</button><span id="pagination"></span><button id="next" class="secondary">下一页</button></div>
+</section>
+{% endblock %}
+{% block scripts %}
+<script>
+let page=1, ownId='', loading=false;
+const notice=document.getElementById('message'),tbody=document.getElementById('users');
+const roles={administrator:'管理员',editor:'编辑',reviewer:'审核员',publisher:'发布员'};
+function date(value,fallback){return value?new Intl.DateTimeFormat('zh-CN',{timeZone:'Asia/Shanghai',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}).format(new Date(value)):fallback}
+async function load(){
+  if(loading)return;
+  loading=true;notice.classList.remove('error');notice.textContent='正在读取用户…';
+  document.querySelector('#search button').disabled=true;
+  document.getElementById('previous').disabled=true;document.getElementById('next').disabled=true;
+  try{
+    const params=new URLSearchParams({page:String(page),limit:'20',q:document.getElementById('query').value});
+    const active=document.getElementById('active').value;if(active)params.set('active',active);
+    const data=await rawApi('/api/v1/admin/users?'+params);tbody.replaceChildren();
+    for(const user of data.items){
+      const tr=document.createElement('tr');tr.dataset.userId=user.id;
+      for(const text of [user.username,user.email||'未记录',user.roles.map(r=>roles[r]||r).join('、')||'学习用户',user.active?'启用':'停用',date(user.created_at,'未记录'),date(user.last_login_at,'未记录'),date(user.last_attempt_at,'暂无'),String(user.attempt_count),user.accuracy===null?'暂无':user.accuracy+'%']){
+        const td=document.createElement('td');td.textContent=text;tr.append(td);
+      }
+      const td=document.createElement('td'),button=document.createElement('button');button.textContent=user.active?'停用':'启用';button.className=user.active?'danger':'secondary';button.disabled=user.id===ownId&&user.active;
+      button.onclick=async()=>{
+        if(user.active&&!confirm('停用 '+user.username+'？该用户的已有登录将失效。'))return;
+        button.disabled=true;
+        try{await rawApi('/api/v1/admin/users/'+user.id+'/status',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({active:!user.active})});await load()}
+        catch(error){notice.textContent=error.message;notice.classList.add('error');button.disabled=false}
+      };td.append(button);tr.append(td);tbody.append(tr);
+    }
+    document.getElementById('empty').hidden=data.items.length>0;
+    const pages=Math.max(1,Math.ceil(data.total/data.limit));document.getElementById('pagination').textContent='共 '+data.total+' 位用户 · 第 '+page+'/'+pages+' 页';
+    document.getElementById('previous').disabled=page<=1;document.getElementById('next').disabled=page>=pages;notice.textContent='';
+  }catch(error){notice.textContent=error.message;notice.classList.add('error')}
+  finally{loading=false;document.querySelector('#search button').disabled=false}
+}
+document.getElementById('search').onsubmit=e=>{e.preventDefault();if(!loading){page=1;load()}};
+document.getElementById('previous').onclick=()=>{if(!loading){page--;load()}};
+document.getElementById('next').onclick=()=>{if(!loading){page++;load()}};
+rawApi('/api/v1/auth/me').then(user=>{ownId=user.id;load()}).catch(error=>{notice.textContent=error.message;notice.classList.add('error')});
+</script>
+{% endblock %}

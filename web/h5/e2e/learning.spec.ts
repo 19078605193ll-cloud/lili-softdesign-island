@@ -4,9 +4,13 @@ test("real API learning loop, restoration, notebook, tutor and mobile layouts", 
 }, info) => {
   const errors: string[] = [];
   page.on("pageerror", (e) => errors.push(e.message));
+  // localhost normally exposes randomUUID even over HTTP; emulate public HTTP.
+  await page.addInitScript(() => {
+    Object.defineProperty(crypto, "randomUUID", { value: undefined, configurable: true });
+  });
   await page.goto("/h5/");
   await page
-    .getByLabel("账号", { exact: true })
+    .getByLabel("用户名或邮箱", { exact: true })
     .fill("h5-" + info.project.name);
   await page.getByLabel("密码", { exact: true }).fill("isolated-test-password");
   await page.getByRole("button", { name: "登录，继续学习" }).click();
@@ -188,6 +192,6 @@ test("real API learning loop, restoration, notebook, tutor and mobile layouts", 
     .click();
   await page.getByRole("button", { name: "个人账号" }).click();
   await page.getByRole("button", { name: "退出登录" }).click();
-  await expect(page.getByLabel("账号", { exact: true })).toBeVisible();
+  await expect(page.getByLabel("用户名或邮箱", { exact: true })).toBeVisible();
   expect(errors).toEqual([]);
 });

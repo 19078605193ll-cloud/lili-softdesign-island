@@ -1,0 +1,69 @@
+x-app: &app
+  image: ${ISLAND_IMAGE:?required}
+  restart: unless-stopped
+  env_file: deploy/production.env
+  environment:
+    APP_ENV: production
+    IMPORT_STORAGE_ROOT: /srv/island/var/imports
+  volumes: ["assets:/srv/island/var/imports"]
+  networks: [backend, outbound]
+  depends_on:
+    db: {condition: service_healthy}
+    redis: {condition: service_started}
+  logging:
+    driver: local
+    options: {max-size: "10m", max-file: "5"}
+  security_opt: [no-new-privileges:true]
+  cap_drop: [ALL]
+services:
+  api:
+    <<: *app
+    ports: ["127.0.0.1:18000:8000"]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health/ready',timeout=5)"]
+      interval: 15s
+      timeout: 6s
+      retries: 5
+  worker:
+    <<: *app
+    command: [celery, -A, app.infrastructure.celery_app:celery_app, worker, --loglevel=INFO, --concurrency=1]
+    stop_grace_period: 630s
+  dispatcher:
+    <<: *app
+    command: [python, -m, app.infrastructure.dispatcher]
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: island
+      POSTGRES_USER: island_migrator
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?required}
+    volumes: ["postgres:/var/lib/postgresql/data"]
+    networks: [backend]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U island_migrator -d island"]
+      interval: 5s
+      retries: 20
+    logging:
+      driver: local
+      options: {max-size: "10m", max-file: "5"}
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: [redis-server, /usr/local/etc/redis/redis.conf]
+    volumes:
+      - redis:/data
+      - ./deploy/redis.conf:/usr/local/etc/redis/redis.conf:ro
+      - ./deploy/redis.acl:/usr/local/etc/redis/users.acl:ro
+    networks: [backend]
+    logging:
+      driver: local
+      options: {max-size: "10m", max-file: "5"}
+volumes:
+  postgres:
+  assets:
+  redis:
+networks:
+  backend:
+    internal: true
+  outbound:

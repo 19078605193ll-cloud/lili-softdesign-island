@@ -255,6 +255,48 @@ async def test_preferences_plan_validation_and_empty_search(client, session, sto
     ).json()["items"] == []
 
 
+async def test_tutor_timeout_retries_once_then_allows_manual_retry(
+    client, session, storage, monkeypatch
+):
+    import httpx
+    from openai import APITimeoutError
+    from app.config import get_settings
+
+    _, _, units = await setup_questions(client, session)
+    monkeypatch.setattr(get_settings(), "ai_api_key", "test-only")
+    monkeypatch.setattr(get_settings(), "ai_tutor_model", "test-only")
+    mock = AsyncMock(side_effect=APITimeoutError(request=httpx.Request("POST", "https://model.invalid")))
+    monkeypatch.setattr("app.h5.ai_worker.completion", mock)
+    response = await client.post(
+        "/api/v2/learning/tutor/sessions",
+        json=dict(question_id=units[0]["id"], content_version=1),
+        headers={"Idempotency-Key": uuid.uuid4().hex},
+    )
+    assert response.status_code == 201
+    sid, jid = response.json()["id"], uuid.UUID(response.json()["job_id"])
+    factory = async_sessionmaker(session.bind, expire_on_commit=False)
+    for status in ("retry_wait", "failed"):
+        await execute_due(session, jid, factory)
+        data = (await client.get("/api/v2/learning/tutor/sessions/" + sid)).json()
+        assert data["job"]["status"] == status
+        assert data["job"]["retries"] == 1
+        assert "模型响应超时" in data["job"]["error"]
+        assert not any(m["role"] == "assistant" for m in data["messages"])
+    assert mock.await_count == 2
+    mock.side_effect = None
+    mock.return_value = "恢复后的回答"
+    response = await client.post(
+        f"/api/v2/learning/tutor/sessions/{sid}/messages",
+        json={"text": "请重新回答上一条问题。"},
+        headers={"Idempotency-Key": uuid.uuid4().hex},
+    )
+    assert response.status_code == 202
+    await execute_due(session, uuid.UUID(response.json()["job_id"]), factory)
+    data = (await client.get("/api/v2/learning/tutor/sessions/" + sid)).json()
+    assert data["job"]["status"] == "succeeded"
+    assert data["messages"][-1]["content"] == "恢复后的回答"
+
+
 async def test_tutor_durable_output_idempotency_and_private_jobs(
     client, session, storage, monkeypatch
 ):

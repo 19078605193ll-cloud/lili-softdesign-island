@@ -36,7 +36,7 @@ async def completion(messages, *, structured=False):
     async with AsyncOpenAI(
         api_key=s.ai_api_key,
         base_url=s.ai_base_url or "https://www.dmxapi.cn/v1",
-        timeout=120,
+        timeout=s.ai_timeout_seconds,
         max_retries=0,
     ) as client:
         result = await client.chat.completions.create(

@@ -7,22 +7,29 @@ import uuid
 from sqlalchemy import delete, select
 from app.core.runtime import run_async
 from app.core.security import ROLE_PERMISSIONS, passwords
+from app.core.identifiers import identifiers_available, normalize_username
+from app.core.user_management import status_lock, ensure_can_disable
 from app.db import SessionFactory, engine
 from app.models import AuditEvent, Role, User, UserRole
 
 
 async def execute(args, password=None):
+    username = normalize_username(args.username)
     async with SessionFactory.begin() as session:
+        if args.command == "create":
+            await identifiers_available(session, username)
+        else:
+            await status_lock(session)
         user = await session.scalar(
             select(User)
-            .where(User.username == args.username.casefold())
+            .where(User.username == username)
             .with_for_update()
         )
         if args.command == "create":
             if user:
                 raise ValueError("Account already exists")
             user = User(
-                username=args.username.casefold(),
+                username=username,
                 password_hash=passwords.hash(password),
             )
             session.add(user)
@@ -32,6 +39,7 @@ async def execute(args, password=None):
         if args.command == "password":
             user.password_hash = passwords.hash(password)
         if args.command == "disable":
+            await ensure_can_disable(session, user)
             user.active = False
         if args.command == "enable":
             user.active = True

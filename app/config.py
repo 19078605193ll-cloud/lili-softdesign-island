@@ -32,6 +32,7 @@ class Settings(BaseSettings):
     redis_url: str = "redis://127.0.0.1:6379/0"
     celery_broker_url: str = "redis://127.0.0.1:6379/1"
     public_origin: str = "http://127.0.0.1:8000"
+    allow_insecure_http: bool = False
     session_ttl_seconds: int = 28800
     allowed_image_hosts: list[str] = ["cdn-mineru.openxlab.org.cn"]
     writes_enabled: bool = True
@@ -39,10 +40,14 @@ class Settings(BaseSettings):
     learning_enabled: bool = True
 
     @property
+    def secure_cookie(self) -> bool:
+        return self.app_env == "production" and self.public_origin.startswith("https://")
+
+    @property
     def session_cookie(self) -> str:
         return (
             "__Host-island-session"
-            if self.app_env == "production"
+            if self.secure_cookie
             else "island-session"
         )
 
@@ -50,7 +55,7 @@ class Settings(BaseSettings):
     def validate_production(self):
         if self.app_env == "production" and not self.public_origin.startswith(
             "https://"
-        ):
+        ) and not (self.allow_insecure_http and self.public_origin.startswith("http://")):
             raise ValueError("Production PUBLIC_ORIGIN must use HTTPS")
         return self
 

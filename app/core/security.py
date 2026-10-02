@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import asyncio
 import json
 import secrets
 import uuid
@@ -14,7 +15,7 @@ from pydantic import BaseModel, Field
 from pwdlib import PasswordHash
 from redis.asyncio import Redis
 from redis.exceptions import RedisError
-from sqlalchemy import select
+from sqlalchemy import select, func
 
 from app.config import get_settings
 from app.db import SessionFactory
@@ -32,6 +33,8 @@ ROLE_PERMISSIONS = {
         "imports:publish",
         "imports:delete",
         "audit:read",
+        "users:read",
+        "users:manage",
     },
 }
 passwords = PasswordHash.recommended()
@@ -64,7 +67,7 @@ def cookie(response, name, value, ttl):
         name,
         value,
         httponly=True,
-        secure=get_settings().app_env == "production",
+        secure=get_settings().secure_cookie,
         samesite="lax",
         path="/",
         max_age=ttl,
@@ -147,6 +150,8 @@ async def protect(request: Request):
                 permission = "imports:read"
         if path.startswith("/api/v1/admin/audit"):
             permission = "audit:read"
+        if path == "/admin/users" or path == "/api/v1/admin/users" or path.startswith("/api/v1/admin/users/"):
+            permission = "users:read" if request.method in {"GET", "HEAD", "OPTIONS"} else "users:manage"
         # Task-specific permissions are checked after loading their trusted DB kind.
         if path.startswith("/api/v2/admin/") and (
             path.endswith("/jobs") or path.endswith("/retry")
@@ -189,10 +194,16 @@ async def csrf(request: Request):
         async with redis_client() as redis:
             raw = await redis.get("session:" + digest(token)) if token else None
             if raw:
-                return JSONResponse(
-                    {"csrf_token": json.loads(raw)["csrf"]},
-                    headers={"Cache-Control": "no-store"},
-                )
+                data = json.loads(raw)
+                async with SessionFactory() as session:
+                    user = await session.get(User, uuid.UUID(data["user_id"]))
+                    valid = user and user.active and user.auth_version == data["auth_version"]
+                if valid:
+                    return JSONResponse(
+                        {"csrf_token": data["csrf"]},
+                        headers={"Cache-Control": "no-store"},
+                    )
+                await redis.delete("session:" + digest(token))
             nonce, csrf_token = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
             await redis.set("prelogin:" + digest(nonce), csrf_token, ex=600)
     except RedisError as exc:
@@ -204,8 +215,58 @@ async def csrf(request: Request):
     return response
 
 
+async def check_prelogin(request, redis):
+    check_origin(request)
+    nonce = request.cookies.get(get_settings().session_cookie + "-prelogin", "")
+    expected = await redis.get("prelogin:" + digest(nonce))
+    if not expected or not secrets.compare_digest(expected, request.headers.get("x-csrf-token", "")):
+        raise fail(403, "CSRF_TOKEN", "请刷新登录或注册页面")
+
+
+async def limit_attempts(redis, key, limit, code, message):
+    count = await redis.eval(
+        "local n=redis.call('INCR',KEYS[1]); if n==1 then redis.call('EXPIRE',KEYS[1],900) end; return n",
+        1, key,
+    )
+    if count > limit:
+        raise fail(429, code, message)
+
+
+async def start_session(request, user_id, redis, *, status_code=200):
+    token, csrf_token = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
+    try:
+        async with SessionFactory.begin() as session:
+            user = await session.scalar(select(User).where(User.id == user_id).with_for_update())
+            if not user or not user.active:
+                raise fail(401, "INVALID_CREDENTIALS", "账号或密码错误")
+            await redis.set(
+                "session:" + digest(token),
+                json.dumps(dict(user_id=str(user.id), auth_version=user.auth_version, csrf=csrf_token)),
+                ex=get_settings().session_ttl_seconds,
+            )
+            user.last_login_at = func.now()
+            old = request.cookies.get(get_settings().session_cookie)
+            if old:
+                await redis.delete("session:" + digest(old))
+            nonce = request.cookies.get(get_settings().session_cookie + "-prelogin", "")
+            await redis.delete("prelogin:" + digest(nonce))
+    except Exception:
+        try:
+            await redis.delete("session:" + digest(token))
+        except RedisError:
+            pass
+        raise
+    response = JSONResponse(
+        {"csrf_token": csrf_token, "authenticated": True},
+        status_code=status_code, headers={"Cache-Control": "no-store"},
+    )
+    cookie(response, get_settings().session_cookie, token, get_settings().session_ttl_seconds)
+    response.delete_cookie(get_settings().session_cookie + "-prelogin", path="/", secure=get_settings().secure_cookie, httponly=True, samesite="lax")
+    return response
+
+
 class Login(BaseModel):
-    username: str = Field(min_length=1, max_length=100)
+    username: str = Field(min_length=1, max_length=254)
     password: str = Field(min_length=12, max_length=128)
 
 
@@ -215,28 +276,25 @@ async def login(request: Request, payload: Login):
     ip = request.client.host if request.client else "unknown"
     try:
         async with redis_client() as redis:
-            nonce = request.cookies.get(get_settings().session_cookie + "-prelogin", "")
-            expected = await redis.get("prelogin:" + digest(nonce))
-            if not expected or not secrets.compare_digest(
-                expected, request.headers.get("x-csrf-token", "")
-            ):
-                raise fail(403, "CSRF_TOKEN", "请刷新登录页面")
+            await check_prelogin(request, redis)
+            identifier = payload.username.strip().casefold()
             for key, limit in [
                 ("login:ip:" + digest(ip), 60),
-                ("login:account:" + digest(ip + ":" + payload.username.casefold()), 10),
+                ("login:account:" + digest(ip + ":" + identifier), 10),
             ]:
-                count = await redis.eval(
-                    "local n=redis.call('INCR',KEYS[1]); if n==1 then redis.call('EXPIRE',KEYS[1],900) end; return n",
-                    1,
-                    key,
-                )
-                if count > limit:
-                    raise fail(429, "LOGIN_RATE_LIMIT", "登录尝试过多，请稍后重试")
+                await limit_attempts(redis, key, limit, "LOGIN_RATE_LIMIT", "登录尝试过多，请稍后重试")
             async with SessionFactory() as session:
                 user = await session.scalar(
-                    select(User).where(User.username == payload.username.casefold())
+                    select(User).where(User.username == identifier)
                 )
-                import asyncio
+                if user is None:
+                    from app.core.identifiers import normalize_email
+                    try:
+                        email = normalize_email(identifier)
+                    except ValueError:
+                        email = None
+                    if email:
+                        user = await session.scalar(select(User).where(User.email == email))
 
                 valid = await asyncio.to_thread(
                     passwords.verify,
@@ -245,35 +303,10 @@ async def login(request: Request, payload: Login):
                 )
                 if not valid or not user or not user.active:
                     raise fail(401, "INVALID_CREDENTIALS", "账号或密码错误")
-                token, csrf_token = secrets.token_urlsafe(32), secrets.token_urlsafe(32)
-                await redis.set(
-                    "session:" + digest(token),
-                    json.dumps(
-                        dict(
-                            user_id=str(user.id),
-                            auth_version=user.auth_version,
-                            csrf=csrf_token,
-                        )
-                    ),
-                    ex=get_settings().session_ttl_seconds,
-                )
-            old = request.cookies.get(get_settings().session_cookie)
-            if old:
-                await redis.delete("session:" + digest(old))
-            await redis.delete("prelogin:" + digest(nonce))
+                user_id = user.id
+            return await start_session(request, user_id, redis)
     except RedisError as exc:
         raise fail(503, "IDENTITY_UNAVAILABLE", "登录服务暂不可用") from exc
-    response = JSONResponse(
-        {"csrf_token": csrf_token}, headers={"Cache-Control": "no-store"}
-    )
-    cookie(
-        response,
-        get_settings().session_cookie,
-        token,
-        get_settings().session_ttl_seconds,
-    )
-    response.delete_cookie(get_settings().session_cookie + "-prelogin", path="/")
-    return response
 
 
 @router.post("/api/v1/auth/logout")
@@ -287,7 +320,7 @@ async def logout(request: Request):
     except RedisError as exc:
         raise fail(503, "IDENTITY_UNAVAILABLE", "登录服务暂不可用") from exc
     response = JSONResponse({"logged_out": True})
-    response.delete_cookie(get_settings().session_cookie, path="/")
+    response.delete_cookie(get_settings().session_cookie, path="/", secure=get_settings().secure_cookie, httponly=True, samesite="lax")
     return response
 
 

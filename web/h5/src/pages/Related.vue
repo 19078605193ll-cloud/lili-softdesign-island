@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { randomUUID } from "../uuid";
 import { onMounted, onUnmounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "../api";
@@ -17,7 +18,7 @@ const error = ref(""),
 let disposed = false,
   timer: ReturnType<typeof setTimeout> | undefined;
 const controller = new AbortController();
-let key = String(route.query.request || crypto.randomUUID());
+let key = String(route.query.request || randomUUID());
 const parent = String(route.query.parent || "");
 const back = () => router.push("/session/" + parent);
 async function showVariant(id: string) {
@@ -55,7 +56,7 @@ async function prepare() {
   busy.value = true;
   error.value = "";
   if (failedJob.value) {
-    key = crypto.randomUUID();
+    key = randomUUID();
     failedJob.value = false;
   }
   await router.replace({ query: { ...route.query, request: key } });

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { randomUUID } from "../uuid";
 import { onMounted, onUnmounted, ref } from "vue";
 import { api } from "../api";
 import AiText from "./AiText.vue";
@@ -21,7 +22,7 @@ let timer: ReturnType<typeof setTimeout> | undefined,
   started = Date.now(),
   sendKey = "",
   sendText = "",
-  createKey = crypto.randomUUID();
+  createKey = randomUUID();
 const controller = new AbortController();
 const active = (s: string) => ["queued", "running", "retry_wait"].includes(s);
 async function refresh() {
@@ -85,7 +86,7 @@ async function send(value: string) {
   error.value = "";
   if (value !== sendText) {
     sendText = value;
-    sendKey = crypto.randomUUID();
+    sendKey = randomUUID();
   }
   try {
     await api("/learning/tutor/sessions/" + sid.value + "/messages", {
@@ -142,7 +143,12 @@ onUnmounted(() => {
       >
         <AiText :text="m.content" />
       </article>
-      <p v-if="busy" class="muted thinking">正在思考，请稍候…</p>
+      <p v-if="busy" class="muted thinking" role="status">
+        {{ data?.job?.status === 'queued' ? '问题已提交，等待 AI 处理…'
+          : data?.job?.status === 'retry_wait' || data?.job?.retries > 0
+            ? 'AI 服务响应较慢，正在自动重试，请稍候…'
+            : '正在思考，请稍候…' }}
+      </p>
     </div>
     <p v-if="readOnly && !data?.messages?.length" class="muted">
       暂无历史 AI 对话

@@ -6,6 +6,9 @@ var
 .test-runtime
 .local-runtime
 deploy/local.env
+deploy/production.env
+deploy/compose.env
+deploy/redis.acl
 tests
 *.pdf
 **/__pycache__

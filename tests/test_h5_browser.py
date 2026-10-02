@@ -18,11 +18,15 @@ pytestmark = pytest.mark.integration
 )
 async def test_browser_learning_flow(client, session, storage, tmp_path):
     await setup_questions(client, session)
-    from app.models import User
+    from app.models import User, UserRole
     from app.core.security import passwords
     for browser in ("chromium", "webkit"):
         session.add(User(username="h5-" + browser, password_hash=passwords.hash("isolated-test-password")))
         session.add(User(username="profile-" + browser, password_hash=passwords.hash("isolated-test-password")))
+        admin = User(username="users-admin-" + browser, password_hash=passwords.hash("isolated-test-password"))
+        session.add(admin)
+        await session.flush()
+        session.add(UserRole(user_id=admin.id, role="administrator"))
     await session.commit()
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 0))

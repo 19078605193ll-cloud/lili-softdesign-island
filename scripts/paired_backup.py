@@ -16,6 +16,7 @@ def main():
     parser.add_argument("--project", required=True)
     parser.add_argument("--env-file", type=Path, required=True)
     parser.add_argument("--destination", type=Path, required=True)
+    parser.add_argument("--compose-file", type=Path, default=Path("compose.production.yml"))
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
     destination = args.destination.resolve()
@@ -26,7 +27,7 @@ def main():
         "--env-file",
         str(args.env_file.resolve()),
         "-f",
-        str(root / "compose.production.yml"),
+        str(root / args.compose_file),
         "-p",
         args.project,
     ]

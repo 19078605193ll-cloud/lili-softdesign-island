@@ -71,6 +71,8 @@ export async function api<T = any>(
         code,
         typeof data.detail === "string"
           ? data.detail
+          : Array.isArray(data.detail)
+            ? data.detail.map((item: any) => String(item.msg || "输入无效").replace(/^Value error, /, "")).join("；")
           : data.error?.message || data.message || "请求失败，请重试",
       );
     }

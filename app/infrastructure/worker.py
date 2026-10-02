@@ -12,7 +12,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 import httpx
-from openai import APIConnectionError, APIStatusError
+from openai import APIConnectionError, APIStatusError, APITimeoutError
 from sqlalchemy import or_, select, func
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
@@ -705,6 +705,19 @@ async def failed(factory, task, exc):
         job.lease_until = None
         job.error_code = type(exc).__name__
         job.error_detail = "任务处理失败，原始资料已保留；请检查配置或重试"
+        if job.kind in {"tutor", "variant", "variant_review", "variant_wait"}:
+            if isinstance(exc, (APITimeoutError, httpx.TimeoutException)):
+                job.error_detail = "AI 模型响应超时，请稍后重试"
+            else:
+                job.error_detail = "AI 服务暂时不可用，请稍后重试"
+        import logging
+
+        logging.getLogger("island").warning(
+            "job_attempt_failed",
+            extra={"fields": {"job_id": str(job.id), "kind": job.kind,
+                              "error_code": job.error_code, "status": job.status,
+                              "retries": job.retries}},
+        )
         if job.kind == "archive_images" and task["payload"].get("reference"):
             doc = await workflow.document_for(session, job.batch_id, lock=True)
             state = copy.deepcopy(doc.extracted_content)

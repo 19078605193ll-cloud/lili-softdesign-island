@@ -11,6 +11,7 @@ const router = useRouter(),
   route = useRoute(),
   store = useLearner();
 async function login() {
+  if (busy.value) return;
   busy.value = true;
   error.value = "";
   try {
@@ -37,10 +38,12 @@ async function login() {
     <p class="muted">软件设计师 · 学习与思考</p>
     <form class="card login-form" @submit.prevent="login">
       <h2>欢迎回来</h2>
+      <p v-if="route.query.registered" class="muted small" role="status">注册成功，请登录后继续学习。</p>
       <label
-        >账号<input
+        >用户名或邮箱<input
           v-model="username"
           autocomplete="username"
+          maxlength="254"
           required /></label
       ><label
         >密码<input
@@ -48,13 +51,14 @@ async function login() {
           type="password"
           autocomplete="current-password"
           minlength="12"
+          maxlength="128"
           required
       /></label>
       <p v-if="error" class="error" role="alert">{{ error }}</p>
       <button class="primary" :disabled="busy">
         {{ busy ? "正在登录…" : "登录，继续学习" }}<span>→</span>
       </button>
-      <p class="muted small">请使用已开通的学习账号登录</p>
+      <p class="muted small">没有账号？<RouterLink to="/register">立即注册</RouterLink></p>
     </form>
   </section>
 </template>

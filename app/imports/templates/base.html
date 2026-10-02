@@ -37,9 +37,18 @@
   {% block head %}{% endblock %}
 </head>
 <body>
-<header><a href="/admin/imports">真题导入审核</a><span class="muted">管理后台</span></header>
+<header><a href="/admin/imports">真题导入审核</a><a id="users-nav" href="/admin/users" hidden>用户管理</a><span class="muted">管理后台</span></header>
 <main class="{% block main_class %}{% endblock %}">{% block content %}{% endblock %}</main>
 <script>
+function randomUUID() {
+  if (typeof globalThis.crypto.randomUUID === 'function') return globalThis.crypto.randomUUID();
+  const bytes = globalThis.crypto.getRandomValues(new Uint8Array(16));
+  bytes[6] = (bytes[6] & 15) | 64;
+  bytes[8] = (bytes[8] & 63) | 128;
+  const hex = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
+  return `${hex.slice(0,8)}-${hex.slice(8,12)}-${hex.slice(12,16)}-${hex.slice(16,20)}-${hex.slice(20)}`;
+}
+
 function formatApiError(detail){
   if(detail==null)return '操作失败';
   if(typeof detail==='string')return detail;
@@ -98,7 +107,7 @@ async function api(url,options={}){
     const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',await file.arrayBuffer()))).map(x=>x.toString(16).padStart(2,'0')).join('');
     const identity=JSON.stringify([...options.body.entries()].map(([k,v])=>[k,k==='file'?hash:v]));
     let pending;try{pending=JSON.parse(sessionStorage.getItem('island-upload-key'))}catch(_){pending=null}
-    if(!pending||pending.identity!==identity)pending={identity,key:crypto.randomUUID()};
+    if(!pending||pending.identity!==identity)pending={identity,key:randomUUID()};
     sessionStorage.setItem('island-upload-key',JSON.stringify(pending));
     const job=await rawApi('/api/v2/admin/import-batches',{...options,headers:{...options.headers,'Idempotency-Key':pending.key}});
     sessionStorage.removeItem('island-upload-key');
@@ -117,7 +126,7 @@ async function api(url,options={}){
         if(!blocks.length)return {configured:true,processed:0,remaining:0};
         body={block_id:blocks[0].id};
       }else if(kind==='assist')body={block_id:path.split('/')[2]};
-      const job=await rawApi('/api/v2/admin/import-batches/'+id+'/jobs',{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':crypto.randomUUID()},body:JSON.stringify({...body,kind,revision:state.revision})});
+      const job=await rawApi('/api/v2/admin/import-batches/'+id+'/jobs',{method:'POST',headers:{'Content-Type':'application/json','Idempotency-Key':randomUUID()},body:JSON.stringify({...body,kind,revision:state.revision})});
       const result=await waitJob(job);await rawApi(base);
       if(path==='/assist-pending')return {configured:true,processed:1,remaining:0};
       return result;
@@ -130,6 +139,8 @@ async function api(url,options={}){
 }
 document.addEventListener('DOMContentLoaded',async()=>{
   const banner=document.querySelector('header');
+  const usersNav=document.getElementById('users-nav');
+  if(usersNav){try{const user=await rawApi('/api/v1/auth/me');usersNav.hidden=!user.permissions.includes('users:read')}catch(_error){usersNav.hidden=true}}
   if(banner){const logout=document.createElement('button');logout.textContent='退出登录';logout.onclick=async()=>{await rawApi('/api/v1/auth/logout',{method:'POST'});location.href='/admin/login'};banner.append(logout)}
   const match=location.pathname.match(/^\/admin\/imports\/([0-9a-f-]+)/);
   if(match){

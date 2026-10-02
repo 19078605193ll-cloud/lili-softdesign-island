@@ -4,7 +4,7 @@ test("profile name and avatar persist, crop cancels and default restores", async
 }, info) => {
   const name = "profile-" + info.project.name;
   await page.goto("/h5/");
-  await page.getByLabel("账号", { exact: true }).fill(name);
+  await page.getByLabel("用户名或邮箱", { exact: true }).fill(name);
   await page.getByLabel("密码", { exact: true }).fill("isolated-test-password");
   await page.getByRole("button", { name: "登录，继续学习" }).click();
   await page.getByRole("button", { name: "个人账号" }).click();
@@ -68,7 +68,7 @@ test("profile name and avatar persist, crop cancels and default restores", async
   await page.getByRole("button", { name: "恢复默认头像" }).click();
   await expect(page.locator(".avatar-picker img")).toHaveCount(0);
   await page.getByRole("button", { name: "退出登录" }).click();
-  await page.getByLabel("账号", { exact: true }).fill(name + "-new");
+  await page.getByLabel("用户名或邮箱", { exact: true }).fill(name + "-new");
   await page.getByLabel("密码", { exact: true }).fill("isolated-test-password");
   await page.getByRole("button", { name: "登录，继续学习" }).click();
   await expect(page.getByRole("button", { name: "个人账号" })).toBeVisible();

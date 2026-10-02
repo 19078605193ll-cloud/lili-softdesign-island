@@ -96,6 +96,6 @@ AI_TUTOR_MODEL未设置时仅回退AI_TEXT_MODEL，不会擅自使用导入分�
 
 发布顺序：备份→在副本升级0014并回归→业务停写执行兼容迁移→部署API/worker/dispatcher→启用H5。开关变更需重建进程。H5_ENABLED关闭学习页面，LEARNING_AI_ENABLED关闭学习模型请求，既有管理后台保持可用。回退优先关闭开关、切换兼容镜像，不有损删除新表。
 
-账号仍由 `python -m app.core.accounts create 用户名` 创建，考生不带管理角色。真实模型验收需完成一次引导、一轮追问、一题自动校验变式题及复用命中；隔离测试的模型夹具不算真实模型验收。
+管理员账号由 `python -m app.core.accounts create 用户名 --roles administrator` 创建，学习用户可通过 H5 自助注册，或通过 CLI 创建不带管理角色的账号。注册和用户管理见 [注册说明](user-registration.md)。真实模型验收需完成一次引导、一轮追问、一题自动校验变式题及复用命中；隔离测试的模型夹具不算真实模型验收。
 
 H5接口、数据和统计约定分别见 [接口映射](h5-api-mapping.md)、[数据字典](h5-data-dictionary.md)、[统计规则](h5-metrics.md)，验证方式与未完成的环境验收见 [验证记录](h5-verification.md)。

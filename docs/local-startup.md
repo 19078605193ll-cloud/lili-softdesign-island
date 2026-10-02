@@ -10,7 +10,7 @@ H5学习端：<http://127.0.0.1:8000/h5/>，使用已有账号登录。
 
 ## 当前运行方式
 
-2026-09-30账号资料更新已部署：数据库版本为0016，支持用户名编辑和头像上传裁剪。备份与验收详见 [账号资料说明](profile-management.md)。历史章节中的0015要求仅对应当时版本，当前健康检查要求0016。
+2026-10-02注册与用户管理已部署：数据库版本为0017，支持 H5 自助注册、用户名或邮箱登录，以及管理员查看和启停用户。详见 [注册说明](user-registration.md)。用户名编辑和头像裁剪保留，历史章节中的0015、0016要求仅对应当时版本，当前健康检查要求0017。
 
 API、Celery worker、dispatcher 和 Redis 由 Docker Compose 管理，项目名 `softdesign-island-app`。
 沿用 `softdesign-island-db-1` 内原有 `software_designer` 数据库及 `var/imports` 素材。
