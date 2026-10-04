@@ -69,3 +69,5 @@ app.include_router(h5_router)
 app.include_router(tutor_router)
 app.include_router(related_router)
 app.include_router(h5_static_router)
+from app.h5.voice import router as voice_router
+app.include_router(voice_router)

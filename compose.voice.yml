@@ -1,0 +1,40 @@
+# Reusable service definition extended by local / production / HTTP deployments.
+# Run scripts/init_voice.py first. This service receives only voice-specific values.
+services:
+  voice-input:
+    image: softdesign-island-voice:0.1.0
+    build:
+      context: .
+      dockerfile: deploy/voice.Dockerfile
+    restart: unless-stopped
+    env_file: .local-runtime/voice.env
+    environment:
+      ASR_PROVIDER: ${ASR_PROVIDER:-dashscope}
+      ASR_API_KEY: ${ASR_API_KEY:-}
+      ASR_BASE_URL: ${ASR_BASE_URL:-https://dashscope.aliyuncs.com/api/v1}
+      ASR_MODEL: ${ASR_MODEL:-qwen-audio-3.0-asr-flash-filetrans}
+      POLISH_ENABLED: ${POLISH_ENABLED:-true}
+      POLISH_API_KEY: ${POLISH_API_KEY:-}
+      POLISH_BASE_URL: ${POLISH_BASE_URL:-https://api.openai.com/v1}
+      POLISH_MODEL: ${POLISH_MODEL:-gpt-4.1-mini}
+      POLISH_ENABLE_THINKING: ${POLISH_ENABLE_THINKING:-false}
+      ALLOWED_ORIGINS: ${PUBLIC_ORIGIN:-http://127.0.0.1:8000}
+      ANONYMOUS_TOKENS_ENABLED: "true"
+      ANONYMOUS_TOKEN_TTL_SECONDS: "900"
+      # The gateway already enforces 10 starts/minute per authenticated user.
+      ANONYMOUS_TOKEN_ISSUE_LIMIT_PER_MINUTE: "200"
+      REDIS_ENABLED: "false"
+      MOCK_PROVIDERS_ENABLED: "false"
+      STT_SEGMENT_TARGET_SECONDS: "20"
+      STT_SEGMENT_MAX_SECONDS: "30"
+      STT_MAX_ACTIVE_SESSIONS: "5"
+      STT_MAX_CONCURRENCY: "5"
+      POLISH_LOCAL_CONCURRENCY: "5"
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:9100/health/ready',timeout=5)"]
+      interval: 15s
+      timeout: 6s
+      retries: 3
+    logging:
+      driver: local
+      options: {max-size: "10m", max-file: "5"}

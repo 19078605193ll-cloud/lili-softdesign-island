@@ -5,6 +5,7 @@ x-app: &app
   environment:
     APP_ENV: production
     IMPORT_STORAGE_ROOT: /srv/island/var/imports
+    VOICE_SERVICE_URL: http://voice-input:9100
   volumes: ["assets:/srv/island/var/imports"]
   networks: [backend, outbound]
   depends_on:
@@ -16,6 +17,11 @@ x-app: &app
   security_opt: [no-new-privileges:true]
   cap_drop: [ALL]
 services:
+  voice-input:
+    extends:
+      file: compose.voice.yml
+      service: voice-input
+    networks: [backend, outbound]
   api:
     <<: *app
     ports: ["127.0.0.1:18000:8000"]

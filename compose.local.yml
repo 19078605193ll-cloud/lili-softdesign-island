@@ -11,8 +11,10 @@ x-app: &app
     APP_ENV: development
     PUBLIC_ORIGIN: http://127.0.0.1:8000
     IMPORT_STORAGE_ROOT: /srv/island/var/imports
+    VOICE_SERVICE_URL: http://voice-input:9100
   volumes:
     - ./app:/srv/island/app:ro
+    - ./Prompt:/srv/island/Prompt:ro
     - ./alembic:/srv/island/alembic:ro
     - ./var/imports:/srv/island/var/imports
   networks: [existing]
@@ -23,13 +25,18 @@ x-app: &app
     options: {max-size: "10m", max-file: "5"}
 
 services:
+  voice-input:
+    extends:
+      file: compose.voice.yml
+      service: voice-input
+    networks: [existing]
   api:
     <<: *app
     ports:
       - "127.0.0.1:8000:8000"
   worker:
     <<: *app
-    command: [celery, -A, app.infrastructure.celery_app:celery_app, worker, --loglevel=INFO, --concurrency=2]
+    command: [celery, -A, app.infrastructure.celery_app:celery_app, worker, --loglevel=INFO, --concurrency=6]
     stop_grace_period: 630s
   dispatcher:
     <<: *app

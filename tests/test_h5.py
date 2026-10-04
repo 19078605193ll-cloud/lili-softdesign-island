@@ -255,17 +255,16 @@ async def test_preferences_plan_validation_and_empty_search(client, session, sto
     ).json()["items"] == []
 
 
-async def test_tutor_timeout_retries_once_then_allows_manual_retry(
+async def test_tutor_exhausted_chain_allows_manual_retry(
     client, session, storage, monkeypatch
 ):
-    import httpx
-    from openai import APITimeoutError
+    from app.h5.ai_worker import LearningModelsExhausted
     from app.config import get_settings
 
     _, _, units = await setup_questions(client, session)
     monkeypatch.setattr(get_settings(), "ai_api_key", "test-only")
     monkeypatch.setattr(get_settings(), "ai_tutor_model", "test-only")
-    mock = AsyncMock(side_effect=APITimeoutError(request=httpx.Request("POST", "https://model.invalid")))
+    mock = AsyncMock(side_effect=LearningModelsExhausted(timed_out=True))
     monkeypatch.setattr("app.h5.ai_worker.completion", mock)
     response = await client.post(
         "/api/v2/learning/tutor/sessions",
@@ -275,14 +274,13 @@ async def test_tutor_timeout_retries_once_then_allows_manual_retry(
     assert response.status_code == 201
     sid, jid = response.json()["id"], uuid.UUID(response.json()["job_id"])
     factory = async_sessionmaker(session.bind, expire_on_commit=False)
-    for status in ("retry_wait", "failed"):
-        await execute_due(session, jid, factory)
-        data = (await client.get("/api/v2/learning/tutor/sessions/" + sid)).json()
-        assert data["job"]["status"] == status
-        assert data["job"]["retries"] == 1
-        assert "模型响应超时" in data["job"]["error"]
-        assert not any(m["role"] == "assistant" for m in data["messages"])
-    assert mock.await_count == 2
+    await execute_due(session, jid, factory)
+    data = (await client.get("/api/v2/learning/tutor/sessions/" + sid)).json()
+    assert data["job"]["status"] == "failed"
+    assert data["job"]["retries"] == 0
+    assert "模型响应超时" in data["job"]["error"]
+    assert not any(m["role"] == "assistant" for m in data["messages"])
+    assert mock.await_count == 1
     mock.side_effect = None
     mock.return_value = "恢复后的回答"
     response = await client.post(
@@ -352,8 +350,9 @@ async def test_tutor_durable_output_idempotency_and_private_jobs(
     ).status_code == 404
 
 
+@pytest.mark.parametrize("rejected_first", [False, True])
 async def test_variant_pool_validation_reuse_and_no_formal_statistics(
-    client, session, storage, monkeypatch
+    client, session, storage, monkeypatch, rejected_first
 ):
     subject, paper, units = await setup_questions(client, session)
     from app.config import get_settings
@@ -366,10 +365,16 @@ async def test_variant_pool_validation_reuse_and_no_formal_statistics(
         answer="A",
         explanation="每位向左移动一位，低位补零，得到0100。",
     )
-    monkeypatch.setattr("app.h5.ai_worker.completion", AsyncMock(return_value=content))
+    async def generated(*args, metadata=None, **kwargs):
+        metadata["model"] = "fallback-model"
+        return content
+    generate = AsyncMock(side_effect=generated)
+    monkeypatch.setattr("app.h5.ai_worker.completion", generate)
+    validations = ([{"valid": False, "answer": "B"}] if rejected_first else [])
+    validations.append({"valid": True, "answer": "A", "reason": "verified"})
     monkeypatch.setattr(
         "app.h5.ai_worker.validate_variant",
-        AsyncMock(return_value={"valid": True, "answer": "A", "reason": "verified"}),
+        AsyncMock(side_effect=validations),
     )
     r = await client.post(
         "/api/v2/learning/variants",
@@ -391,6 +396,9 @@ async def test_variant_pool_validation_reuse_and_no_formal_statistics(
     data = (await client.get("/api/v2/learning/tutor/jobs/" + str(wait_id))).json()
     assert data["status"] == "succeeded", data
     vid = data["result"]["variant_id"]
+    assert generate.await_count == (2 if rejected_first else 1)
+    from app.h5.models import Variant
+    assert (await session.get(Variant, uuid.UUID(vid))).model == "fallback-model"
     assert (
         "answer"
         not in (await client.get("/api/v2/learning/variants/" + vid)).json()["variant"]
@@ -441,6 +449,10 @@ async def test_related_priority_resume_cache_generation_and_ownership(client, se
     monkeypatch.setattr(settings, "ai_api_key", "test-only")
     monkeypatch.setattr(settings, "ai_tutor_model", "test-only")
     mock = AsyncMock(return_value=dict(stem="测试变式：1+1？", options={"A": "2", "B": "3", "C": "4", "D": "5"}, answer="A", explanation="两单位相加。"))
+    async def generated(*args, metadata=None, **kwargs):
+        metadata["model"] = "fallback-model"
+        return mock.return_value
+    mock.side_effect = generated
     monkeypatch.setattr("app.h5.ai_worker.completion", mock)
     monkeypatch.setattr("app.h5.ai_worker.validate_variant", AsyncMock(return_value={"valid": True, "answer": "A"}))
     pending = await client.post(url, json=body, headers={"Idempotency-Key": uuid.uuid4().hex})

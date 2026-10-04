@@ -1,5 +1,7 @@
 # 本机新版后台
 
+语音输入新增独立容器：首次运行 `python scripts/init_voice.py`，在根目录 `.env` 填写 `ASR_API_KEY`、`POLISH_API_KEY`；配置、启用和验证步骤见 [语音输入说明](voice-input.md)。Key 留空不影响普通文字提问。
+
 入口：<http://127.0.0.1:8000/admin/imports>
 
 H5学习端：<http://127.0.0.1:8000/h5/>，使用已有账号登录。

@@ -1339,6 +1339,13 @@ progress::-moz-progress-bar {
 .ai-input textarea:disabled {
   opacity: 0.6;
 }
+.ai-composer { min-width: 0; }
+.voice-status { margin: 0 8px 6px; color: var(--color-muted); overflow-wrap: anywhere; }
+.ai-input .voice-button { display: grid; place-items: center; min-width: 44px; padding: 8px; background: none; }
+.ai-input .voice-button.recording { color: var(--color-danger); background: var(--color-danger-bg); }
+.voice-overflow { margin-bottom: 8px; padding: 8px; max-height: 220px; overflow-y: auto; }
+.voice-overflow textarea { width: 100%; max-height: 100px; resize: vertical; }
+.voice-overflow button { margin: 4px 8px 0 0; }
 .ai-input button {
   flex-shrink: 0;
   min-height: 44px;

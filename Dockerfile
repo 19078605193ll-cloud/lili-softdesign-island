@@ -1,5 +1,6 @@
 FROM node:22-slim AS h5
-WORKDIR /build
+WORKDIR /build/web/h5
+COPY vendor/lili-voice-input/packages/browser /build/vendor/lili-voice-input/packages/browser
 COPY web/h5/package.json web/h5/package-lock.json ./
 RUN npm ci
 COPY web/h5 ./
@@ -20,7 +21,7 @@ COPY --chown=island:island app ./app
 COPY --chown=island:island alembic ./alembic
 COPY --chown=island:island alembic.ini ./
 COPY --chown=island:island Prompt ./Prompt
-COPY --from=h5 --chown=island:island /build/dist ./web/h5/dist
+COPY --from=h5 --chown=island:island /build/web/h5/dist ./web/h5/dist
 ENV PATH="/srv/island/.venv/bin:$PATH" PYTHONUNBUFFERED=1 PYTHONDONTWRITEBYTECODE=1
 RUN mkdir -p /srv/island/var/imports && chown -R island:island /srv/island/var
 USER island

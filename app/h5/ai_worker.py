@@ -1,17 +1,22 @@
 """Learning jobs use existing durable leases and outbox, with short transactions."""
 
+import asyncio
 import json
 import logging
+import time
 import uuid
 from datetime import timedelta
-from openai import AsyncOpenAI
+
+import httpx
+from openai import APIConnectionError, APIStatusError, APITimeoutError, AsyncOpenAI
 from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import select
+
 from app.config import get_settings
-from app.models import Job, Outbox
-from app.h5.models import TutorSession, TutorMessage, Variant, VariantAnswer
-from app.infrastructure.jobs import fingerprint
+from app.h5.models import TutorMessage, TutorSession, Variant, VariantAnswer
 from app.h5.service import lock
+from app.infrastructure.jobs import fingerprint
+from app.models import Job, Outbox
 
 
 class TeachingQuestion(BaseModel):
@@ -29,38 +34,168 @@ class TeachingQuestion(BaseModel):
         return self
 
 
-async def completion(messages, *, structured=False):
+class ModelResponseError(ValueError):
+    """A provider response cannot be used as a complete teaching answer."""
+
+
+class LearningModelsExhausted(Exception):
+    """Terminal for this job: the ordered model chain has already been tried."""
+
+    def __init__(self, *, timed_out=False):
+        super().__init__("All configured teaching models failed")
+        self.timed_out = timed_out
+
+
+def can_fallback(exc):
+    if isinstance(
+        exc,
+        (TimeoutError, APIConnectionError, httpx.TransportError, ModelResponseError),
+    ):
+        return True
+    if not isinstance(exc, APIStatusError):
+        return False
+    body = exc.body if isinstance(exc.body, dict) else {}
+    error = body.get("error", body)
+    code = error.get("code") if isinstance(error, dict) else None
+    # Account-wide failures must not be retried against the same DMX account.
+    if code in {
+        "insufficient_quota",
+        "insufficient_balance",
+        "quota_exceeded",
+        "invalid_api_key",
+    }:
+        return False
+    if exc.status_code in {401, 402}:
+        return False
+    return (
+        exc.status_code in {408, 429}
+        or exc.status_code >= 500
+        or code
+        in {
+            "model_not_found",
+            "model_not_available",
+            "model_unavailable",
+            "no_available_channel",
+        }
+    )
+
+
+def reasoning_options(settings, model):
+    # All three configured DMX Chat Completions routes accept this parameter.
+    # Keep the adapter boundary explicit for future provider-specific mappings.
+    effort = (settings.ai_tutor_reasoning_effort or "").strip()
+    return {"reasoning_effort": effort} if effort else {}
+
+
+async def completion(
+    messages, *, structured=False, metadata=None, job_id=None, stage="tutor"
+):
     s = get_settings()
     if not s.learning_ai_enabled or not s.ai_api_key:
         raise ValueError("Learning AI is disabled or unconfigured")
+    models = list(
+        dict.fromkeys(
+            model.strip()
+            for model in [
+                s.ai_tutor_model or s.ai_text_model,
+                *s.ai_tutor_fallback_models,
+            ]
+            if model and model.strip()
+        )
+    )
+    if not models:
+        raise ValueError("No teaching model configured")
+    logger = logging.getLogger("island")
+    all_timeouts = True
     async with AsyncOpenAI(
         api_key=s.ai_api_key,
         base_url=s.ai_base_url or "https://www.dmxapi.cn/v1",
-        timeout=s.ai_timeout_seconds,
+        timeout=s.ai_tutor_timeout_seconds,
         max_retries=0,
     ) as client:
-        result = await client.chat.completions.create(
-            model=s.ai_tutor_model or s.ai_text_model,
-            messages=messages,
-            max_tokens=3000,
-            **({"response_format": {"type": "json_object"}} if structured else {}),
-        )
-    text = result.choices[0].message.content
-    if not text or len(text) > 30000:
-        raise ValueError("Empty or oversized model response")
-    logging.getLogger("island").info(
-        "learning_ai_usage",
-        extra={
-            "fields": {
-                "model": result.model,
-                "total_tokens": result.usage.total_tokens if result.usage else None,
+        for index, model in enumerate(models):
+            started = time.monotonic()
+            fields = {
+                "job_id": str(job_id) if job_id else None,
+                "stage": stage,
+                "model": model,
+                "attempt": index + 1,
             }
-        },
-    )
-    return json.loads(text) if structured else text
+            try:
+                async with asyncio.timeout(s.ai_tutor_timeout_seconds):
+                    result = await client.chat.completions.create(
+                        model=model,
+                        messages=messages,
+                        max_tokens=3000,
+                        **reasoning_options(s, model),
+                        **(
+                            {"response_format": {"type": "json_object"}}
+                            if structured
+                            else {}
+                        ),
+                    )
+                choice = result.choices[0] if result.choices else None
+                text = choice.message.content if choice else None
+                if (
+                    not isinstance(text, str)
+                    or not text.strip()
+                    or len(text) > 30000
+                    or choice.finish_reason != "stop"
+                ):
+                    raise ModelResponseError("Empty, oversized or incomplete response")
+                try:
+                    output = json.loads(text) if structured else text
+                except json.JSONDecodeError as exc:
+                    raise ModelResponseError("Invalid JSON response") from exc
+                if structured and not isinstance(output, dict):
+                    raise ModelResponseError("Expected JSON object")
+            except Exception as exc:
+                fallback = can_fallback(exc)
+                all_timeouts = all_timeouts and isinstance(
+                    exc, (TimeoutError, APITimeoutError, httpx.TimeoutException)
+                )
+                logger.warning(
+                    "learning_ai_attempt_failed",
+                    extra={
+                        "fields": {
+                            **fields,
+                            "elapsed_seconds": round(time.monotonic() - started, 3),
+                            "error_code": type(exc).__name__,
+                            "status_code": getattr(exc, "status_code", None),
+                            "next_model": models[index + 1]
+                            if fallback and index + 1 < len(models)
+                            else None,
+                            "outcome": "fallback"
+                            if fallback and index + 1 < len(models)
+                            else "failed",
+                        }
+                    },
+                )
+                if not fallback:
+                    raise
+                continue
+            actual_model = result.model or model
+            if metadata is not None:
+                metadata.update(model=actual_model, requested_model=model)
+            logger.info(
+                "learning_ai_usage",
+                extra={
+                    "fields": {
+                        **fields,
+                        "actual_model": actual_model,
+                        "outcome": "succeeded",
+                        "elapsed_seconds": round(time.monotonic() - started, 3),
+                        "total_tokens": result.usage.total_tokens
+                        if result.usage
+                        else None,
+                    }
+                },
+            )
+            return output
+    raise LearningModelsExhausted(timed_out=all_timeouts)
 
 
-async def validate_variant(content):
+async def validate_variant(content, *, job_id=None):
     result = await completion(
         [
             {
@@ -70,6 +205,8 @@ async def validate_variant(content):
             {"role": "user", "content": json.dumps(content, ensure_ascii=False)},
         ],
         structured=True,
+        job_id=job_id,
+        stage="variant_review",
     )
     return result if isinstance(result, dict) else {}
 
@@ -148,10 +285,11 @@ async def execute_learning(factory, task):
             )
             content = variant.content
     if kind == "tutor":
-        output = await completion(data)
+        output = await completion(data, job_id=task["id"])
     elif kind == "variant":
         spec = task["payload"]["spec"]
         for _ in range(2):
+            generation_metadata = {}
             generated = await completion(
                 [
                     {
@@ -174,6 +312,9 @@ async def execute_learning(factory, task):
                     },
                 ],
                 structured=True,
+                metadata=generation_metadata,
+                job_id=task["id"],
+                stage="variant_generate",
             )
             try:
                 content = TeachingQuestion.model_validate(generated).model_dump()
@@ -188,7 +329,7 @@ async def execute_learning(factory, task):
                 x["hash"] for x in task["payload"].get("excluded", [])
             }:
                 continue
-            validation = await validate_variant(content)
+            validation = await validate_variant(content, job_id=task["id"])
             if (
                 validation.get("valid") is True
                 and validation.get("answer") == content["answer"]
@@ -202,7 +343,7 @@ async def execute_learning(factory, task):
             type=spec["type"],
         )
     else:
-        validation = await validate_variant(content)
+        validation = await validate_variant(content, job_id=task["id"])
     async with factory.begin() as session:
         job = await session.scalar(
             select(Job).where(Job.id == task["id"]).with_for_update()
@@ -232,7 +373,7 @@ async def execute_learning(factory, task):
                     match_key=task["payload"]["match_key"],
                     content_hash=digest,
                     content=content,
-                    model=get_settings().ai_tutor_model or get_settings().ai_text_model,
+                    model=generation_metadata["model"],
                     prompt_version=task["payload"]["prompt_version"],
                     validation=validation,
                 )

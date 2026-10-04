@@ -17,6 +17,7 @@ const sid = ref(""),
   data = ref<any>(null),
   error = ref(""),
   busy = ref(false);
+const voiceActive = ref(false);
 let timer: ReturnType<typeof setTimeout> | undefined,
   disposed = false,
   started = Date.now(),
@@ -81,7 +82,7 @@ async function open() {
   }
 }
 async function send(value: string) {
-  if (!value.trim() || busy.value) return;
+  if (!value.trim() || busy.value || voiceActive.value) return;
   busy.value = true;
   error.value = "";
   if (value !== sendText) {
@@ -131,7 +132,7 @@ onUnmounted(() => {
     </header>
     <p v-if="error" class="error" role="alert">
       {{ error }}
-      <button v-if="!readOnly" @click="retry" :disabled="busy">重试</button>
+      <button v-if="!readOnly" @click="retry" :disabled="busy || voiceActive">重试</button>
     </p>
     <div class="messages" aria-live="polite">
       <article
@@ -157,7 +158,7 @@ onUnmounted(() => {
       <button
         v-for="(direction, i) in data?.directions"
         :key="direction"
-        :disabled="busy"
+        :disabled="busy || voiceActive"
         @click="send(direction)"
       >
         <Icon :name="['brain', 'book', 'bulb'][Number(i)]" :size="18" /><span>{{
@@ -173,10 +174,12 @@ onUnmounted(() => {
       defer
     >
       <AiComposer
+        :key="questionId + ':' + (attemptId || 'new')"
         :disabled="!sid"
         :busy="busy"
         :send="send"
         :draft-key="questionId + ':' + (attemptId || 'new')"
+        @voice-active="voiceActive = $event"
       />
     </Teleport>
   </section>

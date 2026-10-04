@@ -10,6 +10,7 @@ import uuid
 from dataclasses import dataclass
 
 from fastapi import APIRouter, Request
+from starlette.requests import HTTPConnection
 from fastapi.responses import HTMLResponse, JSONResponse
 from pydantic import BaseModel, Field
 from pwdlib import PasswordHash
@@ -74,12 +75,13 @@ def cookie(response, name, value, ttl):
     )
 
 
-def check_origin(request: Request):
+def check_origin(request: HTTPConnection):
     if request.headers.get("origin") != get_settings().public_origin:
         raise fail(403, "CSRF_ORIGIN", "请求来源无效")
 
 
-async def current_user(request: Request) -> Principal:
+async def current_session(request: HTTPConnection) -> Principal:
+    """Authenticate HTTP or WebSocket cookies without changing HTTP CSRF policy."""
     if getattr(request.state, "principal", None):
         return request.state.principal
     token = request.cookies.get(get_settings().session_cookie)
@@ -104,14 +106,19 @@ async def current_user(request: Request) -> Principal:
             p for role in roles for p in ROLE_PERMISSIONS.get(role, set())
         )
         principal = Principal(user.id, user.username, perms)
+    request.state.principal = principal
+    request.state.session = data
+    return principal
+
+
+async def current_user(request: Request) -> Principal:
+    principal = await current_session(request)
     if request.method not in {"GET", "HEAD", "OPTIONS"}:
         check_origin(request)
         if not secrets.compare_digest(
-            request.headers.get("x-csrf-token", ""), data["csrf"]
+            request.headers.get("x-csrf-token", ""), request.state.session["csrf"]
         ):
             raise fail(403, "CSRF_TOKEN", "请求验证已失效，请刷新页面")
-    request.state.principal = principal
-    request.state.session = data
     return principal
 
 
@@ -122,7 +129,10 @@ async def require(request: Request, permission: str) -> Principal:
     return user
 
 
-async def protect(request: Request):
+async def protect(request: HTTPConnection):
+    # WebSocket routes authenticate their handshake and protocol explicitly.
+    if request.scope["type"] == "websocket":
+        return
     path = request.url.path
     if (
         request.method not in {"GET", "HEAD", "OPTIONS"}
@@ -217,6 +227,16 @@ async def csrf(request: Request):
 
 async def check_prelogin(request, redis):
     check_origin(request)
+    # /auth/csrf returns a session token while the browser is already logged in.
+    # Accept that token for account switching, with the same live-user, revocation
+    # and CSRF checks used for other authenticated writes.
+    token = request.cookies.get(get_settings().session_cookie)
+    raw = await redis.get("session:" + digest(token)) if token else None
+    if raw and secrets.compare_digest(
+        json.loads(raw)["csrf"], request.headers.get("x-csrf-token", "")
+    ):
+        await current_user(request)
+        return
     nonce = request.cookies.get(get_settings().session_cookie + "-prelogin", "")
     expected = await redis.get("prelogin:" + digest(nonce))
     if not expected or not secrets.compare_digest(expected, request.headers.get("x-csrf-token", "")):

@@ -38,6 +38,8 @@ async def test_browser_learning_flow(client, session, storage, tmp_path):
         PUBLIC_ORIGIN=f"http://127.0.0.1:{port}",
         AI_API_KEY="isolated-fixture-only",
         AI_TUTOR_MODEL="isolated-fixture-only",
+        AI_TUTOR_FALLBACK_MODELS='["fixture-backup-1","fixture-backup-2"]',
+        AI_TUTOR_REASONING_EFFORT="low",
     )
     root = Path(__file__).resolve().parents[1]
     log = tmp_path / "browser-api.log"

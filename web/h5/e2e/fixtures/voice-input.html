@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>语音输入测试</title>
+  </head>
+  <body>
+    <main id="fixture" style="margin: 12px"></main>
+    <script type="module">
+      import { createApp, h, ref } from "vue";
+      import AiComposer from "../../src/components/AiComposer.vue";
+      import "../../src/styles/tokens.css";
+      import "../../src/styles/main.css";
+      const draftKey = ref("voice-fixture"),
+        active = ref(false),
+        sent = ref("");
+      window.addEventListener("voice-fixture-key", (event) => {
+        draftKey.value = event.detail;
+      });
+      window.addEventListener("voice-fixture-unmount", () => {
+        app.unmount();
+      });
+      const app = createApp({
+        setup: () => () =>
+          h("div", [
+            h(
+              "button",
+              { id: "quick-question", disabled: active.value },
+              "快捷提问",
+            ),
+            h(AiComposer, {
+              draftKey: draftKey.value,
+              disabled: false,
+              busy: false,
+              onVoiceActive: (value) => {
+                active.value = value;
+              },
+              send: async (value) => {
+                sent.value = value;
+                return true;
+              },
+            }),
+            h("p", { id: "sent" }, sent.value),
+          ]),
+      });
+      app.mount("#fixture");
+    </script>
+  </body>
+</html>

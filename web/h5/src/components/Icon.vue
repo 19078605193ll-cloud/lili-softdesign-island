@@ -21,6 +21,8 @@ import {
   Brain,
   Plus,
   MessageCircle,
+  Mic,
+  Square,
 } from "lucide-vue-next";
 defineProps<{ name: string; size?: number }>();
 const icons: Record<string, any> = {
@@ -45,6 +47,8 @@ const icons: Record<string, any> = {
   brain: Brain,
   plus: Plus,
   chat: MessageCircle,
+  mic: Mic,
+  stop: Square,
 };
 </script>
 <template>

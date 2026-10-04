@@ -8,6 +8,8 @@ import RichText from "../components/RichText.vue";
 import Tutor from "../components/Tutor.vue";
 import { useVisualViewport } from "../viewport";
 import { useLearner } from "../store";
+import StreakCelebration from "../components/StreakCelebration.vue";
+import { useAnswerStreak, type StreakMilestone } from "../composables/useAnswerStreak";
 const route = useRoute(),
   router = useRouter(),
   store = useLearner(),
@@ -23,6 +25,8 @@ const route = useRoute(),
   explanation = ref(false),
   conflict = ref(false);
 const viewportStyle = useVisualViewport();
+const { record: recordAnswer } = useAnswerStreak();
+const celebration = ref<StreakMilestone | null>(null);
 const scroller = ref<HTMLElement>();
 const notice = ref("");
 let noticeTimer: ReturnType<typeof setTimeout> | undefined;
@@ -47,7 +51,11 @@ async function restoreScroll(tutorReady = false) {
   if (scroller.value) scroller.value.scrollTop = restoredScroll;
   if (!tutor.value || tutorReady) restorePending = false;
 }
-onBeforeRouteLeave(saveView);
+onBeforeRouteLeave(() => {
+  saveView();
+  celebration.value = null;
+  epoch++;
+});
 const availablePositions = computed<number[]>(
   () =>
     session.value?.available_positions ||
@@ -71,6 +79,8 @@ const correct = computed(() =>
 );
 const content = computed(() => result.value?.snapshot || question.value);
 async function load() {
+  celebration.value = null;
+  busy.value = false;
   clearTimeout(noticeTimer);
   notice.value = "";
   const token = ++epoch;
@@ -173,7 +183,13 @@ async function select(part: string, key: string) {
   }
 }
 async function submit() {
-  if (busy.value || !allAnswered.value || result.value) return;
+  if (busy.value || loading.value || session.value?.read_only || !allAnswered.value || result.value) return;
+  const token = epoch;
+  const sessionId = session.value.id;
+  const questionId = question.value.id;
+  const userId = String(store.user?.id || "");
+  const active = () => !disposed && token === epoch &&
+    session.value?.id === sessionId && question.value?.id === questionId;
   busy.value = true;
   error.value = "";
   pending ||= {
@@ -187,21 +203,28 @@ async function submit() {
   };
   try {
     const r = await api("/learning/attempts", { method: "POST", ...pending });
-    result.value = await api("/learning/attempts/" + r.id);
+    if (!active()) return;
+    const detail = await api("/learning/attempts/" + r.id);
+    if (!active()) return;
+    result.value = detail;
     pending = null;
-    session.value.attempts[question.value.id] = r.id;
-    const m = await api("/learning/questions/" + question.value.id + "/marks");
-    marks.value = m.items;
+    session.value.attempts[questionId] = r.id;
+    celebration.value = recordAnswer(userId, String(sessionId), String(r.id), !!correct.value);
     tutor.value = !correct.value;
+    const m = await api("/learning/questions/" + questionId + "/marks");
+    if (!active()) return;
+    marks.value = m.items;
   } catch (e: any) {
+    if (!active()) return;
     error.value = e.message;
     conflict.value = e instanceof ApiError && e.status === 409;
   } finally {
-    busy.value = false;
+    if (active()) busy.value = false;
   }
 }
 async function move(delta: number) {
   if (busy.value || !canMove(delta)) return;
+  celebration.value = null;
   saveView();
   const position =
     availablePositions.value[
@@ -277,6 +300,7 @@ function optionClass(p: any, key: string) {
 </script>
 <template>
   <div class="session-page" :style="viewportStyle">
+    <StreakCelebration v-if="celebration" :level="celebration" @finished="celebration = null" />
     <header class="session-heading">
       <button class="round" aria-label="返回列表" @click="back">
         <Icon name="left" /></button

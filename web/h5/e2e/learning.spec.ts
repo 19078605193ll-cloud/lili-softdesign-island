@@ -96,6 +96,13 @@ test("real API learning loop, restoration, notebook, tutor and mobile layouts", 
     ).toBeTruthy();
   }
   await page.setViewportSize({ width: 390, height: 844 });
+  await composer.fill("测试全部模型超时");
+  await page.getByRole("button", { name: "发送", exact: true }).click();
+  await expect(page.getByRole("alert")).toContainText("AI 模型响应超时，请稍后重试");
+  await page.reload();
+  await expect(page.getByRole("alert")).toContainText("AI 模型响应超时，请稍后重试");
+  await page.getByRole("button", { name: "重试", exact: true }).click();
+  await expect(page.getByText("隔离测试：备用模型已恢复，可以继续提问。", { exact: true })).toBeVisible();
   await composer.fill("请画出步骤");
   await composer.press("Enter");
   await composer.pressSequentially("谢谢");

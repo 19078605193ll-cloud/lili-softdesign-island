@@ -675,11 +675,15 @@ async def apply(factory, task, data, output):
 
 
 async def failed(factory, task, exc):
+    from app.h5.ai_worker import LearningModelsExhausted
     transient = (
         isinstance(exc, (httpx.TransportError, APIConnectionError))
         or isinstance(exc, APIStatusError)
         and (exc.status_code == 429 or exc.status_code >= 500)
     )
+    # Teaching model retries are handled inside completion's ordered chain.
+    if task["kind"] in {"tutor", "variant", "variant_review"}:
+        transient = False
     async with factory.begin() as session:
         job = await session.scalar(
             select(Job).where(Job.id == task["id"]).with_for_update()
@@ -706,7 +710,8 @@ async def failed(factory, task, exc):
         job.error_code = type(exc).__name__
         job.error_detail = "任务处理失败，原始资料已保留；请检查配置或重试"
         if job.kind in {"tutor", "variant", "variant_review", "variant_wait"}:
-            if isinstance(exc, (APITimeoutError, httpx.TimeoutException)):
+            if (isinstance(exc, (APITimeoutError, httpx.TimeoutException))
+                    or isinstance(exc, LearningModelsExhausted) and exc.timed_out):
                 job.error_detail = "AI 模型响应超时，请稍后重试"
             else:
                 job.error_detail = "AI 服务暂时不可用，请稍后重试"
