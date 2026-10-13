@@ -489,6 +489,9 @@ progress::-moz-progress-bar {
 .bottom-nav .router-link-exact-active {
   color: var(--color-accent);
 }
+.bottom-nav .context-active {
+  color: var(--color-accent);
+}
 .page-hero {
   padding: 0 3px 24px;
 }

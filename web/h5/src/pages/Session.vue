@@ -248,6 +248,10 @@ async function move(delta: number) {
   }
 }
 function back() {
+  if (session.value?.return_path) {
+    router.push(session.value.return_path);
+    return;
+  }
   router.push(
     ["wrong", "favorite", "hesitant"].includes(session.value?.source)
       ? "/notebook"

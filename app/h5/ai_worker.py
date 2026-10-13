@@ -81,6 +81,9 @@ def can_fallback(exc):
 
 
 def reasoning_options(settings, model):
+    from app.core.ai_options import thinking_options
+    if "qwen" in model.casefold():
+        return thinking_options(model, enabled=settings.ai_text_enable_thinking)
     # All three configured DMX Chat Completions routes accept this parameter.
     # Keep the adapter boundary explicit for future provider-specific mappings.
     effort = (settings.ai_tutor_reasoning_effort or "").strip()

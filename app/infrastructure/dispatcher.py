@@ -55,7 +55,7 @@ async def dispatch_once(factory, send=None):
                 await asyncio.to_thread(send, str(job.id))
             else:
                 await asyncio.to_thread(celery_app.send_task, 'island.execute', args=[str(job.id)],
-                    time_limit=600 if job.kind in {'tutor','variant','variant_review'} else 240)
+                    time_limit=600 if job.kind in {'tutor','variant','variant_review','recall_generate'} else 240)
             outbox.sent_at = now
             sent += 1
         return sent

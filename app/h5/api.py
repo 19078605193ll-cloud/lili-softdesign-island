@@ -227,7 +227,7 @@ async def node_questions(
 class SessionIn(BaseModel):
     subject_id: uuid.UUID
     source: Literal[
-        "paper", "node", "question", "wrong", "hesitant", "favorite", "similar"
+        "paper", "node", "question", "wrong", "hesitant", "favorite", "similar", "recall", "knowledge"
     ]
     source_id: uuid.UUID
     mode: Literal["new", "resume"] = "new"
@@ -255,7 +255,24 @@ async def create_session(
     await subject(session, payload.subject_id)
     rows = await catalog(session, payload.subject_id)
     title = "题目练习"
-    if payload.source == "paper":
+    if payload.source == "recall":
+        from app.recall.service import related_version
+        version, matched = await related_version(session, payload.source_id, payload.subject_id)
+        order = {uuid.UUID(item["id"]): i for i, item in enumerate(matched)}
+        rows = sorted([(u, p) for u, p in rows if u.id in order], key=lambda pair: order[pair[0].id])
+        title = version.title + " · 相关真题"
+    elif payload.source == "knowledge":
+        from app.models import KnowledgeNode
+        from app.recall.service import related
+        from app.h5.service import descendants
+        node = await session.get(KnowledgeNode, payload.source_id)
+        if not node or node.subject_id != payload.subject_id or node.status != "active":
+            raise fail(404, "NODE_NOT_FOUND", "知识点不存在")
+        matched = await related(session, node.subject_id, descendants(node.id, await nodes(session, node.subject_id)))
+        order = {uuid.UUID(item["id"]): i for i, item in enumerate(matched)}
+        rows = sorted([(u, p) for u, p in rows if u.id in order], key=lambda pair: order[pair[0].id])
+        title = node.name + " · 相关真题"
+    elif payload.source == "paper":
         rows = [(u, p) for u, p in rows if p.id == payload.source_id]
         title = rows[0][1].title if rows else title
     elif payload.source == "node":
@@ -280,7 +297,7 @@ async def create_session(
             }[payload.source]
     if not rows:
         raise fail(404, "NO_QUESTIONS", "暂无可练习题目")
-    if payload.mode == "resume" and payload.source in {"paper", "node"}:
+    if payload.mode == "resume" and payload.source in {"paper", "node", "recall", "knowledge"}:
         from app.h5.resume import resume_session
         return session_read(await resume_session(session, user.id, payload, rows, title))
     row = LearningSession(
@@ -314,8 +331,18 @@ async def get_session(
     deleted = bool(paper and paper.status == "retired")
     if deleted:
         notice = "当前为历史回顾，可查看原来的答案、解析和对话。"
+    return_path = None
+    if row.source == "recall":
+        from app.recall.models import RecallVersion, RecallSession
+        version = await session.get(RecallVersion, row.source_id)
+        recalled = await session.scalar(select(RecallSession).where(RecallSession.user_id == user.id,
+            RecallSession.version_id == row.source_id).order_by(RecallSession.updated_at.desc()).limit(1))
+        if version:
+            return_path = f"/recall-session/{recalled.id}" if recalled else f"/recalls/{version.recall_id}"
+    elif row.source == "knowledge":
+        return_path = f"/knowledge/{row.source_id}"
     return {**session_read(row), "title": await session_title(session, row),
-            "available_positions": positions, "notice": notice, "read_only": deleted}
+            "available_positions": positions, "notice": notice, "read_only": deleted, "return_path": return_path}
 
 
 class DraftIn(BaseModel):

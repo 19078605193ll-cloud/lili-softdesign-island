@@ -60,9 +60,16 @@ AI_BASE_URL=https://兼容服务/v1
 AI_API_KEY=你的密钥
 AI_TEXT_MODEL=文本提取模型
 AI_CLASSIFICATION_MODEL=知识点分类模型
+AI_RECALL_MODEL=主动回忆生成模型（留空回退 AI_TEXT_MODEL）
+AI_TEXT_ENABLE_THINKING=false
+AI_RECALL_ENABLE_THINKING=false
+RECALL_AI_GENERATION_ENABLED=true
+RECALL_SEMANTIC_GRADING_ENABLED=true
+RECALL_GRADING_TIMEOUT_SECONDS=10
 ```
 
 `AI_TEXT_MODEL` 留空时暂用分类模型。无法配置或调用失败时，题块和原文仍保留，管理员可以手动处理。模型不能创建新知识点，也不能替管理员批准或发布。
+主动回忆 AI 生成一次最多处理 20 个知识点，每个知识点独立创建草稿；生成依据优先使用知识库和已确认真题。缺少有效依据的内容会标记为 AI 补充，管理员逐项确认后才能提交审核。
 
 ## 读取接口
 

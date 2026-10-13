@@ -39,6 +39,11 @@ ROLE_PERMISSIONS = {
     },
 }
 passwords = PasswordHash.recommended()
+for _role, _actions in {
+    "editor": ("read", "edit"), "reviewer": ("read", "review"),
+    "publisher": ("read", "publish"), "administrator": ("read", "edit", "review", "publish"),
+}.items():
+    ROLE_PERMISSIONS[_role].update("recalls:" + action for action in _actions)
 dummy_hash = passwords.hash(secrets.token_urlsafe(32))
 router = APIRouter(tags=["identity"])
 
@@ -141,6 +146,10 @@ async def protect(request: HTTPConnection):
         raise fail(503, "MAINTENANCE", "系统正在维护，请稍后重试")
     if path.startswith("/api/v2/learning/"):
         await current_user(request)
+    if path == "/admin/recalls" or path.startswith("/api/v2/admin/recalls"):
+        await require(request, "recalls:read")
+        # Recall endpoints check their own edit/review/publish permission.
+        return
     if (
         path.startswith(("/admin/", "/api/v1/admin/", "/api/v2/admin/"))
         and path != "/admin/login"

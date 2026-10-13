@@ -6,10 +6,18 @@ import hashlib
 import json
 
 from sqlalchemy import select, text
+
 from app.core.errors import fail
 from app.models import Job, Outbox
 
-KINDS = {"parse", "classify", "assist", "archive_images", "supplement"}
+KINDS = {
+    "parse",
+    "classify",
+    "assist",
+    "archive_images",
+    "supplement",
+    "recall_generate",
+}
 
 
 def fingerprint(value) -> str:
@@ -55,14 +63,14 @@ async def enqueue(
 
 
 def read_job(job):
-    return dict(
-        job_id=str(job.id),
-        batch_id=str(job.batch_id),
-        kind=job.kind,
-        status=job.status,
-        progress=100 if job.status == "succeeded" else 0,
-        result=job.result,
-        error_code=job.error_code,
-        error_detail=job.error_detail,
-        status_url=f"/api/v2/admin/jobs/{job.id}",
-    )
+    return {
+        "job_id": str(job.id),
+        "batch_id": str(job.batch_id),
+        "kind": job.kind,
+        "status": job.status,
+        "progress": 100 if job.status == "succeeded" else 0,
+        "result": job.result,
+        "error_code": job.error_code,
+        "error_detail": job.error_detail,
+        "status_url": f"/api/v2/admin/jobs/{job.id}",
+    }

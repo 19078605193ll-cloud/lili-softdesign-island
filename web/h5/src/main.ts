@@ -5,6 +5,7 @@ import App from "./App.vue";
 import { useLearner } from "./store";
 import "./styles/tokens.css";
 import "./styles/main.css";
+import "./styles/recall.css";
 const router = createRouter({
   history: createWebHistory("/h5/"),
   routes: [
@@ -15,6 +16,11 @@ const router = createRouter({
     { path: "/session/:id", component: () => import("./pages/Session.vue") },
     { path: "/related/:id", component: () => import("./pages/Related.vue") },
     { path: "/notebook", component: () => import("./pages/Notebook.vue") },
+    { path: "/recalls", component: () => import("./pages/Recalls.vue") },
+    { path: "/recalls/:id", component: () => import("./pages/RecallDetail.vue") },
+    { path: "/recall-session/:id", component: () => import("./pages/RecallSession.vue") },
+    { path: "/recall-preview/:id", component: () => import("./pages/RecallPreview.vue") },
+    { path: "/knowledge/:id", component: () => import("./pages/Knowledge.vue") },
     { path: "/:pathMatch(.*)*", redirect: "/" },
   ],
   scrollBehavior(to, from, saved) {

@@ -22,6 +22,7 @@ def visible():
         select(1)
         .select_from(PracticeQuestionPart)
         .where(PracticeQuestionPart.practice_question_id == PracticeQuestion.id)
+        .correlate(PracticeQuestion)
     )
     hidden = (
         select(1)
@@ -31,6 +32,7 @@ def visible():
             PracticeQuestionPart.practice_question_id == PracticeQuestion.id,
             Question.status != "published",
         )
+        .correlate(PracticeQuestion)
     )
     return (ExamPaper.status == "verified", exists(members), ~exists(hidden))
 

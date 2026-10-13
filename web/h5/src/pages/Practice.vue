@@ -8,8 +8,10 @@ const store = useLearner(),
   router = useRouter(),
   route = useRoute(),
   tab = computed({
-    get: () => route.query.tab === "node" ? "node" : "paper",
-    set: (value: string) => { void router.replace({ query: value === "node" ? { tab: "node" } : {} }); },
+    get: () => (route.query.tab === "node" ? "node" : "paper"),
+    set: (value: string) => {
+      void router.replace({ query: value === "node" ? { tab: "node" } : {} });
+    },
   }),
   query = ref(""),
   items = ref<any[]>([]),
@@ -130,12 +132,13 @@ async function start(item: any) {
       <div v-else-if="!items.length && !error" class="empty">
         {{ query ? "没有找到相关章节或知识点" : "暂无已发布题目" }}
       </div>
-      <button
+      <component
         v-for="item in items"
+        :is="item.total !== undefined ? 'button' : 'article'"
         :key="item.id"
         class="list-card"
-        :disabled="busy"
-        @click="start(item)"
+        :disabled="item.total !== undefined ? busy : undefined"
+        @click="item.total !== undefined && start(item)"
       >
         <div class="split">
           <strong>{{ item.name || item.title }}</strong
@@ -183,7 +186,13 @@ async function start(item: any) {
           v-if="item.score_share !== null && item.sample_label"
           class="muted"
           >{{ item.sample_label }}</small
-        ></button
+        >
+        <div v-if="item.total === undefined" class="recall-links">
+          <RouterLink :to="'/knowledge/' + item.id">查看知识与回忆 →</RouterLink
+          ><button class="text-button" :disabled="busy" @click="start(item)">
+            继续练题 →
+          </button>
+        </div> </component
       ><button
         v-if="next !== null"
         class="text-button more"

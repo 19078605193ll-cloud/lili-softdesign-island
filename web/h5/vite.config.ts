@@ -7,20 +7,20 @@ export default defineConfig({
     fs: { allow: [".", "../../vendor/lili-voice-input/packages/browser"] },
     proxy: {
       "/api": {
-        target: process.env.H5_API_TARGET || "http://127.0.0.1:8000",
+        target: process.env.H5_API_TARGET || "http://127.0.0.1:18000",
         changeOrigin: true,
         ws: true,
         configure(proxy) {
           proxy.on("proxyReq", (req) =>
             req.setHeader(
               "Origin",
-              process.env.H5_PUBLIC_ORIGIN || "http://127.0.0.1:8000",
+              process.env.H5_PUBLIC_ORIGIN || "http://127.0.0.1:18000",
             ),
           );
           proxy.on("proxyReqWs", (req) =>
             req.setHeader(
               "Origin",
-              process.env.H5_PUBLIC_ORIGIN || "http://127.0.0.1:8000",
+              process.env.H5_PUBLIC_ORIGIN || "http://127.0.0.1:18000",
             ),
           );
         },

@@ -146,7 +146,11 @@ async def test_json_and_reasoning_preserved_across_fallback(model_client, invali
     assert await completion([], structured=True) == {"valid": False}
     for call in create.call_args_list:
         assert call.kwargs["response_format"] == {"type": "json_object"}
-        assert call.kwargs["reasoning_effort"] == "low"
+        if call.kwargs["model"] == "qwen":
+            assert call.kwargs["extra_body"] == {"enable_thinking": False}
+            assert "reasoning_effort" not in call.kwargs
+        else:
+            assert call.kwargs["reasoning_effort"] == "low"
 
 
 async def test_wall_clock_deadline_exhaustion_and_cleanup(model_client, monkeypatch):

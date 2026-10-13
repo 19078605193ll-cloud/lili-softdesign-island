@@ -22,6 +22,8 @@ async def lifespan(app):
     logger = logging.getLogger("island")
     logger.handlers = [handler]
     logger.setLevel(logging.INFO)
+    from app.core.health import require_current_schema
+    await require_current_schema()
     yield
     await engine.dispose()
 
@@ -71,3 +73,8 @@ app.include_router(related_router)
 app.include_router(h5_static_router)
 from app.h5.voice import router as voice_router
 app.include_router(voice_router)
+from app.recall.api import router as recall_router, admin as recall_admin_router
+from app.recall.admin import router as recall_pages
+app.include_router(recall_router)
+app.include_router(recall_admin_router)
+app.include_router(recall_pages)

@@ -23,6 +23,9 @@ import {
   MessageCircle,
   Mic,
   Square,
+  TableProperties,
+  AlignLeft,
+  GitFork,
 } from "lucide-vue-next";
 defineProps<{ name: string; size?: number }>();
 const icons: Record<string, any> = {
@@ -49,6 +52,9 @@ const icons: Record<string, any> = {
   chat: MessageCircle,
   mic: Mic,
   stop: Square,
+  table: TableProperties,
+  lines: AlignLeft,
+  relation: GitFork,
 };
 </script>
 <template>

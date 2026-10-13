@@ -12,6 +12,7 @@ from openai import APITimeoutError
 from sqlalchemy import select
 
 import app.h5.ai_worker as worker
+from app.recall import grading
 from app.db import SessionFactory
 from app.infrastructure.worker import execute
 from app.main import app
@@ -79,6 +80,13 @@ class FixtureModelClient:
 
 
 worker.AsyncOpenAI = FixtureModelClient
+
+
+async def fixture_recall_grade(**kwargs):
+    return kwargs["user_answer"] == "更合适" and kwargs["blank"].answer == "更适合"
+
+
+grading.semantic_grade = fixture_recall_grade
 original = app.router.lifespan_context
 
 

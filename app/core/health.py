@@ -1,11 +1,23 @@
 from fastapi import APIRouter, Request
-from sqlalchemy import select, text, func
+from sqlalchemy import func, select, text
+
 from app.core.errors import fail
 from app.core.security import redis_client, require
 from app.db import SessionFactory
 from app.models import AuditEvent, Job, Outbox
 
 router = APIRouter()
+REQUIRED_SCHEMA_REVISION = "20261013_0021"
+
+
+async def require_current_schema():
+    async with SessionFactory() as session:
+        revision = await session.scalar(text("SELECT version_num FROM alembic_version"))
+    if revision != REQUIRED_SCHEMA_REVISION:
+        raise RuntimeError(
+            f"Database schema {revision!r}; required {REQUIRED_SCHEMA_REVISION}. "
+            "Run alembic upgrade head with the database migration owner before starting API."
+        )
 
 
 @router.get("/health/live")
@@ -16,12 +28,7 @@ async def live():
 @router.get("/health/ready")
 async def ready():
     try:
-        async with SessionFactory() as session:
-            revision = await session.scalar(
-                text("SELECT version_num FROM alembic_version")
-            )
-            if revision != "20261002_0017":
-                raise ValueError("schema version")
+        await require_current_schema()
         async with redis_client() as redis:
             await redis.ping()
     except Exception as exc:

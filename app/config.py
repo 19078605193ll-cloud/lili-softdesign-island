@@ -24,11 +24,18 @@ class Settings(BaseSettings):
     ai_vision_model: str | None = None
     ai_classification_model: str | None = None
     ai_text_model: str | None = None
+    ai_text_enable_thinking: bool = False
+    ai_recall_model: str | None = None
+    ai_recall_enable_thinking: bool = False
     ai_tutor_model: str | None = None
     ai_tutor_fallback_models: list[str] = Field(default_factory=list)
     ai_tutor_reasoning_effort: str | None = None
     ai_tutor_timeout_seconds: float = Field(default=30.0, gt=0)
     h5_enabled: bool = True
+    recall_enabled: bool = True
+    recall_ai_generation_enabled: bool = True
+    recall_semantic_grading_enabled: bool = True
+    recall_grading_timeout_seconds: float = Field(default=10.0, gt=0, le=15)
     learning_ai_enabled: bool = True
     voice_enabled: bool = True
     voice_service_url: str = "http://127.0.0.1:9100"

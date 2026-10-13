@@ -2,6 +2,7 @@ import json
 import re
 from openai import AsyncOpenAI
 from app.config import get_settings
+from app.core.ai_options import thinking_options
 from app.imports.markdown_parser import Unit, IMAGE, ANSWER, EXPLANATION
 
 
@@ -58,6 +59,7 @@ async def suggest(raw):
     ) as client:
         response = await client.chat.completions.create(
             model=model,
+            **thinking_options(model, enabled=settings.ai_text_enable_thinking),
             temperature=0,
             response_format={"type": "json_object"},
             messages=[

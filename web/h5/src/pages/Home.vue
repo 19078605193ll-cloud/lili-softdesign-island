@@ -7,6 +7,7 @@ import Icon from "../components/Icon.vue";
 import Avatar from "../components/Avatar.vue";
 import ProfileEditor from "../components/ProfileEditor.vue";
 import Modal from "../components/Modal.vue";
+import RecallHome from "../components/RecallHome.vue";
 const store = useLearner(),
   router = useRouter();
 const stats = ref<any>(null),
@@ -158,6 +159,7 @@ const percent = (n: any) => (n === null || n === undefined ? "—" : n + "%");
         </button>
       </div>
     </section>
+    <RecallHome />
     <section class="section">
       <h2 class="section-label">学情看板</h2>
       <div class="stat-grid">
@@ -192,12 +194,24 @@ const percent = (n: any) => (n === null || n === undefined ? "—" : n + "%");
             v-for="item in stats.recent"
             :key="item.id || 'history'"
             :disabled="!item.id"
-            @click="router.push('/session/' + item.id)"
+            @click="
+              router.push(
+                (item.kind === 'recall' ? '/recall-session/' : '/session/') +
+                  item.id,
+              )
+            "
           >
             <strong>{{ item.title }}</strong>
             <div>
-              <span class="tag neutral">练{{ item.count }}题</span
-              ><span class="tag">正确率 {{ percent(item.accuracy) }}</span>
+              <span v-if="item.kind === 'recall'" class="tag"
+                >主动回忆 · 掌握 {{ item.count }}/{{ item.total }} 空</span
+              >
+              <template v-else
+                ><span class="tag neutral">练{{ item.count }}题</span
+                ><span class="tag"
+                  >正确率 {{ percent(item.accuracy) }}</span
+                ></template
+              >
             </div>
           </button></template
         >

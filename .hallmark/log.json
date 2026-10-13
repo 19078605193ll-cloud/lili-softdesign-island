@@ -1,5 +1,19 @@
 [
   {
+    "date": "2026-10-13",
+    "macrostructure": "Narrative Workflow",
+    "theme": "user reference",
+    "enrichment": "none",
+    "brief": "Compact active-recall list, knowledge and one-question feedback flow"
+  },
+  {
+    "date": "2026-10-13",
+    "macrostructure": "Workbench",
+    "theme": "existing-admin",
+    "enrichment": "none",
+    "brief": "Active-recall generation and editorial workflow for administrators"
+  },
+  {
     "date": "2026-09-29",
     "macrostructure": "learning workspace",
     "theme": "user reference",

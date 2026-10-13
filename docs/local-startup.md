@@ -2,9 +2,9 @@
 
 语音输入新增独立容器：首次运行 `python scripts/init_voice.py`，在根目录 `.env` 填写 `ASR_API_KEY`、`POLISH_API_KEY`；配置、启用和验证步骤见 [语音输入说明](voice-input.md)。Key 留空不影响普通文字提问。
 
-入口：<http://127.0.0.1:8000/admin/imports>
+入口：<http://127.0.0.1:18000/admin/imports>
 
-H5学习端：<http://127.0.0.1:8000/h5/>，使用已有账号登录。
+H5学习端：<http://127.0.0.1:18000/h5/>，使用已有账号登录。
 
 账号为 `admin`，随机生成的密码保存在项目根目录 `.local-runtime/admin-access.txt`。
 该目录和 `deploy/local.env` 已加入 Git/Docker 忽略规则，不提交登录信息。
@@ -12,11 +12,24 @@ H5学习端：<http://127.0.0.1:8000/h5/>，使用已有账号登录。
 
 ## 当前运行方式
 
+2026-10-13：本机 Windows 保留端口范围包含 8000，导致 API 容器无法绑定端口。Docker 本地入口和 Vite 默认代理已统一改为 `http://127.0.0.1:18000`（容器内部仍为 8000）。数据库已为 `20261013_0021`。启动后可用 `Invoke-RestMethod http://127.0.0.1:18000/health/ready` 检查，应返回 `status: ready`。
+
+主动回忆本轮答案已支持跨空、刷新及返回恢复，开始复测时清空旧回填。规则未匹配的答案由 Qwen 结合上下文复核，判分失败可重试且不计错。本地 `AI_RECALL_MODEL`、`AI_TEXT_MODEL` 均为 `qwen3.8-flash`，对应思考开关为 `false`。已完成独立副本恢复和迁移验证、业务库迁移、镜像构建及应用容器重建，健康检查和 Celery ping 通过。升级前配套备份为 `var/backups/before_recall_0021_20261013_195735/`，原 485 道小问、8 份试卷、44 个题图、162 条正式作答和 30 条主动回忆提交数量一致。功能和回退配置见 [主动回忆说明](active-recall.md)。
+
+开发当前前端源码时，先启动下文 Docker 服务，再另开 PowerShell：
+
+```powershell
+cd D:\softdesign-island\web\h5
+npm run dev
+```
+
+访问 <http://127.0.0.1:5173/h5/>。保留该终端；如未安装前端依赖，先执行 `npm ci`。18000 端口的 H5 页面使用镜像构建时的前端资源，修改前端源码后请使用 5173 开发入口或重新构建镜像。
+
 2026-10-02注册与用户管理已部署：数据库版本为0017，支持 H5 自助注册、用户名或邮箱登录，以及管理员查看和启停用户。详见 [注册说明](user-registration.md)。用户名编辑和头像裁剪保留，历史章节中的0015、0016要求仅对应当时版本，当前健康检查要求0017。
 
 API、Celery worker、dispatcher 和 Redis 由 Docker Compose 管理，项目名 `softdesign-island-app`。
 沿用 `softdesign-island-db-1` 内原有 `software_designer` 数据库及 `var/imports` 素材。
-API 只监听本机 `127.0.0.1:8000`；原 Windows Python API 已停止，不要再同时运行 `python -m app.server`。
+API 只监听本机 `127.0.0.1:18000`；原 Windows Python API 已停止，不要再同时运行 `python -m app.server`。
 现有 `.env` 继续提供 AI 配置；容器内数据库和 Redis 地址由 `deploy/local.env` 覆盖。
 本机应用数据库账号为 `island_local_app`，不使用 postgres 超级用户运行 Web 服务。
 

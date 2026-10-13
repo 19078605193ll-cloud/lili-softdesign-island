@@ -9,7 +9,7 @@ x-app: &app
     - deploy/local.env
   environment:
     APP_ENV: development
-    PUBLIC_ORIGIN: http://127.0.0.1:8000
+    PUBLIC_ORIGIN: http://127.0.0.1:18000
     IMPORT_STORAGE_ROOT: /srv/island/var/imports
     VOICE_SERVICE_URL: http://voice-input:9100
   volumes:
@@ -33,7 +33,7 @@ services:
   api:
     <<: *app
     ports:
-      - "127.0.0.1:8000:8000"
+      - "127.0.0.1:18000:8000"
   worker:
     <<: *app
     command: [celery, -A, app.infrastructure.celery_app:celery_app, worker, --loglevel=INFO, --concurrency=6]

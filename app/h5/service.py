@@ -338,6 +338,21 @@ async def metrics(session, user_id, subject_id):
                 else None,
             )
         ]
+    from app.config import get_settings
+    if get_settings().recall_enabled:
+        from app.recall.models import RecallSession, RecallVersion, Recall, RecallSessionBlank
+        recall_rows = (await session.execute(select(RecallSession, RecallVersion.title)
+            .join(RecallVersion, RecallVersion.id == RecallSession.version_id)
+            .join(Recall, Recall.id == RecallSession.recall_id)
+            .where(RecallSession.user_id == user_id, Recall.subject_id == subject_id)
+            .order_by(RecallSession.updated_at.desc()).limit(5))).all()
+        timed = [(s.updated_at, item) for s, item in zip(recent_sessions, recent)]
+        for rs, title in recall_rows:
+            bs = list(await session.scalars(select(RecallSessionBlank).where(RecallSessionBlank.session_id == rs.id)))
+            timed.append((rs.updated_at, dict(id=str(rs.id), kind="recall", title=title,
+                count=sum(b.mastered for b in bs), total=len(bs), accuracy=None)))
+        if timed:
+            recent = [item for _, item in sorted(timed, key=lambda pair: pair[0], reverse=True)[:5]]
     return dict(
         rule_version="h5-v1",
         total=len(versions),

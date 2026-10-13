@@ -1,0 +1,898 @@
+/* Hallmark · genre: playful · macrostructure: Narrative Workflow · tone: utilitarian · theme: user reference · anchor: jade
+ * pre-emit critique: P5 H5 E5 S5 R5 V5 · contrast: pass (46–50) · nav: existing bottom tabs · footer: none · slop: pass (51–55)
+ * honest: pass (56) · chrome: pass (57) · tokens: pass (58) · responsive: pass (59) · icons: pass (60) · mobile: pass (36, 59, 61–69) */
+.recall-home {
+  margin-top: 16px;
+  padding: 22px;
+}
+.recall-home h2 {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 18px;
+  font-size: 24px;
+}
+.recall-brain {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--color-mist);
+  color: var(--color-accent);
+}
+.recall-types {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+.recall-types > a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-mist);
+  border-radius: 20px;
+  padding: 18px 12px;
+  color: var(--color-ink);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.recall-types svg {
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+.recall-types small {
+  display: block;
+  color: var(--color-muted);
+  font-size: 12px;
+  margin-top: 4px;
+}
+.recall-home-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-top: 16px;
+}
+.recall-home-actions > .primary {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+.recall-home-actions .text-button {
+  white-space: nowrap;
+  font-size: 14px;
+}
+.recall-home-progress {
+  margin-bottom: 0;
+}
+.recall-page {
+  min-width: 0;
+  padding: 20px 18px 36px;
+}
+.recall-page > .back-link {
+  min-height: 44px;
+  margin-bottom: 16px;
+  padding: 4px 2px;
+  gap: 6px;
+  font-size: 16px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.recall-page h1 {
+  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.recall-page > .card,
+.recall-page > section {
+  margin: 18px 0;
+}
+.recall-page .page-hero {
+  margin-bottom: 20px;
+}
+.recall-page .page-hero h1 {
+  font-size: clamp(26px, 5vw, 38px);
+  line-height: 1.35;
+}
+.recall-filter {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 16px 0 24px;
+}
+.recall-filter a {
+  padding: 9px 14px;
+  border-radius: var(--radius-pill);
+  background: var(--color-mist);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.recall-filter .selected {
+  background: var(--color-accent);
+  color: var(--color-white);
+}
+.recall-catalog {
+  display: grid;
+  gap: 16px;
+}
+.recall-catalog h2 {
+  font-size: 22px;
+  margin: 16px 0 8px;
+}
+.recall-catalog progress {
+  margin-bottom: 16px;
+}
+.recall-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  margin-top: 12px;
+}
+.recall-links a {
+  white-space: nowrap;
+  font-size: 14px;
+}
+.recall-detail-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.recall-detail-actions button {
+  flex: 1;
+}
+.recall-detail-actions a {
+  white-space: nowrap;
+}
+.recall-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  border: 1px solid var(--color-line);
+  border-radius: 12px;
+}
+.recall-content table {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 620px;
+  font-size: 14px;
+}
+.recall-content th,
+.recall-content td {
+  padding: 15px 12px;
+  border-bottom: 1px solid var(--color-line);
+  text-align: left;
+  white-space: nowrap;
+}
+.recall-content th {
+  background: var(--color-mist);
+  color: var(--color-muted);
+  font-weight: 500;
+}
+.recall-content td:first-child {
+  font-weight: 600;
+}
+.recall-cell-token {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.recall-slot {
+  color: var(--color-accent-dark);
+  font-weight: 600;
+}
+.recall-current {
+  background: var(--color-jade);
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+  border-radius: 4px;
+}
+.recall-note {
+  font-size: 13px;
+  line-height: 1.8;
+  color: var(--color-muted);
+  margin-top: 18px;
+}
+.recall-sentences p {
+  display: flex;
+  gap: 16px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--color-line);
+  line-height: 2.1;
+}
+.recall-number {
+  color: var(--color-accent);
+  font-size: 13px;
+  padding-top: 3px;
+}
+.recall-sentences .recall-slot {
+  padding: 4px 8px;
+}
+.recall-graph {
+  display: block;
+  width: 100%;
+  min-width: 640px;
+  color: var(--color-ink);
+}
+.recall-graph line {
+  stroke: var(--color-accent);
+  stroke-width: 2;
+}
+.recall-graph marker path {
+  fill: var(--color-accent);
+}
+.recall-graph rect {
+  fill: var(--color-mist);
+  stroke: var(--color-line);
+}
+.recall-graph text {
+  text-anchor: middle;
+  fill: var(--color-ink);
+  font-size: 16px;
+}
+.recall-graph .active-node {
+  fill: var(--color-jade);
+  stroke: var(--color-accent);
+  stroke-width: 2;
+}
+.recall-graph .active-label {
+  fill: var(--color-accent);
+  font-weight: 700;
+}
+.recall-answer {
+  scroll-margin-bottom: 24px;
+}
+.recall-answer label {
+  font-size: 20px;
+  font-weight: 600;
+}
+.recall-answer input {
+  margin: 14px 0;
+  font-size: 18px;
+  min-height: 52px;
+}
+.recall-answer .split {
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.recall-answer button {
+  white-space: nowrap;
+}
+.recall-hint {
+  padding: 12px;
+  background: var(--color-warning-bg);
+  border-radius: 8px;
+  color: var(--color-ink);
+}
+.recall-feedback h2,
+.recall-complete h2 {
+  font-size: 22px;
+}
+.recall-feedback p,
+.recall-complete p {
+  line-height: 1.8;
+}
+.recall-complete .text-button {
+  display: block;
+  margin-top: 16px;
+}
+.recall-questions ol {
+  padding-left: 24px;
+  margin-top: 24px;
+}
+.recall-questions li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-line);
+}
+.recall-page .card {
+  min-width: 0;
+}
+.recall-page .choice-row {
+  text-decoration: none;
+}
+.recall-types > a:hover,
+.recall-filter a:hover {
+  filter: brightness(0.97);
+}
+.recall-page button:active,
+.recall-types > a:active {
+  transform: translateY(1px);
+}
+.recall-page :focus-visible,
+.recall-home :focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+@media (min-width: 600px) {
+  .recall-page {
+    padding: 28px 35px 40px;
+  }
+}
+@media (max-width: 480px) {
+  .recall-home {
+    padding: 18px 14px;
+  }
+  .recall-types {
+    gap: 7px;
+  }
+  .recall-types > a {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 13px 10px;
+    gap: 7px;
+    font-size: 14px;
+    border-radius: 16px;
+  }
+  .recall-types small {
+    font-size: 10px;
+  }
+  .recall-home-actions {
+    gap: 8px;
+  }
+  .recall-home-actions > .primary {
+    padding: 12px 8px;
+    gap: 5px;
+    font-size: 14px;
+  }
+  .recall-home-actions > .text-button {
+    font-size: 11px;
+    padding: 8px 0;
+  }
+  .recall-content th,
+  .recall-content td {
+    padding: 12px 10px;
+  }
+  .recall-page .card {
+    padding: 18px 14px;
+  }
+  .recall-answer .split {
+    display: flex;
+  }
+  .recall-answer .split button {
+    margin-left: auto;
+  }
+  .recall-filter {
+    gap: 5px;
+  }
+  .recall-filter a {
+    font-size: 13px;
+    padding: 8px 10px;
+  }
+}
+@media (max-width: 350px) {
+  .recall-page {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+}
+
+/* Active-recall learning flow: compact hierarchy, one task at a time. */
+.recall-page {
+  display: grid;
+  align-content: start;
+  gap: var(--space-lg);
+  padding-block-start: var(--space-md);
+}
+.recall-page > .back-link,
+.recall-page > .card,
+.recall-page > section,
+.recall-page > header,
+.recall-page > div,
+.recall-page > nav,
+.recall-page > dl,
+.recall-page > p {
+  margin-block: 0;
+}
+.recall-page > .back-link {
+  width: max-content;
+  margin: 0;
+}
+.recall-page .card {
+  padding: var(--space-md);
+}
+.recall-page-title,
+.recall-detail-header,
+.recall-session-header {
+  display: grid;
+  gap: var(--space-sm);
+  padding-inline: var(--space-xs);
+}
+.recall-page-title h1,
+.recall-detail-header h1,
+.recall-session-header h1 {
+  margin: 0;
+  font-size: clamp(1.75rem, 7vw, 2.375rem);
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+}
+.recall-page-title > p,
+.recall-detail-header > p {
+  max-width: 45ch;
+  color: var(--color-muted);
+  font-size: 0.9375rem;
+}
+.recall-kicker {
+  margin-bottom: var(--space-xs);
+  color: var(--color-accent-dark);
+  font-family: var(--font-verse);
+  font-size: 1rem;
+}
+.recall-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding-block: var(--space-sm);
+  border-block: 1px solid var(--color-line);
+}
+.recall-summary > div {
+  min-width: 0;
+  padding-inline: var(--space-sm);
+  border-inline-end: 1px solid var(--color-line);
+}
+.recall-summary > div:last-child {
+  border-inline-end: 0;
+}
+.recall-summary dt {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+.recall-summary dd {
+  margin: var(--space-xs) 0 0;
+  color: var(--color-ink);
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.recall-filter {
+  flex-wrap: nowrap;
+  max-width: 100%;
+  margin: 0;
+  padding-block-end: var(--space-xs);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+}
+.recall-filter::-webkit-scrollbar {
+  display: none;
+}
+.recall-filter a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  padding-inline: var(--space-md);
+}
+.recall-filter .selected {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+}
+.recall-groups,
+.recall-list-section,
+.recall-catalog {
+  display: grid;
+}
+.recall-groups {
+  gap: var(--space-xl);
+}
+.recall-list-section {
+  gap: var(--space-md);
+}
+.recall-catalog {
+  gap: var(--space-sm);
+}
+.recall-section-heading,
+.recall-panel-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--space-md);
+}
+.recall-section-heading h2,
+.recall-panel-heading h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+.recall-section-heading p,
+.recall-panel-heading p {
+  margin-top: var(--space-xs);
+  color: var(--color-muted);
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+.recall-section-heading > span,
+.recall-panel-heading > span {
+  flex: 0 0 auto;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.recall-catalog-card {
+  display: grid;
+  gap: var(--space-md);
+  border-color: var(--color-line);
+  border-radius: 16px;
+  box-shadow: none;
+}
+.recall-card-main {
+  min-width: 0;
+}
+.recall-card-meta,
+.recall-progress-copy,
+.recall-card-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.recall-card-meta,
+.recall-progress-copy {
+  justify-content: space-between;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.recall-catalog-card h3 {
+  margin: var(--space-sm) 0;
+  font-size: 1.0625rem;
+  line-height: 1.4;
+}
+.recall-catalog-card progress {
+  margin: var(--space-sm) 0 0;
+}
+.recall-card-actions {
+  flex-wrap: wrap;
+}
+.recall-primary-link,
+.recall-secondary-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding-inline: var(--space-md);
+  border-radius: var(--radius-pill);
+  font-size: 0.875rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.recall-page button.primary,
+.recall-page .text-button {
+  white-space: nowrap;
+}
+.recall-page button:disabled {
+  cursor: not-allowed;
+}
+.recall-primary-link {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+}
+.recall-secondary-link {
+  color: var(--color-accent-dark);
+}
+.recall-detail-header .tag {
+  width: max-content;
+}
+.recall-knowledge-panel,
+.recall-context-panel {
+  display: grid;
+  gap: var(--space-lg);
+  border-color: var(--color-line);
+  box-shadow: none;
+}
+.recall-knowledge-links {
+  display: grid;
+  gap: var(--space-xs);
+  padding-block-start: var(--space-md);
+  border-block-start: 1px solid var(--color-line);
+}
+.recall-knowledge-links > span {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+.recall-knowledge-links > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+.recall-knowledge-links a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
+.recall-detail-actions {
+  display: grid;
+  gap: var(--space-sm);
+  margin: 0;
+  padding-block-start: var(--space-md);
+  border-block-start: 1px solid var(--color-line);
+}
+.recall-detail-actions button,
+.recall-detail-actions a {
+  width: 100%;
+  min-height: 48px;
+}
+.recall-related-block {
+  scroll-margin-top: var(--space-md);
+}
+.recall-related-block .recall-questions {
+  margin: 0;
+  border-color: var(--color-line);
+  box-shadow: none;
+}
+.recall-related-block .recall-questions > .primary {
+  margin-top: var(--space-md);
+}
+.recall-session-header {
+  gap: var(--space-md);
+  padding-block-end: var(--space-sm);
+  border-block-end: 1px solid var(--color-line);
+}
+.recall-session-meta,
+.recall-session-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.recall-session-meta,
+.recall-session-progress > span {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+.recall-session-progress {
+  flex-wrap: wrap;
+  font-variant-numeric: tabular-nums;
+}
+.recall-session-progress .text-button {
+  min-height: 44px;
+  margin-inline-start: auto;
+  padding-inline: var(--space-xs);
+}
+.recall-session-header progress {
+  margin: 0;
+}
+.recall-context-panel .recall-content {
+  min-width: 0;
+}
+.recall-slot-result {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0.125rem 0.375rem;
+  border-radius: 5px;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.recall-slot-correct {
+  background: var(--color-success-bg);
+  color: var(--color-success);
+  outline-color: var(--color-success);
+}
+.recall-slot-incorrect {
+  background: var(--color-danger-bg);
+  color: var(--color-danger);
+  outline-color: var(--color-danger);
+}
+.recall-graph .recall-result-correct-node {
+  fill: var(--color-success-bg);
+  stroke: var(--color-success);
+  stroke-width: 2;
+}
+.recall-graph .recall-result-incorrect-node {
+  fill: var(--color-danger-bg);
+  stroke: var(--color-danger);
+  stroke-width: 2;
+}
+.recall-graph .recall-graph-correct {
+  fill: var(--color-success);
+  font-weight: 700;
+}
+.recall-graph .recall-graph-incorrect {
+  fill: var(--color-danger);
+  font-weight: 700;
+}
+.recall-feedback {
+  display: grid;
+  gap: var(--space-md);
+  border-color: var(--color-line);
+  box-shadow: none;
+}
+.recall-feedback.is-correct {
+  background: var(--color-success-bg);
+  color: var(--color-ink);
+}
+.recall-feedback.is-incorrect {
+  background: var(--color-danger-bg);
+  color: var(--color-ink);
+}
+.recall-feedback-status {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+}
+.recall-feedback-status > div {
+  min-width: 0;
+}
+.recall-feedback-status p {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+.recall-feedback-status h2 {
+  margin-top: var(--space-xs);
+  font-size: 1.25rem;
+}
+.recall-feedback-icon {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+}
+.is-correct .recall-feedback-icon {
+  background: var(--color-success);
+  color: var(--color-accent-ink);
+}
+.is-incorrect .recall-feedback-icon {
+  background: var(--color-danger);
+  color: var(--color-accent-ink);
+}
+.recall-feedback-location {
+  color: var(--color-muted);
+  font-size: 0.875rem;
+}
+.recall-feedback-detail {
+  padding-block: var(--space-sm);
+  border-block: 1px solid var(--color-line);
+}
+.recall-feedback-detail strong {
+  font-size: 0.75rem;
+}
+.recall-feedback-detail p {
+  margin-top: var(--space-xs);
+}
+.recall-feedback .primary {
+  width: 100%;
+  min-height: 48px;
+}
+.recall-answer {
+  display: grid;
+  gap: var(--space-sm);
+  border-color: var(--color-line);
+  box-shadow: none;
+}
+.recall-answer-heading {
+  display: grid;
+  gap: var(--space-xs);
+}
+.recall-answer-heading span {
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+.recall-answer-heading strong {
+  font-size: 1.125rem;
+  line-height: 1.5;
+}
+.recall-answer label {
+  margin: var(--space-xs) 0 0;
+  font-size: 0.875rem;
+  font-weight: 650;
+}
+.recall-answer input {
+  min-height: 48px;
+  margin: 0;
+  border-width: 1px;
+  outline: 2px solid transparent;
+  outline-offset: 1px;
+  font-size: 1rem;
+}
+.recall-answer input:focus-visible {
+  outline-color: var(--color-focus);
+}
+.recall-answer input[readonly] {
+  cursor: wait;
+  background: var(--color-mist);
+  color: var(--color-ink);
+}
+.recall-answer .split {
+  display: grid;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.recall-answer .split .primary {
+  width: 100%;
+  min-height: 48px;
+}
+.recall-answer-help {
+  min-height: 1lh;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+}
+.recall-hint {
+  margin: 0;
+  background: var(--color-warning-bg);
+  color: var(--color-ink);
+}
+.recall-complete {
+  display: grid;
+  gap: var(--space-md);
+  border-color: var(--color-line);
+  box-shadow: none;
+}
+.recall-complete .primary {
+  width: 100%;
+}
+.recall-complete .text-button {
+  min-height: 44px;
+  margin: 0;
+}
+@media (hover: hover) and (pointer: fine) {
+  .recall-primary-link:hover,
+  .recall-page button.primary:hover:not(:disabled) {
+    background: var(--color-accent-dark);
+    color: var(--color-accent-ink);
+    transform: translateY(-1px);
+  }
+  .recall-secondary-link:hover,
+  .recall-page .text-button:hover:not(:disabled) {
+    text-decoration: underline;
+  }
+  .recall-answer input:hover:not([readonly]) {
+    background: var(--color-mist);
+  }
+}
+.recall-primary-link,
+.recall-page button.primary {
+  transition:
+    background-color var(--dur-short) var(--ease-out),
+    transform var(--dur-micro) var(--ease-out);
+}
+.recall-primary-link:active,
+.recall-page button.primary:active:not(:disabled) {
+  transform: translateY(1px);
+}
+@media (min-width: 36rem) {
+  .recall-page .card {
+    padding: var(--space-lg);
+  }
+  .recall-catalog-card {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+  .recall-card-actions {
+    justify-content: flex-end;
+  }
+  .recall-detail-actions {
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+  .recall-detail-actions a {
+    width: auto;
+    padding-inline: var(--space-md);
+  }
+  .recall-answer .split {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+  .recall-answer .split .primary {
+    width: auto;
+  }
+}
+@media (max-width: 30rem) {
+  .recall-section-heading,
+  .recall-panel-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+  .recall-progress-copy span:last-child {
+    display: none;
+  }
+  .recall-session-progress .text-button {
+    width: 100%;
+    justify-content: flex-start;
+    margin-inline-start: 0;
+  }
+}

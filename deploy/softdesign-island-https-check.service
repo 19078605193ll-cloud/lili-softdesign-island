@@ -1,0 +1,9 @@
+[Unit]
+Description=Softdesign Island public HTTPS health and certificate expiry check
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /opt/softdesign-island/scripts/observe_https.py
+TimeoutStartSec=45

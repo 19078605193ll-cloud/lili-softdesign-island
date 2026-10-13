@@ -1,0 +1,10 @@
+{
+  "date": "2026-10-13",
+  "scope": "admin active-recall page",
+  "font_stack": "Inter, Microsoft YaHei, sans-serif",
+  "palette": "existing admin blue-grey custom properties and base-template colours",
+  "motion": "motion-cut; transform-only active feedback with reduced-motion fallback",
+  "spacing": "existing admin spacing preserved",
+  "framework": "FastAPI Jinja template with vanilla JavaScript; Vue is limited to the H5 learner client",
+  "preserve": ["font stack", "palette", "admin component voice", "route and template ownership"]
+}

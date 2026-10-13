@@ -71,7 +71,11 @@ async def prepare(factory, job_id):
             return None
         job.status = "running"
         job.generation += 1
-        job.lease_until = now + timedelta(seconds=660 if job.kind in {'tutor','variant','variant_review'} else 360)
+        job.lease_until = now + timedelta(
+            seconds=660
+            if job.kind in {"tutor", "variant", "variant_review", "recall_generate"}
+            else 360
+        )
         return dict(
             id=job.id,
             batch_id=job.batch_id,
@@ -715,6 +719,23 @@ async def failed(factory, task, exc):
                 job.error_detail = "AI 模型响应超时，请稍后重试"
             else:
                 job.error_detail = "AI 服务暂时不可用，请稍后重试"
+        elif job.kind == "recall_generate":
+            from app.recall.generation import RecallPromptError
+            if isinstance(exc, RecallPromptError):
+                job.error_code = exc.code
+                job.error_detail = str(exc)
+            elif isinstance(exc, (APITimeoutError, httpx.TimeoutException)):
+                job.error_detail = "主动回忆生成超时，请稍后重试"
+            elif str(exc) == "CONTENT_CHANGED":
+                job.error_detail = "内容已产生新版本，请重新发起生成"
+            elif str(exc) == "KNOWLEDGE_NODE_CHANGED":
+                job.error_detail = "知识点已失效或发生变化，请重新选择"
+            elif str(exc) == "AI_NOT_CONFIGURED":
+                job.error_detail = "主动回忆生成模型尚未配置"
+            elif str(exc).startswith("AI_OUTPUT_INVALID"):
+                job.error_detail = "模型连续两次未返回有效结构，请重试或调整生成要求"
+            else:
+                job.error_detail = "主动回忆生成失败，请稍后重试"
         import logging
 
         logging.getLogger("island").warning(
@@ -747,6 +768,11 @@ async def execute(job_id, factory=None):
         if task['kind'] in {'tutor', 'variant', 'variant_review', 'variant_wait'}:
             from app.h5.ai_worker import execute_learning
             await execute_learning(factory, task)
+            return
+        if task["kind"] == "recall_generate":
+            from app.recall.generation import execute_generation
+
+            await execute_generation(factory, task)
             return
         data = await inputs(factory, task)
         output = await perform(task, data) if data is not None else {}

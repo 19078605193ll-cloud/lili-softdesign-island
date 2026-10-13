@@ -17,7 +17,17 @@ pytestmark = pytest.mark.integration
     reason="Set H5_E2E=1 through scripts/test_isolated.py to run browser acceptance",
 )
 async def test_browser_learning_flow(client, session, storage, tmp_path):
-    await setup_questions(client, session)
+    _, _, recall_units = await setup_questions(client, session)
+    from tests.test_recall import seed, publish
+    from app.models import KnowledgeNode, QuestionKnowledgeAssignment
+    from sqlalchemy import select
+    import uuid
+    for row in await seed(client):
+        await publish(client, row)
+    acid = await session.scalar(select(KnowledgeNode).where(KnowledgeNode.code == "database.transaction.acid"))
+    for unit in recall_units:
+        for part in unit["parts"]:
+            session.add(QuestionKnowledgeAssignment(subject_id=acid.subject_id, question_id=uuid.UUID(part["id"]), knowledge_node_id=acid.id, role="related", status="confirmed", source="manual"))
     from app.models import User, UserRole
     from app.core.security import passwords
     for browser in ("chromium", "webkit"):
@@ -42,6 +52,20 @@ async def test_browser_learning_flow(client, session, storage, tmp_path):
         AI_TUTOR_REASONING_EFFORT="low",
     )
     root = Path(__file__).resolve().parents[1]
+    # The fixture API serves dist, so browser assertions must use today's source.
+    executable = "npm.cmd" if sys.platform == "win32" else "npm"
+    build = await asyncio.to_thread(
+        subprocess.run,
+        [executable, "run", "build"],
+        cwd=root / "web/h5",
+        env=env,
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="replace",
+        timeout=120,
+    )
+    assert build.returncode == 0, build.stdout + "\n" + build.stderr
     log = tmp_path / "browser-api.log"
     with log.open("w", encoding="utf-8") as output:
         process = subprocess.Popen(
@@ -64,17 +88,16 @@ async def test_browser_learning_flow(client, session, storage, tmp_path):
                     await asyncio.sleep(0.1)
                 else:
                     pytest.fail(log.read_text(encoding="utf-8"))
-            executable = "npm.cmd" if sys.platform == "win32" else "npm"
             result = await asyncio.to_thread(
                 subprocess.run,
-                [executable, "run", "test:e2e"],
+                [executable, "run", "test:e2e", *(["--", os.environ["H5_E2E_SPEC"]] if os.environ.get("H5_E2E_SPEC") else [])],
                 cwd=root / "web/h5",
                 env=env,
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
                 errors="replace",
-                timeout=240,
+                timeout=480,
             )
             assert result.returncode == 0, (
                 result.stdout

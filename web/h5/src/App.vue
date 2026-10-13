@@ -3,8 +3,11 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 import BottomNav from "./components/BottomNav.vue";
 const route = useRoute();
-const hasNavigation = computed(() =>
-  ["/", "/practice", "/notebook"].includes(route.path),
+const hasNavigation = computed(
+  () =>
+    ["/", "/practice", "/notebook", "/recalls"].includes(route.path) ||
+    route.path.startsWith("/recalls/") ||
+    route.path.startsWith("/recall-session/"),
 );
 </script>
 <template>
