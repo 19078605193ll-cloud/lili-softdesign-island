@@ -606,6 +606,9 @@ async def admin_action(
         )
         if current and current.number > v.number:
             raise fail(409, "RECALL_VERSION", "不能用旧版本覆盖新版")
+        # Publication and removal of old learning commit atomically. Draft and
+        # review actions never reset users' progress.
+        await svc.clear_obsolete_sessions(session, r.id, v.id)
         v.status, v.published_by, v.published_at = "published", user.id, svc.now()
         r.published_version_id, r.active = v.id, True
     else:

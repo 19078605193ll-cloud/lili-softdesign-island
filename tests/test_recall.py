@@ -3,7 +3,7 @@ import uuid
 import pytest
 from sqlalchemy import func, select
 
-from app.recall.models import RecallSubmission
+from app.recall.models import RecallSession, RecallSessionBlank, RecallSubmission
 from app.recall.pilots import pilots
 from app.recall.schemas import Normalization, VersionIn, normalize
 from tests.test_markdown_integration import storage  # noqa: F401 - pytest fixture
@@ -19,8 +19,9 @@ def deterministic_semantic_grading(monkeypatch):
 @pytest.mark.integration
 async def test_semantic_grading_failure_retry_and_rule_shortcut(client, session, monkeypatch):
     from unittest.mock import AsyncMock
-    from app.recall import grading
+
     from app.config import get_settings
+    from app.recall import grading
     monkeypatch.setattr(get_settings(), "recall_semantic_grading_enabled", True)
     row = next(r for r in await seed(client) if r["type"] == "sentence")
     await publish(client, row)
@@ -166,6 +167,74 @@ async def publish(client, row):
         assert r.status_code == 200, r.text
         rev = r.json()["revision"]
     return rev
+
+
+@pytest.mark.integration
+@pytest.mark.parametrize("completed", [False, True])
+async def test_publish_new_version_deletes_old_learning_only(client, session, completed):
+    from app.models import User
+    from app.recall import service
+
+    rows = await seed(client)
+    row = next(r for r in rows if r["type"] == "sentence")
+    other = next(r for r in rows if r["id"] != row["id"])
+    revision = await publish(client, row)
+    await publish(client, other)
+    old = (await client.post("/api/v2/learning/recall-sessions",
+                             json={"recall_id": row["id"]})).json()
+    url = "/api/v2/learning/recall-sessions/" + old["id"]
+    body = {"revision": old["revision"], "blank_key": old["current_key"], "answer": "错误"}
+    headers = {"Idempotency-Key": uuid.uuid4().hex}
+    result = await client.post(url + "/answers", json=body, headers=headers)
+    assert result.status_code == 200, result.text
+    old = result.json()["session"]
+    saved = await client.patch(url, json={"revision": old["revision"],
+                                         "blank_key": old["current_key"], "answer": "旧草稿"})
+    assert saved.status_code == 200
+    if completed:
+        s = await session.get(RecallSession, uuid.UUID(old["id"]))
+        s.phase = "completed"
+        await session.commit()
+    second_user = User(username="second-learner", password_hash="unused")
+    session.add(second_user)
+    await session.flush()
+    second = await service.create_session(session, second_user.id, uuid.UUID(row["id"]))
+    second_id = second.id
+    await session.commit()
+    unaffected = (await client.post("/api/v2/learning/recall-sessions",
+                                    json={"recall_id": other["id"]})).json()
+    detail = (await client.get("/api/v2/admin/recalls/versions/" + row["version_id"])).json()
+    version = {k: detail[k] for k in ("title", "content", "blanks", "source", "provenance", "knowledge_node_ids")}
+    version["title"] += " 新版"
+    created = await client.post(f"/api/v2/admin/recalls/{row['id']}/versions", json=version,
+                                headers={"If-Match": f"{row['version_id']}:{revision}"})
+    assert created.status_code == 201, created.text
+    new = created.json()
+    approved = await client.post(f"/api/v2/admin/recalls/versions/{new['version_id']}/approve",
+                                 json={"revision": 1})
+    assert approved.status_code == 200, approved.text
+    # Editing and approval leave the existing training intact.
+    assert (await client.get(url)).status_code == 200
+    publish_url = f"/api/v2/admin/recalls/versions/{new['version_id']}/publish"
+    failed = await client.post(publish_url, json={"revision": 1})
+    assert failed.status_code == 409
+    assert (await client.get(url)).status_code == 200
+    published = await client.post(publish_url, json={"revision": approved.json()["revision"]})
+    assert published.status_code == 200, published.text
+    assert (await client.get(url)).status_code == 404
+    assert (await client.get("/api/v2/learning/recall-sessions/" + unaffected["id"])).json() == unaffected
+    old_ids = [uuid.UUID(old["id"]), second_id]
+    assert await session.scalar(select(func.count()).select_from(RecallSession).where(RecallSession.id.in_(old_ids))) == 0
+    assert await session.scalar(select(func.count()).select_from(RecallSessionBlank).where(RecallSessionBlank.session_id.in_(old_ids))) == 0
+    assert await session.scalar(select(func.count()).select_from(RecallSubmission).where(RecallSubmission.session_id.in_(old_ids))) == 0
+    # A cached answer retry cannot bring deleted old feedback back.
+    assert (await client.post(url + "/answers", json=body, headers=headers)).status_code == 404
+    fresh = (await client.post("/api/v2/learning/recall-sessions", json={"recall_id": row["id"]})).json()
+    assert fresh["version_id"] == new["version_id"]
+    assert fresh["title"] == version["title"]
+    assert fresh["completed"] == 0 and fresh["slot_presentations"] == {}
+    assert fresh["current_key"] == fresh["blanks"][0]["key"]
+    assert all(b["draft"] == "" and b["historical_error_count"] == 0 and not b["mastered"] for b in fresh["blanks"])
 
 
 @pytest.mark.integration
@@ -610,3 +679,65 @@ async def test_concurrent_start_and_submission_are_idempotent(client, session):
         assert await db.scalar(select(func.count()).select_from(RecallSubmission)) == 1
         b = await db.get(RecallSessionBlank, (ids[0], payload.blank_key))
         assert b.round_error_count == 1
+
+
+@pytest.mark.integration
+async def test_publication_waits_for_inflight_answer_then_removes_it(client, session, monkeypatch):
+    import asyncio
+
+    from sqlalchemy.ext.asyncio import async_sessionmaker
+
+    from app.models import User
+    from app.recall import service
+    from app.recall.models import Recall, RecallVersion
+    from app.recall.schemas import AnswerIn
+
+    row = next(r for r in await seed(client) if r["type"] == "sentence")
+    await publish(client, row)
+    user = await session.scalar(select(User).where(User.username == "test-admin"))
+    uid, rid = user.id, uuid.UUID(row["id"])
+    old = await service.create_session(session, uid, rid)
+    sid = old.id
+    payload = AnswerIn(revision=old.revision, blank_key=old.queue[0], answer="wrong")
+    version_data = await service.version_payload(session, await session.get(RecallVersion, old.version_id))
+    version_data["title"] += " 新版"
+    next_version = await service.add_version(session, await session.get(Recall, rid),
+                                             VersionIn.model_validate(version_data), uid)
+    vid = next_version.id
+    await session.commit()
+    factory = async_sessionmaker(session.bind, expire_on_commit=False)
+    grading_started, finish_grading, publish_started = asyncio.Event(), asyncio.Event(), asyncio.Event()
+
+    async def grade(**kwargs):
+        grading_started.set()
+        await finish_grading.wait()
+        return False
+
+    monkeypatch.setattr("app.recall.grading.semantic_grade", grade)
+
+    async def answer():
+        async with factory.begin() as db:
+            await service.submit(db, sid, uid, payload, uuid.uuid4().hex)
+
+    async def publish_new():
+        await grading_started.wait()
+        async with factory.begin() as db:
+            publish_started.set()
+            recall = await db.scalar(select(Recall).where(Recall.id == rid).with_for_update())
+            await service.clear_obsolete_sessions(db, rid, vid)
+            recall.published_version_id = vid
+            (await db.get(RecallVersion, vid)).status = "published"
+
+    answer_task = asyncio.create_task(answer())
+    publish_task = asyncio.create_task(publish_new())
+    try:
+        await asyncio.wait_for(publish_started.wait(), timeout=5)
+        assert not publish_task.done()
+    finally:
+        finish_grading.set()
+        await asyncio.wait_for(asyncio.gather(answer_task, publish_task), timeout=10)
+    async with factory.begin() as db:
+        assert await db.get(RecallSession, sid) is None
+        assert await db.scalar(select(func.count()).select_from(RecallSubmission)) == 0
+        fresh = await service.create_session(db, uid, rid)
+        assert fresh.version_id == vid

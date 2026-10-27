@@ -1,5 +1,68 @@
 import { test, expect } from "@playwright/test";
 
+test("recall: publishing resets old training and sends an open learner to new knowledge", async ({ page }, info) => {
+  await page.goto("/h5/");
+  await page.getByLabel("用户名或邮箱", { exact: true }).fill("users-admin-" + info.project.name);
+  await page.getByLabel("密码", { exact: true }).fill("isolated-test-password");
+  await page.getByRole("button", { name: "登录，继续学习" }).click();
+  await expect(page.getByRole("heading", { name: "主动回忆", exact: true })).toBeVisible();
+  const csrf = (await (await page.request.get("/api/v1/auth/csrf")).json()).csrf_token;
+  const headers = { "X-CSRF-Token": csrf, Origin: new URL(page.url()).origin };
+  const rows = (await (await page.request.get("/api/v2/admin/recalls")).json()).items;
+  const base = await (await page.request.get("/api/v2/admin/recalls/versions/" + rows[0].version_id)).json();
+  const body = {
+    title: "发布同步旧版 " + info.project.name,
+    content: { type: "sentence", paragraphs: [[{ text: "事务的性质：" }, { blank_key: "atomicity" }]], note: "" },
+    blanks: [{ key: "atomicity", label: "事务性质", answer: "原子性", hints: ["不可分割", "全部成功或全部失败"] }],
+    knowledge_node_ids: base.knowledge_node_ids,
+  };
+  const created = await page.request.post("/api/v2/admin/recalls", {
+    headers, data: { ...body, subject_id: base.subject_id, slug: "publish-reset-" + info.project.name },
+  });
+  expect(created.status()).toBe(201);
+  const row = await created.json();
+  async function publishVersion(id: string) {
+    let revision = 1;
+    for (const action of ["approve", "publish"]) {
+      const response = await page.request.post(`/api/v2/admin/recalls/versions/${id}/${action}`, {
+        headers, data: { revision },
+      });
+      expect(response.ok()).toBeTruthy();
+      revision = (await response.json()).revision;
+    }
+    return revision;
+  }
+  const revision = await publishVersion(row.version_id);
+  await page.goto("/h5/recalls/" + row.id);
+  await page.getByRole("button", { name: "开始 / 继续回忆 →" }).click();
+  await expect(page.getByPlaceholder("凭记忆输入答案")).toBeVisible();
+  const oldUrl = page.url();
+  const oldId = new URL(oldUrl).pathname.split("/").pop();
+  await page.getByPlaceholder("凭记忆输入答案").fill("旧答案");
+  await page.getByRole("button", { name: "提交本题", exact: true }).click();
+  await expect(page.getByRole("heading", { name: "本题未答对，根据提示再试一次" })).toBeVisible();
+  const newTitle = "发布同步新版 " + info.project.name;
+  const next = await page.request.post(`/api/v2/admin/recalls/${row.id}/versions`, {
+    headers: { ...headers, "If-Match": `${row.version_id}:${revision}` },
+    data: { ...body, title: newTitle },
+  });
+  expect(next.status()).toBe(201);
+  const version = await next.json();
+  await publishVersion(version.version_id);
+  await page.evaluate(() => window.dispatchEvent(new Event("focus")));
+  await expect(page.getByRole("heading", { name: newTitle, exact: true })).toBeVisible();
+  await expect(page.getByRole("status")).toContainText("旧版学习记录已清除");
+  expect((await page.request.get("/api/v2/learning/recall-sessions/" + oldId)).status()).toBe(404);
+  // Reloading an old bookmarked training URL also recovers to the current content.
+  await page.goto(oldUrl);
+  await expect(page.getByRole("heading", { name: newTitle, exact: true })).toBeVisible();
+  await page.getByRole("button", { name: "开始 / 继续回忆 →" }).click();
+  await expect(page.getByPlaceholder("凭记忆输入答案")).toHaveValue("");
+  await expect(page.getByText("已掌握 0 / 1 空")).toBeVisible();
+  await expect(page.getByText("本轮错误 0 次 · 历史错误 0 次")).toBeVisible();
+  await expect(page.locator('[aria-label^="你的答案："]')).toHaveCount(0);
+});
+
 test("recall: semantic retry and persistent answers in all layouts", async ({
   page,
 }, info) => {

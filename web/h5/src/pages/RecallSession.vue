@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, ref, watch } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import { api, ApiError } from "../api";
 import { randomUUID } from "../uuid";
@@ -65,6 +65,41 @@ let pending: {
   key: string;
   body: { revision: number; blank_key: string; answer: string };
 } | null = null;
+let invalidated = false;
+function reportError(err: any) {
+  if (err instanceof ApiError && err.status === 404) {
+    const recallId = data.value?.recall_id || route.query.recall_id;
+    invalidated = true;
+    clearTimeout(timer);
+    pending = null;
+    feedback.value = null;
+    answer.value = "";
+    data.value = null;
+    void router.replace({
+      path: recallId ? "/recalls/" + recallId : "/recalls",
+      query: { updated: "1" },
+    });
+    return;
+  }
+  error.value = err.message;
+}
+async function checkPublication() {
+  if (!data.value || busy.value || invalidated || document.hidden) return;
+  const sid = data.value.id;
+  try {
+    await api<RecallSession>("/learning/recall-sessions/" + sid);
+  } catch (err) {
+    // Transient connectivity must not interrupt an answer in progress.
+    if (data.value?.id === sid && err instanceof ApiError && err.status === 404)
+      reportError(err);
+  }
+}
+let publicationTimer: ReturnType<typeof setInterval>;
+onMounted(() => {
+  publicationTimer = setInterval(checkPublication, 15000);
+  window.addEventListener("focus", checkPublication);
+  document.addEventListener("visibilitychange", checkPublication);
+});
 async function load() {
   const e = ++epoch;
   error.value = "";
@@ -81,7 +116,7 @@ async function load() {
     await nextTick();
     if (e === epoch) input.value?.focus();
   } catch (err: any) {
-    if (e === epoch) error.value = err.message;
+    if (e === epoch) reportError(err);
   }
 }
 watch(() => route.params.id, load, { immediate: true });
@@ -89,6 +124,7 @@ async function save() {
   clearTimeout(timer);
   if (savePromise) await savePromise;
   if (
+    invalidated ||
     !data.value?.current_key ||
     data.value.read_only ||
     busy.value ||
@@ -109,10 +145,13 @@ async function save() {
       method: "PATCH",
       body,
     });
-    data.value = d;
+    if (!invalidated) data.value = d;
   })();
   try {
     await savePromise;
+  } catch (err) {
+    reportError(err);
+    if (!invalidated) throw err;
   } finally {
     savePromise = null;
   }
@@ -130,10 +169,11 @@ async function submit() {
     try {
       await savePromise;
     } catch (e: any) {
-      error.value = e.message;
+      reportError(e);
       return;
     }
   }
+  if (invalidated || !data.value) return;
   busy.value = true;
   error.value = "";
   try {
@@ -158,7 +198,8 @@ async function submit() {
     await nextTick();
     feedbackBox.value?.focus();
   } catch (e: any) {
-    error.value = e.message;
+    reportError(e);
+    if (invalidated) return;
     if (e instanceof ApiError && e.status < 500) {
       pending = null;
       retryPending.value = false;
@@ -191,7 +232,7 @@ async function retest() {
     await nextTick();
     input.value?.focus();
   } catch (e: any) {
-    error.value = e.message;
+    reportError(e);
   } finally {
     busy.value = false;
   }
@@ -200,6 +241,7 @@ async function questions() {
   if (!data.value || busy.value) return;
   try {
     await save();
+    if (invalidated || !data.value) return;
     busy.value = true;
     noQuestions.value = false;
     const related = await api<{ total: number }>(
@@ -225,11 +267,12 @@ async function questions() {
     busy.value = false;
     await router.push("/session/" + s.id);
   } catch (e: any) {
-    error.value = e.message;
+    reportError(e);
     busy.value = false;
   }
 }
 onBeforeRouteLeave(async () => {
+  if (invalidated) return true;
   if (busy.value || pending) {
     error.value = "请先完成当前提交，网络失败时可重试原提交。";
     return false;
@@ -242,7 +285,13 @@ onBeforeRouteLeave(async () => {
     return false;
   }
 });
-onBeforeUnmount(() => clearTimeout(timer));
+onBeforeUnmount(() => {
+  ++epoch;
+  clearTimeout(timer);
+  clearInterval(publicationTimer);
+  window.removeEventListener("focus", checkPublication);
+  document.removeEventListener("visibilitychange", checkPublication);
+});
 </script>
 <template>
   <div class="recall-page recall-training">
@@ -275,9 +324,6 @@ onBeforeUnmount(() => clearTimeout(timer));
         </div>
         <progress :value="data.completed" :max="data.total" />
       </header>
-      <p v-if="!data.is_current_version" class="recall-note">
-        你正在完成开始时的内容版本；新版需单独学习。
-      </p>
       <section v-if="noQuestions" class="card" role="status">
         暂无关联的可练真题。
         <RouterLink to="/practice">前往题库 →</RouterLink>

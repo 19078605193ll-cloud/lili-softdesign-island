@@ -42,7 +42,7 @@ async function start() {
       method: "POST",
       body: { recall_id: data.value.id },
     });
-    await router.push("/recall-session/" + s.id);
+    await router.push({ path: "/recall-session/" + s.id, query: { recall_id: s.recall_id } });
   } catch (e: any) {
     error.value = e.message;
   } finally {
@@ -59,7 +59,9 @@ async function start() {
       {{ error }} <button @click="load">重试</button>
     </p>
     <template v-if="data"
-      ><header class="recall-detail-header">
+      ><p v-if="route.query.updated" class="recall-note" role="status">
+        内容已更新，旧版学习记录已清除。请阅读最新知识后重新开始回忆。
+      </p><header class="recall-detail-header">
         <span class="tag neutral">{{ recallNames[data.type] }}</span>
         <h1>{{ data.title }}</h1>
         <p>先理解完整知识，再隐藏答案逐题回忆。</p>

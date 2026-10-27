@@ -3,7 +3,7 @@ import json
 import logging
 from datetime import UTC, datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 
 from app.config import get_settings
 from app.core.errors import fail
@@ -17,6 +17,7 @@ from app.models import (
     QuestionKnowledgeAssignment,
 )
 from app.practice.service import load, visible
+from app.recall import grading
 from app.recall.models import (
     Recall,
     RecallBlank,
@@ -27,7 +28,6 @@ from app.recall.models import (
     RecallVersion,
 )
 from app.recall.schemas import Normalization, VersionIn, normalize
-from app.recall import grading
 
 
 def now():
@@ -390,6 +390,7 @@ async def create_session(db, user_id, rid):
         select(RecallSession).where(
             RecallSession.user_id == user_id,
             RecallSession.recall_id == rid,
+            RecallSession.version_id == v.id,
             RecallSession.phase != "completed",
         )
     )
@@ -414,12 +415,38 @@ async def create_session(db, user_id, rid):
     return s
 
 
+async def clear_obsolete_sessions(db, recall_id, version_id):
+    """Caller holds the parent Recall lock; remove children before their sessions."""
+    ids = select(RecallSession.id).where(
+        RecallSession.recall_id == recall_id, RecallSession.version_id != version_id
+    )
+    counts = {}
+    for model in (RecallSubmission, RecallSessionBlank, RecallSession):
+        column = model.id if model is RecallSession else model.session_id
+        result = await db.execute(
+            delete(model).where(column.in_(ids)).execution_options(synchronize_session=False)
+        )
+        counts[model.__tablename__] = result.rowcount
+    return counts
+
+
+async def session_parent_guard(db, sid, user_id):
+    # Match publish's parent -> children lock order. In particular, never hold
+    # a session write lock while waiting for a publisher deleting that session.
+    rid = await db.scalar(select(RecallSession.recall_id).where(
+        RecallSession.id == sid, RecallSession.user_id == user_id,
+    ))
+    if rid is None:
+        raise fail(404, "NOT_FOUND", "训练不存在或内容已更新，请重新开始学习")
+    return await published(db, rid, write_guard=True)
+
+
 async def writable(db, sid, user_id, revision):
     enabled()
     if not get_settings().learning_enabled:
         raise fail(503, "LEARNING_DISABLED", "作答服务暂不可用")
+    await session_parent_guard(db, sid, user_id)
     s = await owned(db, RecallSession, sid, user_id, write=True)
-    await published(db, s.recall_id, write_guard=True)
     if s.revision != revision:
         raise fail(409, "RECALL_CHANGED", "训练已在其他页面更新，请重新加载")
     return s
@@ -428,6 +455,9 @@ async def writable(db, sid, user_id, revision):
 async def submit(db, sid, user_id, payload, key):
     digest = fingerprint({**payload.model_dump(), "session_id": str(sid)})
     await lock(db, f"recall-submit:{user_id}:{key}")
+    # A replay must also wait for publication, so old cached feedback cannot
+    # survive a successful version reset.
+    await session_parent_guard(db, sid, user_id)
     old = await db.scalar(
         select(RecallSubmission).where(
             RecallSubmission.user_id == user_id, RecallSubmission.idempotency_key == key

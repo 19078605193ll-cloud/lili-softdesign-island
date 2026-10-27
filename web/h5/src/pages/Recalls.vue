@@ -89,6 +89,9 @@ function stateLabel(item: RecallList["items"][number]) {
 </script>
 <template>
   <div class="recall-page recall-list-page">
+    <p v-if="route.query.updated" class="recall-note" role="status">
+      原训练已更新或不存在，请选择最新内容重新学习。
+    </p>
     <RouterLink to="/" class="back-link" aria-label="返回首页"
       ><Icon name="left" :size="22" /><span>首页</span></RouterLink
     >
